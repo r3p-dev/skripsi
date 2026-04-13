@@ -6,10 +6,60 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
+import type AddressTransformer from '#transformers/address_transformer'
+import type DiscountTransformer from '#transformers/discount_transformer'
+import type NotificationTransformer from '#transformers/notification_transformer'
+import type OrderActionTransformer from '#transformers/order_action_transformer'
+import type OrderItemTransformer from '#transformers/order_item_transformer'
+import type OrderTransformer from '#transformers/order_transformer'
+import type ReviewTransformer from '#transformers/review_transformer'
+import type ServiceTransformer from '#transformers/service_transformer'
+import type ShoeTransformer from '#transformers/shoe_transformer'
+import type TransactionTransformer from '#transformers/transaction_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
 export namespace Data {
+  export type Address = InferData<AddressTransformer>
+  export namespace Address {
+    export type Variants = InferVariants<AddressTransformer>
+  }
+  export type Discount = InferData<DiscountTransformer>
+  export namespace Discount {
+    export type Variants = InferVariants<DiscountTransformer>
+  }
+  export type Notification = InferData<NotificationTransformer>
+  export namespace Notification {
+    export type Variants = InferVariants<NotificationTransformer>
+  }
+  export type OrderAction = InferData<OrderActionTransformer>
+  export namespace OrderAction {
+    export type Variants = InferVariants<OrderActionTransformer>
+  }
+  export type OrderItem = InferData<OrderItemTransformer>
+  export namespace OrderItem {
+    export type Variants = InferVariants<OrderItemTransformer>
+  }
+  export type Order = InferData<OrderTransformer>
+  export namespace Order {
+    export type Variants = InferVariants<OrderTransformer>
+  }
+  export type Review = InferData<ReviewTransformer>
+  export namespace Review {
+    export type Variants = InferVariants<ReviewTransformer>
+  }
+  export type Service = InferData<ServiceTransformer>
+  export namespace Service {
+    export type Variants = InferVariants<ServiceTransformer>
+  }
+  export type Shoe = InferData<ShoeTransformer>
+  export namespace Shoe {
+    export type Variants = InferVariants<ShoeTransformer>
+  }
+  export type Transaction = InferData<TransactionTransformer>
+  export namespace Transaction {
+    export type Variants = InferVariants<TransactionTransformer>
+  }
   export type User = InferData<UserTransformer>
   export namespace User {
     export type Variants = InferVariants<UserTransformer>

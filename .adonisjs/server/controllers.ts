@@ -4,6 +4,32 @@
  */
 
 export const controllers = {
-  NewAccount: () => import('#controllers/new_account_controller'),
-  Session: () => import('#controllers/session_controller'),
+  admin: {
+    Dashboard: () => import('#controllers/admin/dashboard_controller'),
+  },
+  auth: {
+    ForgotPassword: () => import('#controllers/auth/forgot_password_controller'),
+    Register: () => import('#controllers/auth/register_controller'),
+    ResetPassword: () => import('#controllers/auth/reset_password_controller'),
+    Session: () => import('#controllers/auth/session_controller'),
+  },
+  customer: {
+    Address: () => import('#controllers/customer/address_controller'),
+    Order: () => import('#controllers/customer/order_controller'),
+    Profile: () => import('#controllers/customer/profile_controller'),
+  },
+  staff: {
+    Delivery: () => import('#controllers/staff/delivery_controller'),
+    Inspection: () => import('#controllers/staff/inspection_controller'),
+    OfflineOrder: () => import('#controllers/staff/offline_order_controller'),
+    Pickup: () => import('#controllers/staff/pickup_controller'),
+    StaffProfile: () => import('#controllers/staff/staff_profile_controller'),
+    Task: () => import('#controllers/staff/task_controller'),
+  },
+  transaction: {
+    DownPayment: () => import('#controllers/transaction/down_payment_controller'),
+    Download: () => import('#controllers/transaction/download_controller'),
+    FullPayment: () => import('#controllers/transaction/full_payment_controller'),
+    Webhook: () => import('#controllers/transaction/webhook_controller'),
+  },
 }

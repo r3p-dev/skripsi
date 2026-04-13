@@ -1,7 +1,7 @@
 import './css/app.css'
 import { ReactElement } from 'react'
 import { client } from './client'
-import Layout from '~/layouts/default'
+import Layout from '@/components/layouts/default'
 import { Data } from '@generated/data'
 import { createRoot } from 'react-dom/client'
 import { createInertiaApp } from '@inertiajs/react'

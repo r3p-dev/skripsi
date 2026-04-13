@@ -1,20 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
+import { Role } from '#models/user'
 
-/**
- * Guest middleware is used to deny access to routes that should
- * be accessed by unauthenticated users.
- *
- * For example, the login page should not be accessible if the user
- * is already logged-in
- */
 export default class GuestMiddleware {
-  /**
-   * The URL to redirect to when user is logged-in
-   */
-  redirectTo = '/'
-
   async handle(
     ctx: HttpContext,
     next: NextFn,
@@ -22,8 +11,16 @@ export default class GuestMiddleware {
   ) {
     for (let guard of options.guards || [ctx.auth.defaultGuard]) {
       if (await ctx.auth.use(guard).check()) {
+        const roleRedirects = {
+          [Role.CUSTOMER]: 'order.create',
+          [Role.STAFF]: 'task.index',
+          [Role.ADMIN]: 'dashboard.index',
+        } as const
+
         ctx.session.reflash()
-        return ctx.response.redirect(this.redirectTo, true)
+        return ctx.response
+          .redirect()
+          .toRoute(roleRedirects[ctx.auth.use(guard).user!.role as Role])
       }
     }
 

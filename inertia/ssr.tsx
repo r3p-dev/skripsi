@@ -1,11 +1,11 @@
-import { client } from '~/client'
+import { client } from '@/client'
 import { ReactElement } from 'react'
-import Layout from '~/layouts/default'
 import { Data } from '@generated/data'
 import ReactDOMServer from 'react-dom/server'
 import { createInertiaApp } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
+import Layout from '@/components/layouts/default'
 
 export default function render(page: any) {
   return createInertiaApp({

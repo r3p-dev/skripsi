@@ -1,0 +1,12 @@
+{
+  "E_TOO_MANY_REQUESTS": "Terlalu banyak permintaan. Silakan coba lagi nanti.",
+  "E_BAD_CSRF_TOKEN": "Token CSRF tidak valid.",
+  "E_UNAUTHORIZED_ACCESS": "Anda harus login terlebih dahulu.",
+  "E_AUTHORIZATION_FAILURE": "Anda tidak memiliki izin untuk mengakses sumber daya ini.",
+  "E_INVALID_CREDENTIALS": "Nomor telepon atau kata sandi salah.",
+  "E_ROUTE_NOT_FOUND": "Halaman tidak ditemukan.",
+  "E_ROW_NOT_FOUND": "Data tidak ditemukan.",
+  "E_INVALID_SESSION": "Sesi tidak valid atau telah berakhir.",
+  "E_REQUEST_ABORTED": "Permintaan dibatalkan.",
+  "E_HTTP_EXCEPTION": "Terjadi kesalahan pada permintaan."
+}
