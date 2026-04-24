@@ -1,13 +1,13 @@
 import { PhoneInput } from '@/components/atoms/phone-input'
 import PinpointMap from '@/components/organisms/pinpoint-map'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { validateLocation } from '@/lib/location_validator'
-import { Form } from '@adonisjs/inertia/react'
+import { Form, Link } from '@adonisjs/inertia/react'
 import { Data } from '@generated/data'
 import { latLng, LatLng } from 'leaflet'
 import { useEffect, useState } from 'react'
@@ -15,10 +15,9 @@ import { useForm } from 'react-hook-form'
 
 type AddressFormProps = {
   address: Data.Address | null
-  setIsOpen: (open: boolean) => void
 }
 
-export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
+export default function AddressForm({ address }: AddressFormProps) {
   const defaultPosition = latLng(-6.9555305, 107.6540353)
 
   const [position, setPosition] = useState<LatLng>(
@@ -74,16 +73,13 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
   return (
     <Card className="border border-gray-200 bg-gray-50 rounded-2xl overflow-hidden">
       <CardHeader className="bg-white border-b border-gray-200">
-        <h3 className="text-lg font-bold text-black mb-1">Tambah Alamat Baru</h3>
-        <p className="text-sm text-gray-600">Isi informasi alamat pengiriman Anda dengan lengkap</p>
+        <CardTitle className="text-lg font-bold">Tambah Alamat Baru</CardTitle>
+        <CardDescription className="text-sm">
+          Isi informasi alamat pengiriman Anda dengan lengkap
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form
-          route="address.update"
-          disableWhileProcessing
-          resetOnSuccess
-          onSuccess={() => setIsOpen(false)}
-        >
+        <Form route="address.update" disableWhileProcessing resetOnSuccess>
           {({ errors, processing }) => (
             <FieldSet>
               <input type="hidden" name="latitude" value={watchedLat ?? ''} readOnly />
@@ -92,8 +88,9 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
 
               <FieldGroup>
                 <Field data-invalid={errors.name ? 'true' : undefined}>
-                  <FieldLabel>Nama Lengkap</FieldLabel>
+                  <FieldLabel className="text-sm">Nama Lengkap</FieldLabel>
                   <Input
+                    className="h-10 px-3 py-1"
                     name="name"
                     placeholder="Masukkan nama lengkap"
                     defaultValue={address?.name}
@@ -102,8 +99,9 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
                 </Field>
 
                 <Field data-invalid={errors.phone ? 'true' : undefined}>
-                  <FieldLabel>Nomor Telepon</FieldLabel>
+                  <FieldLabel className="text-sm">Nomor Telepon</FieldLabel>
                   <PhoneInput
+                    className="h-10 px-3 py-1"
                     name="phone"
                     placeholder="Masukkan nomor telepon"
                     defaultValue={address?.phone}
@@ -112,8 +110,9 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
                 </Field>
 
                 <Field data-invalid={errors.street ? 'true' : undefined}>
-                  <FieldLabel>Nama Jalan</FieldLabel>
+                  <FieldLabel className="text-sm">Nama Jalan</FieldLabel>
                   <Textarea
+                    className="h-22 p-3"
                     name="street"
                     placeholder="Masukkan nama jalan"
                     defaultValue={address?.street}
@@ -122,8 +121,9 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
                 </Field>
 
                 <Field data-invalid={errors.note ? 'true' : undefined}>
-                  <FieldLabel>Catatan</FieldLabel>
+                  <FieldLabel className="text-sm">Catatan</FieldLabel>
                   <Input
+                    className="h-10 px-3 py-1"
                     name="note"
                     placeholder="Masukkan catatan"
                     defaultValue={address?.note ?? undefined}
@@ -140,7 +140,7 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
                       : undefined
                   }
                 >
-                  <FieldLabel>Lokasi Pinpoint</FieldLabel>
+                  <FieldLabel className="text-sm">Lokasi Pinpoint</FieldLabel>
                   <div className="overflow-hidden rounded-lg border border-border">
                     <PinpointMap
                       position={
@@ -168,17 +168,18 @@ export default function AddressForm({ address, setIsOpen }: AddressFormProps) {
                 </Field>
 
                 <Field orientation="horizontal">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                    className="flex-1 h-11 rounded-lg border border-gray-300 text-black font-semibold hover:bg-gray-50 active:scale-95 transition-all"
-                  >
-                    Batalkan
-                  </Button>
+                  <Link route="address.show">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-11 rounded-lg border border-gray-300 text-black font-semibold hover:bg-gray-50 active:scale-95 transition-all text-sm"
+                    >
+                      Batalkan
+                    </Button>
+                  </Link>
                   <Button
                     type="submit"
-                    className="flex-1 h-11 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 active:scale-95 transition-all"
+                    className="flex-1 h-11 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-900 active:scale-95 transition-all"
                   >
                     {processing && <Spinner />}
                     {address ? 'Simpan Perubahan' : 'Tambah Alamat'}

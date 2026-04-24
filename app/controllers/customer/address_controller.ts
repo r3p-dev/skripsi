@@ -5,12 +5,18 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { errors } from '@vinejs/vine'
 
 export default class AddressController {
+  async create({ inertia }: HttpContext) {
+    return inertia.render('customer/address/create', {
+      address: null,
+    })
+  }
+
   async show({ inertia, auth }: HttpContext) {
     const user = auth.getUserOrFail()
 
     const address = await user.related('addresses').query().where('is_active', true).first()
 
-    return inertia.render('customer/address', {
+    return inertia.render('customer/address/show', {
       address: AddressTransformer.transform(address),
     })
   }

@@ -25,9 +25,9 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           onClick={() => setShowPassword((prev) => !prev)}
         >
           {showPassword ? (
-            <IconEye className="h-7 w-7" aria-hidden="true" />
+            <IconEye className="size-5" aria-hidden="true" />
           ) : (
-            <IconEyeOff className="h-7 w-7" aria-hidden="true" />
+            <IconEyeOff className="size-5" aria-hidden="true" />
           )}
           <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
         </Button>

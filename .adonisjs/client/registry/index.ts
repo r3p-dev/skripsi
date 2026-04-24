@@ -102,6 +102,12 @@ const routes = {
     tokens: [{"old":"/address","type":0,"val":"address","end":""}],
     types: placeholder as Registry['address.show']['types'],
   },
+  'address.create': {
+    methods: ["GET","HEAD"],
+    pattern: '/address/create',
+    tokens: [{"old":"/address/create","type":0,"val":"address","end":""},{"old":"/address/create","type":0,"val":"create","end":""}],
+    types: placeholder as Registry['address.create']['types'],
+  },
   'address.update': {
     methods: ["POST"],
     pattern: '/address',

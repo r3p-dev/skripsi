@@ -21,4 +21,5 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   MIDTRANS_MERCHANT_ID: Env.schema.string(),
   MIDTRANS_SERVER_KEY: Env.schema.string(),
+  FONNTE_API_KEY: Env.schema.string(),
 })

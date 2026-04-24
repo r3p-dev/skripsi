@@ -90,7 +90,7 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
         role="slider"
         aria-valuenow={sliderPosition}
       >
-        <div className="absolute top-1/2 left-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl">
+        <div className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl">
           <div className="flex gap-1.5">
             <div className="h-5 w-0.5 bg-black"></div>
             <div className="h-5 w-0.5 bg-black"></div>

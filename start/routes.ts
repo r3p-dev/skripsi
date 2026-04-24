@@ -39,6 +39,7 @@ router
     router.post('/profile', [controllers.customer.Profile, 'update'])
 
     router.get('/address', [controllers.customer.Address, 'show'])
+    router.get('/address/create', [controllers.customer.Address, 'create'])
     router.post('/address', [controllers.customer.Address, 'update'])
 
     router.get('/orders', [controllers.customer.Order, 'index'])

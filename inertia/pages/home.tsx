@@ -35,7 +35,7 @@ export default function Home() {
     <div className="mx-auto max-w-md">
       <section className="min-h-screen bg-white px-6 py-5">
         <div className="mb-10 flex items-center gap-3">
-          <img src="/images/umima-logo.png" alt="Premium Care" className="h-14 w-14" />
+          <img src="/images/umima-logo.png" alt="Premium Care" className="size-14" />
           <div>
             <h1 className="mb-0.5 text-2xl font-bold tracking-tight text-black">UmimaClean</h1>
             <p className="text-xs tracking-widest text-gray-600 uppercase">Layanan Cuci Sepatu</p>
@@ -71,7 +71,7 @@ export default function Home() {
                   className="h-13 w-full gap-2 rounded-xl bg-white text-base font-semibold tracking-wide text-black transition-all duration-300 hover:bg-white/90 active:scale-95 cursor-pointer"
                 >
                   Pesan sekarang
-                  <IconChevronRight className="h-5 w-5" />
+                  <IconChevronRight className="size-5" />
                 </Button>
               </Link>
             </div>
@@ -80,8 +80,8 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-5">
             <div className="rounded-xl bg-gray-100 p-6 border border-gray-200">
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black/10">
-                  <IconClock className="h-5 w-5 text-black" />
+                <div className="flex size-10 items-center justify-center rounded-lg bg-black/10">
+                  <IconClock className="size-5 text-black" />
                 </div>
                 <span className="text-sm tracking-widest uppercase font-medium text-gray-700">
                   Waktu
@@ -91,8 +91,8 @@ export default function Home() {
             </div>
             <div className="rounded-xl bg-gray-100 p-6 border border-gray-200">
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black/10">
-                  <IconMapPin className="h-5 w-5 text-black" />
+                <div className="flex size-10 items-center justify-center rounded-lg bg-black/10">
+                  <IconMapPin className="size-5 text-black" />
                 </div>
                 <span className="text-sm tracking-widest uppercase font-medium text-gray-700">
                   Area
@@ -181,7 +181,7 @@ export default function Home() {
             <button
               key={i}
               onClick={() => api?.scrollTo(i)}
-              className={`h-2.5 w-2.5 rounded-full cursor-pointer transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
+              className={`size-2.5 rounded-full cursor-pointer transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
               aria-label={`Go to slide ${i + 1}`}
             ></button>
           ))}
@@ -204,8 +204,8 @@ export default function Home() {
               className="flex gap-5 rounded-2xl border border-gray-300 bg-gray-50 p-6 transition-colors hover:bg-gray-100 active:scale-95"
             >
               <div className="shrink-0">
-                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-white shrink-0">
-                  <step.icon className="h-6 w-6" />
+                <div className="flex size-14 items-center justify-center rounded-lg bg-black text-white shrink-0">
+                  <step.icon className="size-6" />
                 </div>
               </div>
               <div className="flex-1 pt-0.5">
@@ -237,8 +237,8 @@ export default function Home() {
               key={index}
               className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white p-5 transition-all hover:shadow-sm active:scale-95 touch-target flex-col text-center"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
-                <IconMapPin className="h-5 w-5 text-black" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
+                <IconMapPin className="size-5 text-black" />
               </div>
               <span className="text-sm font-medium tracking-wide text-black">{area}</span>
             </div>
@@ -270,7 +270,7 @@ export default function Home() {
                 </div>
                 <div className="flex gap-1">
                   {Array.from({ length: review.rating }).map((_, i) => (
-                    <IconStar key={i} className="h-4 w-4 fill-black text-black" />
+                    <IconStar key={i} className="size-4 fill-black text-black" />
                   ))}
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function Home() {
               className="h-13 w-full gap-2 rounded-xl bg-white text-base font-semibold tracking-wide text-black transition-all duration-300 hover:bg-white/90 active:scale-95 cursor-pointer"
             >
               Pesan sekarang
-              <IconChevronRight className="h-5 w-5" />
+              <IconChevronRight className="size-5" />
             </Button>
           </Link>
         </div>
@@ -329,24 +329,24 @@ export default function Home() {
                 href="https://wa.me/6281234567890"
                 className="flex items-center justify-center gap-3 py-2 text-sm font-medium transition-colors hover:text-white/80 active:scale-95"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                  <IconMapPin className="h-5 w-5" />
+                <div className="flex size-10 items-center justify-center rounded-lg bg-white/10">
+                  <IconMapPin className="size-5" />
                 </div>
               </a>
               <a
                 href="https://wa.me/6281234567890"
                 className="flex items-center justify-center gap-3 py-2 text-sm font-medium transition-colors hover:text-white/80 active:scale-95"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                  <IconBrandWhatsapp className="h-5 w-5" />
+                <div className="flex size-10 items-center justify-center rounded-lg bg-white/10">
+                  <IconBrandWhatsapp className="size-5" />
                 </div>
               </a>
               <a
                 href="https://instagram.com/premiumcare.bdg"
                 className="flex items-center justify-center gap-3 py-2 text-sm font-medium transition-colors hover:text-white/80 active:scale-95"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
-                  <IconBrandInstagram className="h-5 w-5" />
+                <div className="flex size-10 items-center justify-center rounded-lg bg-white/10">
+                  <IconBrandInstagram className="size-5" />
                 </div>
               </a>
             </div>

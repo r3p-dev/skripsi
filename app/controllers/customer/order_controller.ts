@@ -42,9 +42,9 @@ export default class OrderController {
   async index({ inertia, auth, request }: HttpContext) {
     const user = auth.getUserOrFail()
     const filters: Filters = {
-      page: Number(request.input('page', 1)),
-      search: String(request.input('search', '')).trim(),
-      status: this.normalizeStatusTab(request.input('status', 'active')),
+      page: Number(request.qs().page) || 1,
+      search: String(request.qs().search || '').trim(),
+      status: this.normalizeStatusTab(request.qs().status || 'active'),
     }
 
     const query = user.related('orders').query().preload('address')

@@ -35,6 +35,7 @@ export interface ApiDefinition {
   }
   address: {
     show: typeof routes['address.show']
+    create: typeof routes['address.create']
     update: typeof routes['address.update']
   }
   order: {

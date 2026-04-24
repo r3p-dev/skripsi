@@ -20,6 +20,7 @@ export type ScannedRoutes = {
     'profile.show': { paramsTuple?: []; params?: {} }
     'profile.update': { paramsTuple?: []; params?: {} }
     'address.show': { paramsTuple?: []; params?: {} }
+    'address.create': { paramsTuple?: []; params?: {} }
     'address.update': { paramsTuple?: []; params?: {} }
     'order.index': { paramsTuple?: []; params?: {} }
     'order.create': { paramsTuple?: []; params?: {} }
@@ -40,6 +41,7 @@ export type ScannedRoutes = {
     'full_payment.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'address.show': { paramsTuple?: []; params?: {} }
+    'address.create': { paramsTuple?: []; params?: {} }
     'order.index': { paramsTuple?: []; params?: {} }
     'order.create': { paramsTuple?: []; params?: {} }
     'order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -57,6 +59,7 @@ export type ScannedRoutes = {
     'full_payment.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'profile.show': { paramsTuple?: []; params?: {} }
     'address.show': { paramsTuple?: []; params?: {} }
+    'address.create': { paramsTuple?: []; params?: {} }
     'order.index': { paramsTuple?: []; params?: {} }
     'order.create': { paramsTuple?: []; params?: {} }
     'order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }

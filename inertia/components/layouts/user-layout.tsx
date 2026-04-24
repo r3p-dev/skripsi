@@ -22,7 +22,6 @@ export default function UserLayout({ children }: { children: ReactNode }) {
 
   const isActive = (path: string) => {
     const baseUrl = routeUrlMap[path] ?? ''
-    // Profile should be active for both /profile and /address
     if (path === 'profile.show') {
       return (
         url === '/profile' ||
@@ -35,12 +34,12 @@ export default function UserLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="max-w-md mx-auto bg-background min-h-screen">
+    <div className="max-w-md mx-auto bg-muted min-h-dvh">
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
-        <div className="flex items-center p-4 justify-between gap-3">
+        <div className="flex items-center p-3 justify-between gap-3">
           <div className="flex items-center gap-3 flex-1">
-            <div className="flex h-10 w-10 items-center justify-center bg-black rounded-lg shrink-0">
-              <img src="/images/umima-logo.png" alt="Premium Care" className="h-6 w-6" />
+            <div className="flex size-10 items-center justify-center bg-black rounded-lg shrink-0">
+              <img src="/images/umima-logo.png" alt="Premium Care" className="size-6" />
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-bold text-black leading-tight">UmimaClean</h1>
@@ -51,8 +50,8 @@ export default function UserLayout({ children }: { children: ReactNode }) {
             className="relative p-2 hover:bg-secondary/50 rounded-full transition-colors"
             title="Notifikasi"
           >
-            <IconBell className="w-8 h-8" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            <IconBell className="size-8" />
+            <span className="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full" />
           </button>
         </div>
       </header>
@@ -75,7 +74,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="size-5" />
                 <span className="text-sm font-medium">{item.label}</span>
               </Link>
             )
