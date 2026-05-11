@@ -46,6 +46,11 @@ export default class Order extends OrderSchema {
   })
   declare user: BelongsTo<typeof User>
 
+  @belongsTo(() => User, {
+    foreignKey: 'staffId',
+  })
+  declare staff: BelongsTo<typeof User>
+
   @belongsTo(() => Address, {
     foreignKey: 'addressId',
   })

@@ -7,13 +7,6 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table
-        .integer('order_id')
-        .unsigned()
-        .notNullable()
-        .references('id')
-        .inTable(Tables.ORDERS)
-        .onDelete('CASCADE')
 
       table.string('brand').notNullable()
       table.integer('size').notNullable()

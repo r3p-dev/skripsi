@@ -29,7 +29,7 @@ export default class extends BaseSchema {
         .inTable(Tables.DISCOUNTS)
         .onDelete('SET NULL')
       table
-        .integer('claimed_by')
+        .integer('staff_id')
         .unsigned()
         .nullable()
         .references('id')

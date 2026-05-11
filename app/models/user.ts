@@ -39,6 +39,16 @@ export default class User extends compose(UserSchema, AuthFinder) {
   })
   declare orders: HasMany<typeof Order>
 
+  @hasMany(() => OrderAction, {
+    foreignKey: 'staffId',
+  })
+  declare actions: HasMany<typeof OrderAction>
+
+  @hasMany(() => Order, {
+    foreignKey: 'staffId',
+  })
+  declare claimedOrders: HasMany<typeof Order>
+
   @hasMany(() => Notification, {
     foreignKey: 'userId',
   })
@@ -48,11 +58,6 @@ export default class User extends compose(UserSchema, AuthFinder) {
     foreignKey: 'userId',
   })
   declare reviews: HasMany<typeof Review>
-
-  @hasMany(() => OrderAction, {
-    foreignKey: 'staffId',
-  })
-  declare orderActions: HasMany<typeof OrderAction>
 
   @hasMany(() => PushNotification, {
     foreignKey: 'userId',
