@@ -14,6 +14,7 @@ import type { Authenticators } from '@adonisjs/auth/types'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { appUrl } from '#config/app'
 import { Role } from '#enums/role_enum'
+import { errors } from '@vinejs/vine'
 
 /**
  * Manages customer authentication and account security workflows.
@@ -61,7 +62,6 @@ export default class AuthService {
     const { phone, password, rememberMe } = data
 
     const user = await User.verifyCredentials(phone, password)
-
     await auth.use('web').login(user, Boolean(rememberMe))
 
     return user
@@ -95,7 +95,15 @@ export default class AuthService {
   async changePassword(data: ChangePasswordData, user: User): Promise<User> {
     const { currentPassword, password } = data
 
-    await user.validatePassword(currentPassword, 'current_password')
+    const isValid = await user.verifyPassword(currentPassword)
+    if (!isValid) {
+      throw new errors.E_VALIDATION_ERROR([
+        {
+          field: 'currentPassword',
+          message: 'Kata sandi saat ini salah',
+        },
+      ])
+    }
 
     return db.transaction((trx) =>
       user
@@ -119,7 +127,6 @@ export default class AuthService {
    */
   async requestPasswordReset(data: ForgotPasswordData): Promise<void> {
     const user = await User.findBy('phone', data.phone)
-
     if (user) {
       const resetUrl = signedUrlFor(
         'password_reset.edit',

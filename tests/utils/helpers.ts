@@ -20,8 +20,8 @@ import { DateTime } from 'luxon'
  */
 export async function createUser(): Promise<User> {
   return User.create({
-    phone: '6281387882973',
     name: 'Valid Name',
+    phone: '081387882973',
     password: 'password123',
     role: Role.CUSTOMER,
   })
@@ -31,7 +31,7 @@ export async function createAddress(userId: number) {
   return Address.create({
     userId: userId,
     recipientName: 'Valid Name',
-    recipientPhone: '6281313293859',
+    recipientPhone: '081387882973',
     addressDetail: 'Jalan Braga',
     latitude: -6.9555306,
     longitude: 107.6540354,

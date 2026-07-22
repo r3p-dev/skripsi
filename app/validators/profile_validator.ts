@@ -6,9 +6,9 @@ import type { Infer } from '@vinejs/vine/types'
  * Validate customer address payloads.
  */
 export const addressValidator = vine.create({
-  name: name(),
-  phone: phone(),
-  street: vine.string().trim().maxLength(255),
+  recipientName: name(),
+  recipientPhone: phone(),
+  addressDetail: vine.string().trim().maxLength(255),
   latitude: vine.number().min(-90).max(90),
   longitude: vine.number().min(-180).max(180),
   note: note(),

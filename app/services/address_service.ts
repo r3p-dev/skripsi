@@ -83,13 +83,8 @@ export default class AddressService {
 
       return Address.create(
         {
+          ...data,
           userId: user.id,
-          recipientName: data.name,
-          recipientPhone: data.phone,
-          addressDetail: data.street,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          note: data.note ?? null,
           isActive: true,
         },
         { client: trx }

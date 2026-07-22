@@ -30,11 +30,12 @@ export default class ProfileController {
   /**
    * Change password for the current authenticated user.
    */
-  async update({ auth, request, response }: HttpContext): Promise<void> {
+  async update({ auth, request, response, session }: HttpContext): Promise<void> {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(changePasswordValidator)
 
     await this.authService.changePassword(payload, user)
+    session.flash('success', 'Kata sandi berhasil diperbarui')
 
     return response.redirect().toRoute('customer.profile.show')
   }

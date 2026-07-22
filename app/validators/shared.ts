@@ -1,4 +1,3 @@
-import { normalizeIndonesianPhoneNumber } from '#utils/phone'
 import vine from '@vinejs/vine'
 
 /**
@@ -19,8 +18,7 @@ export const phone = () =>
   vine
     .string()
     .trim()
-    .regex(/^(?:\+?62|0)?8[1-9]\d{7,11}$/)
-    .transform((value) => normalizeIndonesianPhoneNumber(value) as string)
+    .regex(/^08[1-9]\d{8,10}$/)
 
 export const password = () =>
   vine

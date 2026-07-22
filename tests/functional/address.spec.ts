@@ -37,18 +37,19 @@ test.group('Validation Errors', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Invalid N4m3_',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Invalid N4m3_',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
       errors: {
-        name: 'Nama Lengkap hanya boleh berisi huruf',
+        recipientName: 'Nama lengkap penerima hanya boleh berisi huruf',
       },
       flash: {},
     })
@@ -61,42 +62,44 @@ test.group('Validation Errors', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: 'waduh',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name',
+        recipientPhone: 'waduh',
+        addressDetail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
       errors: {
-        phone: 'Nomor Telepon harus berupa nomor HP Indonesia yang valid',
+        recipientPhone: 'Nomor telepon memiliki format yang tidak valid',
       },
       flash: {},
     })
   })
 
-  test('POST /address returns validation errors for invalid street', async ({ client }) => {
+  test('POST /address returns validation errors for invalid address detail', async ({ client }) => {
     const user = await createUser()
     const response = await client
       .visit('customer.address.store')
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: '6281313293859',
-        street: '',
+        recipientName: 'Valid Name',
+        recipientPhone: '081313293859',
+        addressDetail: '',
         latitude: -6.9555305,
         longitude: 107.6540353,
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
       errors: {
-        street: 'Alamat wajib diisi',
+        addressDetail: 'Alamat wajib diisi',
       },
       flash: {},
     })
@@ -109,11 +112,12 @@ test.group('Validation Errors', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: '',
         longitude: 107.6540353,
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
@@ -133,11 +137,12 @@ test.group('Validation Errors', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: '',
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
@@ -157,11 +162,12 @@ test.group('Validation Errors', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: -16.9555305,
         longitude: 127.6540353,
+        note: 'Tolong diantar ke depan rumah',
       })
       .loginAs(user)
       .withCsrfToken()
@@ -182,14 +188,15 @@ test.group('POST succeeds', (group) => {
 
   test('POST /address succeeds for valid data', async ({ client, db }) => {
     const user = await createUser()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
         note: 'Tolong diantar ke depan rumah',
@@ -202,7 +209,7 @@ test.group('POST succeeds', (group) => {
       {
         user_id: user.id,
         recipient_name: 'Valid Name',
-        recipient_phone: '6281313293859',
+        recipient_phone: '081313293859',
         address_detail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
@@ -216,10 +223,11 @@ test.group('POST succeeds', (group) => {
 
   test('POST /address succeeds for valid existing data', async ({ client, db }) => {
     const user = await createUser()
+
     await Address.create({
       userId: user.id,
       recipientName: 'Valid Name satu',
-      recipientPhone: '6281313293859',
+      recipientPhone: '081313293859',
       addressDetail: 'Jalan Braga',
       latitude: -6.9555306,
       longitude: 107.6540354,
@@ -232,9 +240,9 @@ test.group('POST succeeds', (group) => {
       .withInertia()
       .header('referer', '/address/create')
       .json({
-        name: 'Valid Name dua',
-        phone: '6281313293859',
-        street: 'Jalan Braga',
+        recipientName: 'Valid Name dua',
+        recipientPhone: '081313293859',
+        addressDetail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
         note: 'Tolong diantar ke depan rumah',
@@ -247,7 +255,7 @@ test.group('POST succeeds', (group) => {
       {
         user_id: user.id,
         recipient_name: 'Valid Name dua',
-        recipient_phone: '6281313293859',
+        recipient_phone: '081313293859',
         address_detail: 'Jalan Braga',
         latitude: -6.9555305,
         longitude: 107.6540353,
@@ -262,7 +270,7 @@ test.group('POST succeeds', (group) => {
       {
         user_id: user.id,
         recipient_name: 'Valid Name satu',
-        recipient_phone: '6281313293859',
+        recipient_phone: '081313293859',
         address_detail: 'Jalan Braga',
         latitude: -6.9555306,
         longitude: 107.6540354,

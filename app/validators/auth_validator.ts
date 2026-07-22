@@ -16,8 +16,8 @@ export const loginValidator = vine.create({
  */
 export const signupValidator = vine.create({
   name: name(),
-  phone: phone(),
-  password: password().confirmed(),
+  phone: phone().unique({ table: 'users', column: 'phone' }),
+  password: password().confirmed({ as: 'passwordConfirm' }),
 })
 
 /**
@@ -31,7 +31,7 @@ export const forgotPasswordValidator = vine.create({
  * Validate password reset through a WhatsApp magic-link token.
  */
 export const resetPasswordValidator = vine.create({
-  password: password().confirmed(),
+  password: password().confirmed({ as: 'passwordConfirm' }),
 })
 
 /**
@@ -39,7 +39,7 @@ export const resetPasswordValidator = vine.create({
  */
 export const changePasswordValidator = vine.create({
   currentPassword: password(),
-  password: password().confirmed(),
+  password: password().confirmed({ as: 'passwordConfirm' }),
 })
 
 /**
