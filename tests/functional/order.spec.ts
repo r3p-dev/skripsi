@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { createUser } from '#tests/utils/helpers'
+import { createAddress, createOrder, createUser } from '#tests/utils/helpers'
 
 test.group('GET Pages', (group) => {
   group.each.setup(() => {
@@ -23,11 +23,13 @@ test.group('GET Pages', (group) => {
     response.assertInertiaComponent('customer/order/index')
   })
 
-  test('GET /orders returns customer/order/show', async ({ client }) => {
+  test('GET /orders/:number returns customer/order/show', async ({ client }) => {
     const user = await createUser()
+    const address = await createAddress(user.id)
+    const order = await createOrder(user, address.id)
 
     const response = await client
-      .visit('customer.order.show', { number: 1 })
+      .visit('customer.order.show', { number: order.orderNumber })
       .loginAs(user)
       .withInertia()
 

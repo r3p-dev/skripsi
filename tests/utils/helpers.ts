@@ -1,6 +1,10 @@
-import { Role, type Role as UserRole } from '#enums/role_enum'
+import { OrderStatus } from '#enums/order_status_enum'
+import { Role } from '#enums/role_enum'
+import Address from '#models/address'
 import Order from '#models/order'
 import User from '#models/user'
+import OrderService from '#services/order_service'
+import { DateTime } from 'luxon'
 
 /**
  * Shared test helpers to reduce repetition across functional tests.
@@ -14,22 +18,40 @@ import User from '#models/user'
 /**
  * Create a user with sensible defaults. Override any field via `overrides`.
  */
-export async function createUser(
-  overrides: Partial<{
-    phone: string
-    name: string
-    password: string
-    role: UserRole
-  }> = {}
-): Promise<User> {
+export async function createUser(): Promise<User> {
   return User.create({
-    phone: overrides.phone ?? `6281387882973`,
-    name: overrides.name ?? 'Test User',
-    password: overrides.password ?? 'secret123',
-    role: overrides.role ?? Role.CUSTOMER,
+    phone: '6281387882973',
+    name: 'Valid Name',
+    password: 'password123',
+    role: Role.CUSTOMER,
   })
 }
 
-export async function createOrder() {
-  return Order.create({})
+export async function createAddress(userId: number) {
+  return Address.create({
+    userId: userId,
+    recipientName: 'Valid Name',
+    recipientPhone: '6281313293859',
+    addressDetail: 'Jalan Braga',
+    latitude: -6.9555306,
+    longitude: 107.6540354,
+    note: 'Tolong diantar ke depan rumah',
+    isActive: true,
+  })
+}
+
+export async function createOrder(user: User, addressId: number) {
+  const service = new OrderService()
+  const number = await service.generateOrderNumber()
+
+  return Order.create({
+    userId: user.id,
+    addressId: addressId,
+    customerName: user.name,
+    customerPhone: user.phone,
+    pickupDate: DateTime.local().plus({ days: 1 }),
+    orderNumber: number,
+    status: OrderStatus.PICKUP_SCHEDULED,
+    totalPrice: null,
+  })
 }

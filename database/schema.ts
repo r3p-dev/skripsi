@@ -8,7 +8,19 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AddressSchema extends BaseModel {
-  static $columns = ['addressDetail', 'createdAt', 'id', 'isActive', 'latitude', 'longitude', 'note', 'recipientName', 'recipientPhone', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'addressDetail',
+    'createdAt',
+    'id',
+    'isActive',
+    'latitude',
+    'longitude',
+    'note',
+    'recipientName',
+    'recipientPhone',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = AddressSchema.$columns
   @column()
   declare addressDetail: string
@@ -35,7 +47,18 @@ export class AddressSchema extends BaseModel {
 }
 
 export class ItemSchema extends BaseModel {
-  static $columns = ['brand', 'condition', 'createdAt', 'id', 'material', 'model', 'note', 'size', 'type', 'updatedAt'] as const
+  static $columns = [
+    'brand',
+    'condition',
+    'createdAt',
+    'id',
+    'material',
+    'model',
+    'note',
+    'size',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = ItemSchema.$columns
   @column()
   declare brand: string
@@ -77,7 +100,16 @@ export class NotificationSchema extends BaseModel {
 }
 
 export class OrderActionSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'name', 'note', 'orderId', 'photoPath', 'staffId', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'name',
+    'note',
+    'orderId',
+    'photoPath',
+    'staffId',
+    'updatedAt',
+  ] as const
   $columns = OrderActionSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -98,7 +130,17 @@ export class OrderActionSchema extends BaseModel {
 }
 
 export class OrderItemSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'itemId', 'name', 'orderId', 'price', 'serviceId', 'subtotal', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'itemId',
+    'name',
+    'orderId',
+    'price',
+    'serviceId',
+    'subtotal',
+    'updatedAt',
+  ] as const
   $columns = OrderItemSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -121,7 +163,19 @@ export class OrderItemSchema extends BaseModel {
 }
 
 export class OrderSchema extends BaseModel {
-  static $columns = ['addressId', 'createdAt', 'customerName', 'customerPhone', 'id', 'orderNumber', 'pickupDate', 'status', 'totalPrice', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'addressId',
+    'createdAt',
+    'customerName',
+    'customerPhone',
+    'id',
+    'orderNumber',
+    'pickupDate',
+    'status',
+    'totalPrice',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = OrderSchema.$columns
   @column()
   declare addressId: number | null
@@ -176,7 +230,16 @@ export class RememberMeTokenSchema extends BaseModel {
 }
 
 export class ServiceSchema extends BaseModel {
-  static $columns = ['category', 'createdAt', 'description', 'id', 'name', 'price', 'type', 'updatedAt'] as const
+  static $columns = [
+    'category',
+    'createdAt',
+    'description',
+    'id',
+    'name',
+    'price',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = ServiceSchema.$columns
   @column()
   declare category: string
@@ -197,7 +260,17 @@ export class ServiceSchema extends BaseModel {
 }
 
 export class TransactionSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'midtransOrderId', 'midtransTransactionId', 'orderId', 'snapRedirectUrl', 'snapToken', 'status', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'midtransOrderId',
+    'midtransTransactionId',
+    'orderId',
+    'snapRedirectUrl',
+    'snapToken',
+    'status',
+    'updatedAt',
+  ] as const
   $columns = TransactionSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
