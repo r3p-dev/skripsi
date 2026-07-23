@@ -1,5 +1,5 @@
 import { appUrl } from '#config/app'
-import { createUser } from '#tests/utils/helpers'
+import { UserFactory } from '#database/factories/user_factory'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { test } from '@japa/runner'
@@ -32,7 +32,8 @@ test.group('GET pages', (group) => {
   test('GET /reset-password returns auth/reset_password component for guests', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const resetUrl = signedUrlFor(
       'password_reset.edit',
       {},
@@ -51,7 +52,7 @@ test.group('GET pages', (group) => {
   })
 
   test('GET /login redirects to /order when already logged in', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('session.create').withInertia().loginAs(user)
 
@@ -60,7 +61,7 @@ test.group('GET pages', (group) => {
   })
 
   test('GET /register redirects to /order when already logged in', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('signup.create').withInertia().loginAs(user)
 
@@ -69,7 +70,7 @@ test.group('GET pages', (group) => {
   })
 
   test('GET /forgot-password redirects to /order when already logged in', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('password_reset.create').withInertia().loginAs(user)
 
@@ -78,7 +79,7 @@ test.group('GET pages', (group) => {
   })
 
   test('GET /reset-password redirects to /order when already logged in', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .visit('password_reset.edit')
@@ -177,7 +178,7 @@ test.group('Validation errors', (group) => {
   })
 
   test('POST /login returns validation errors for invalid remember me', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .post('/login')
@@ -190,7 +191,6 @@ test.group('Validation errors', (group) => {
       })
       .withCsrfToken()
 
-    response.dump()
     response.assertInertiaPropsContains({
       errors: {
         rememberMe: 'Ingat saya harus berupa nilai benar atau salah',
@@ -332,7 +332,7 @@ test.group('Validation errors', (group) => {
   })
 
   test('POST /register returns validation errors for duplicate phone', async ({ client }) => {
-    await createUser()
+    await UserFactory.merge({ phone: '081387882973' }).create()
 
     const response = await client
       .post('/signup')
@@ -346,7 +346,6 @@ test.group('Validation errors', (group) => {
       })
       .withCsrfToken()
 
-    response.headers()
     response.assertInertiaPropsContains({
       errors: {
         phone: 'Nomor telepon sudah digunakan',
@@ -384,7 +383,7 @@ test.group('Validation errors', (group) => {
   test('POST /reset-password returns validation errors for invalid short password', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const resetUrl = signedUrlFor(
       'password_reset.update',
@@ -419,7 +418,7 @@ test.group('Validation errors', (group) => {
   test('POST /reset-password returns validation errors for invalid regex password', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const resetUrl = signedUrlFor(
       'password_reset.update',
@@ -454,7 +453,7 @@ test.group('Validation errors', (group) => {
   test('POST /reset-password returns validation errors for invalid long password', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const resetUrl = signedUrlFor(
       'password_reset.update',
@@ -489,7 +488,7 @@ test.group('Validation errors', (group) => {
   test('POST /reset-password returns validation errors for invalid different passwords', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const resetUrl = signedUrlFor(
       'password_reset.update',
@@ -528,13 +527,13 @@ test.group('POST succeeds', (group) => {
   })
 
   test('POST /login succeeds and redirects to user /order page', async ({ client }) => {
-    await createUser()
+    const user = await UserFactory.merge({ phone: '081387882973' }).create()
 
     const response = await client
       .post('/login')
       .withInertia()
       .json({
-        phone: '081387882973',
+        phone: user.phone,
         password: 'password123',
         rememberMe: false,
       })
@@ -560,11 +559,12 @@ test.group('POST succeeds', (group) => {
   })
 
   test('POST /forgot-password succeeds and send whatsapp OTP', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.merge({ phone: '081387882973' }).create()
 
     const response = await client
       .post('/forgot-password')
       .withInertia()
+      .header('referer', '/forgot-password')
       .json({
         phone: user.phone,
       })
@@ -579,7 +579,7 @@ test.group('POST succeeds', (group) => {
   })
 
   test('POST /reset-password succeeds and redirect to login page', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.merge({ phone: '081387882973' }).create()
 
     const resetUrl = signedUrlFor(
       'password_reset.update',

@@ -1,5 +1,4 @@
-import Address from '#models/address'
-import { createUser } from '#tests/utils/helpers'
+import { UserFactory } from '#database/factories/user_factory'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
@@ -9,7 +8,7 @@ test.group('GET Pages', (group) => {
   })
 
   test('GET /address returns customer/address/show', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('customer.address.show').loginAs(user).withInertia()
 
@@ -17,7 +16,7 @@ test.group('GET Pages', (group) => {
   })
 
   test('GET /address returns customer/address/create', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('customer.address.create').loginAs(user).withInertia()
 
@@ -31,7 +30,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid name', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -56,7 +56,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid phone', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -81,7 +82,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid address detail', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -106,7 +108,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid latitude', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -131,7 +134,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid longitude', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -156,7 +160,8 @@ test.group('Validation Errors', (group) => {
   })
 
   test('POST /address returns validation errors for invalid location', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
+
     const response = await client
       .visit('customer.address.store')
       .withInertia()
@@ -187,7 +192,7 @@ test.group('POST succeeds', (group) => {
   })
 
   test('POST /address succeeds for valid data', async ({ client, db }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .visit('customer.address.store')
@@ -222,18 +227,19 @@ test.group('POST succeeds', (group) => {
   })
 
   test('POST /address succeeds for valid existing data', async ({ client, db }) => {
-    const user = await createUser()
-
-    await Address.create({
-      userId: user.id,
-      recipientName: 'Valid Name satu',
-      recipientPhone: '081313293859',
-      addressDetail: 'Jalan Braga',
-      latitude: -6.9555306,
-      longitude: 107.6540354,
-      note: 'Tolong diantar ke depan rumah',
-      isActive: true,
-    })
+    const user = await UserFactory.with('addresses', 1, (address) => {
+      address.merge([
+        {
+          recipientName: 'Valid Name satu',
+          recipientPhone: '081313293859',
+          addressDetail: 'Jalan Braga',
+          latitude: -6.9555306,
+          longitude: 107.6540354,
+          note: 'Tolong diantar ke depan rumah',
+          isActive: true,
+        },
+      ])
+    }).create()
 
     const response = await client
       .visit('customer.address.store')
