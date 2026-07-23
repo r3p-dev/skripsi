@@ -4,7 +4,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { test } from '@japa/runner'
 
-test.group('GET pages', (group) => {
+test.group('GET Pages', (group) => {
   group.each.setup(() => {
     return testUtils.db().truncate()
   })
@@ -92,7 +92,7 @@ test.group('GET pages', (group) => {
   })
 })
 
-test.group('Validation errors', (group) => {
+test.group('Validation Errors', (group) => {
   group.each.setup(() => {
     return testUtils.db().truncate()
   })
@@ -521,7 +521,7 @@ test.group('Validation errors', (group) => {
   })
 })
 
-test.group('POST succeeds', (group) => {
+test.group('POST Succeeds', (group) => {
   group.each.setup(() => {
     return testUtils.db().truncate()
   })

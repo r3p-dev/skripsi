@@ -48,12 +48,13 @@ export default class OrderController {
   /**
    * Create a pickup-scheduled order for the authenticated customer.
    */
-  async store({ auth, request, response }: HttpContext): Promise<void> {
+  async store({ auth, request, response, session }: HttpContext): Promise<void> {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(orderValidator)
 
     const order = await this.orderService.createOnlineOrder(user, payload)
 
+    session.flash('success', 'Pesanan berhasil dibuat!')
     return response.redirect().toRoute('customer.order.show', { number: order.orderNumber })
   }
 

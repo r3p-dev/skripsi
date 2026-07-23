@@ -186,7 +186,7 @@ test.group('Validation Errors', (group) => {
   })
 })
 
-test.group('POST succeeds', (group) => {
+test.group('POST Succeeds', (group) => {
   group.each.setup(() => {
     return testUtils.db().truncate()
   })

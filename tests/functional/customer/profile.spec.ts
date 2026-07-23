@@ -1,4 +1,4 @@
-import { createUser } from '#tests/utils/helpers'
+import { UserFactory } from '#database/factories/user_factory'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
@@ -8,7 +8,7 @@ test.group('GET Pages', (group) => {
   })
 
   test('GET /profile returns customer/profile/show', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client.visit('customer.profile.show').loginAs(user).withInertia()
 
@@ -22,7 +22,7 @@ test.group('Validation Errors', (group) => {
   })
 
   test('PUT /profile returns validation errors for invalid short password', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .put('/profile')
@@ -45,7 +45,7 @@ test.group('Validation Errors', (group) => {
   })
 
   test('PUT /profile returns validation errors for invalid regex password', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .put('/profile')
@@ -68,7 +68,7 @@ test.group('Validation Errors', (group) => {
   })
 
   test('PUT /profile returns validation errors for invalid long password', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .put('/profile')
@@ -93,7 +93,7 @@ test.group('Validation Errors', (group) => {
   test('PUT /profile returns validation errors for invalid different password', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .put('/profile')
@@ -118,7 +118,7 @@ test.group('Validation Errors', (group) => {
   test('PUT /profile returns validation errors for invalid current password', async ({
     client,
   }) => {
-    const user = await createUser()
+    const user = await UserFactory.create()
 
     const response = await client
       .put('/profile')
@@ -147,7 +147,7 @@ test.group('PUT succeeds', (group) => {
   })
 
   test('PUT /profile succeeds with valid data', async ({ client }) => {
-    const user = await createUser()
+    const user = await UserFactory.merge({ password: 'password123' }).create()
 
     const response = await client
       .put('/profile')
