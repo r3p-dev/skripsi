@@ -1,0 +1,7 @@
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  fsevents: true
+
+overrides:
+  'eslint-plugin-react>eslint': '^10.4.0'

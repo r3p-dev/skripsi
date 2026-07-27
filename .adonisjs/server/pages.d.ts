@@ -1,0 +1,42 @@
+import '@adonisjs/inertia/types'
+
+import type React from 'react'
+import type { Prettify } from '@adonisjs/core/types/common'
+
+type ExtractProps<T> =
+  T extends React.FC<infer Props>
+    ? Prettify<Omit<Props, 'children'>>
+    : T extends React.Component<infer Props>
+      ? Prettify<Omit<Props, 'children'>>
+      : never
+
+declare module '@adonisjs/inertia/types' {
+  export interface InertiaPages {
+    'admin/index': ExtractProps<(typeof import('../../inertia/pages/admin/index.tsx'))['default']>
+    'admin/profile/edit': ExtractProps<(typeof import('../../inertia/pages/admin/profile/edit.tsx'))['default']>
+    'admin/profile/show': ExtractProps<(typeof import('../../inertia/pages/admin/profile/show.tsx'))['default']>
+    'auth/forgot_password': ExtractProps<(typeof import('../../inertia/pages/auth/forgot_password.tsx'))['default']>
+    'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
+    'auth/reset_password': ExtractProps<(typeof import('../../inertia/pages/auth/reset_password.tsx'))['default']>
+    'auth/signup': ExtractProps<(typeof import('../../inertia/pages/auth/signup.tsx'))['default']>
+    'customer/address/create': ExtractProps<(typeof import('../../inertia/pages/customer/address/create.tsx'))['default']>
+    'customer/address/show': ExtractProps<(typeof import('../../inertia/pages/customer/address/show.tsx'))['default']>
+    'customer/order/create': ExtractProps<(typeof import('../../inertia/pages/customer/order/create.tsx'))['default']>
+    'customer/order/index': ExtractProps<(typeof import('../../inertia/pages/customer/order/index.tsx'))['default']>
+    'customer/order/receipt': ExtractProps<(typeof import('../../inertia/pages/customer/order/receipt.tsx'))['default']>
+    'customer/order/show': ExtractProps<(typeof import('../../inertia/pages/customer/order/show.tsx'))['default']>
+    'customer/profile/show': ExtractProps<(typeof import('../../inertia/pages/customer/profile/show.tsx'))['default']>
+    'errors/invalid_signature': ExtractProps<(typeof import('../../inertia/pages/errors/invalid_signature.tsx'))['default']>
+    'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
+    'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
+    'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
+    'order/payment': ExtractProps<(typeof import('../../inertia/pages/order/payment.tsx'))['default']>
+    'staff/inspection/show': ExtractProps<(typeof import('../../inertia/pages/staff/inspection/show.tsx'))['default']>
+    'staff/order/create': ExtractProps<(typeof import('../../inertia/pages/staff/order/create.tsx'))['default']>
+    'staff/profile/edit': ExtractProps<(typeof import('../../inertia/pages/staff/profile/edit.tsx'))['default']>
+    'staff/profile/show': ExtractProps<(typeof import('../../inertia/pages/staff/profile/show.tsx'))['default']>
+    'staff/task/edit': ExtractProps<(typeof import('../../inertia/pages/staff/task/edit.tsx'))['default']>
+    'staff/trip/index': ExtractProps<(typeof import('../../inertia/pages/staff/trip/index.tsx'))['default']>
+    'staff/trip/show': ExtractProps<(typeof import('../../inertia/pages/staff/trip/show.tsx'))['default']>
+  }
+}

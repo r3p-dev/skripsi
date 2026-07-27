@@ -1,0 +1,37 @@
+import vine from '@vinejs/vine'
+import type { Infer } from '@vinejs/vine/types'
+import { image, name, note, phone, item } from '#validators/shared'
+import { PaymentMethod } from '#enums/transaction_enum'
+
+export const orderValidator = vine.create({
+  addressId: vine.number().positive(),
+  pickupDate: vine.date(),
+})
+
+export const customerValidator = vine.create({
+  phone: phone(),
+})
+
+export const offlineOrderValidator = vine.create({
+  name: name(),
+  phone: phone(),
+  totalItems: vine.number(),
+  items: vine.array(item),
+  note: note(),
+  paymentMethod: vine.enum(Object.values(PaymentMethod)),
+})
+
+export const completeTaskValidator = vine.create({
+  photo: image(),
+})
+
+export const inspectionValidator = vine.create({
+  photo: image(),
+  items: vine.array(item),
+})
+
+export type OrderData = Infer<typeof orderValidator>
+export type CustomerData = Infer<typeof customerValidator>
+export type OfflineOrderData = Infer<typeof offlineOrderValidator>
+export type CompleteTaskData = Infer<typeof completeTaskValidator>
+export type InspectionData = Infer<typeof inspectionValidator>
