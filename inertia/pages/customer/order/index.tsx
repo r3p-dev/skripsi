@@ -13,18 +13,22 @@ type PageProps = InertiaProps<{
   filters: Filters
 }>
 
-export default function Index({ orders, filters }: PageProps) {
-  const statusStyles: Record<string, string> = {
-    'Penjemputan Dijadwalkan': 'bg-gray-200 text-gray-700',
-    'Dalam Penjemputan': 'bg-blue-100 text-blue-700',
-    'Dalam Inspeksi': 'bg-blue-100 text-blue-700',
-    'Menunggu Pelunasan': 'bg-amber-100 text-amber-700',
-    'Dalam Pencucian': 'bg-blue-100 text-blue-700',
-    'Dalam Pengantaran': 'bg-blue-100 text-blue-700',
-    'Selesai': 'bg-green-100 text-green-700',
-    'Dibatalkan': 'bg-red-100 text-red-700',
-  }
+/**
+ * Badge colour per order status. Keyed by the translated status the
+ * transformer sends, so it must stay in sync with `OrderStatusLabel`.
+ */
+const STATUS_STYLES: Record<string, string> = {
+  'Penjemputan Dijadwalkan': 'bg-gray-200 text-gray-700',
+  'Dalam Penjemputan': 'bg-blue-100 text-blue-700',
+  'Dalam Inspeksi': 'bg-blue-100 text-blue-700',
+  'Menunggu Pelunasan': 'bg-amber-100 text-amber-700',
+  'Dalam Pencucian': 'bg-blue-100 text-blue-700',
+  'Dalam Pengantaran': 'bg-blue-100 text-blue-700',
+  'Selesai': 'bg-green-100 text-green-700',
+  'Dibatalkan': 'bg-red-100 text-red-700',
+}
 
+export default function Index({ orders, filters }: PageProps) {
   return (
     <CustomerLayout title="Pesanan" description="Riwayat pesanan UmimaClean Anda">
       <div className="flex items-center justify-between gap-3 px-6 py-5">
@@ -91,7 +95,7 @@ export default function Index({ orders, filters }: PageProps) {
                     <p className="text-sm font-bold tracking-wide text-black">
                       {order.orderNumber}
                     </p>
-                    <Badge className={statusStyles[order.status] ?? 'bg-gray-200 text-gray-700'}>
+                    <Badge className={STATUS_STYLES[order.status] ?? 'bg-gray-200 text-gray-700'}>
                       {order.status}
                     </Badge>
                   </div>

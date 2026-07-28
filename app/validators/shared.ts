@@ -52,4 +52,14 @@ export type Filters = {
   page: number
 }
 
+/**
+ * The admin order monitor's filters. Both narrowing fields are raw enum
+ * values rather than the Indonesian labels pages usually receive, because a
+ * filter has to survive a round trip through the query string.
+ */
+export type OrderFilters = Filters & {
+  status: string
+  type: string
+}
+
 export type ItemData = Infer<typeof item>

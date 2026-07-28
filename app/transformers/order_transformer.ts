@@ -1,5 +1,6 @@
 import type Order from '#models/order'
 import { type OrderStatus, OrderStatusLabel } from '#enums/order_status_enum'
+import { type OrderType, OrderTypeLabel } from '#enums/order_type_enum'
 import AddressTransformer from '#transformers/address_transformer'
 import OrderItemTransformer from '#transformers/order_item_transformer'
 import UserTransformer from '#transformers/user_transformer'
@@ -16,6 +17,9 @@ export default class OrderTransformer extends BaseTransformer<Order> {
 
       totalPrice: this.resource.totalPrice ? formatRupiah(this.resource.totalPrice) : null,
       status: OrderStatusLabel[this.resource.status as OrderStatus],
+      statusValue: this.resource.status as OrderStatus,
+      type: OrderTypeLabel[this.resource.type as OrderType],
+      typeValue: this.resource.type as OrderType,
       pickupDate: this.resource.pickupDate?.setLocale('id').toLocaleString(DateTime.DATE_FULL),
       createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
 

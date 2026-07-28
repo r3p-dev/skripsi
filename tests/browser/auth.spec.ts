@@ -25,7 +25,7 @@ test.group('Login', (group) => {
     const page = await visit(route('session.create'))
 
     await page.assertPath('/order')
-    await page.assertTextContains('body', 'Order')
+    await page.assertTextContains('body', 'Buat Pesanan')
   })
 
   test('user can login with valid credentials', async ({ visit, route }) => {
@@ -38,7 +38,7 @@ test.group('Login', (group) => {
     await page.getByRole('button', { name: 'Masuk' }).click()
 
     await page.assertPath('/order')
-    await page.assertTextContains('body', 'Order')
+    await page.assertTextContains('body', 'Buat Pesanan')
     await page.locator('[data-sonner-toast]').waitFor({ state: 'visible' })
     await page.assertTextContains('[data-sonner-toast]', 'Berhasil masuk.')
   })
@@ -65,7 +65,7 @@ test.group('Signup', (group) => {
     const page = await visit(route('signup.create'))
 
     await page.assertPath('/order')
-    await page.assertTextContains('body', 'Order')
+    await page.assertTextContains('body', 'Buat Pesanan')
   })
 
   test('user can signup with valid credentials', async ({ visit, route }) => {
@@ -77,8 +77,8 @@ test.group('Signup', (group) => {
     await page.getByLabel('Konfirmasi Kata Sandi', { exact: true }).fill('password123')
     await page.getByRole('button', { name: 'Daftar' }).click()
 
-    await page.assertPath('/address')
-    await page.assertTextContains('body', 'Alamat')
+    await page.assertPath('/order')
+    await page.assertTextContains('body', 'Buat Pesanan')
     await page.locator('[data-sonner-toast]').waitFor({ state: 'visible' })
     await page.assertTextContains('[data-sonner-toast]', 'Akun berhasil dibuat. Selamat datang!')
   })
@@ -105,7 +105,7 @@ test.group('Forgot Password', (group) => {
     const page = await visit(route('password_reset.create'))
 
     await page.assertPath('/order')
-    await page.assertTextContains('body', 'Order')
+    await page.assertTextContains('body', 'Buat Pesanan')
   })
 
   test('user can request password reset with valid phone number', async ({ visit, route }) => {
@@ -161,7 +161,7 @@ test.group('Reset Password', (group) => {
     )
 
     await page.assertPath('/reset-password')
-    await page.assertTextContains('body', 'Token atur ulang kata sandi sudah kedaluwarsa')
+    await page.assertTextContains('body', 'Tautan Tidak Valid')
   })
 
   test('user redirected to /order page when visiting reset password page while logged in', async ({
@@ -186,7 +186,7 @@ test.group('Reset Password', (group) => {
     const page = await visit(resetUrl)
 
     await page.assertPath('/order')
-    await page.assertTextContains('body', 'Order')
+    await page.assertTextContains('body', 'Buat Pesanan')
   })
 
   test('user can reset password with valid signed url and valid new password', async ({

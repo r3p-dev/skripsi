@@ -30,8 +30,27 @@ export const inspectionValidator = vine.create({
   items: vine.array(item),
 })
 
+/**
+ * Marking a batch washed records the "after" half of the before/after pair,
+ * so the photo is as required here as it is at every other stage.
+ */
+export const cleaningValidator = vine.create({
+  photo: image(),
+})
+
+/**
+ * Correcting the items on an order that has been inspected but not yet paid.
+ * The payload is the whole list, not a patch: the form always submits every
+ * row it is showing.
+ */
+export const orderItemsValidator = vine.create({
+  items: vine.array(item),
+})
+
 export type OrderData = Infer<typeof orderValidator>
 export type CustomerData = Infer<typeof customerValidator>
 export type OfflineOrderData = Infer<typeof offlineOrderValidator>
 export type CompleteTaskData = Infer<typeof completeTaskValidator>
 export type InspectionData = Infer<typeof inspectionValidator>
+export type CleaningData = Infer<typeof cleaningValidator>
+export type OrderItemsData = Infer<typeof orderItemsValidator>

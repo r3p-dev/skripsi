@@ -7,13 +7,22 @@ import { errors } from '@vinejs/vine'
 import RouteService from '#services/route_service'
 
 /**
- * Directional service radius limits measured from the service center.
+ * Coordinates of the service center, used as the origin
+ * when measuring how far away an address is.
  */
-type DirectionalLimits = {
-  north: number
-  south: number
-  east: number
-  west: number
+const SERVICE_CENTER_LATITUDE = -6.9555305
+const SERVICE_CENTER_LONGITUDE = 107.6540353
+
+/**
+ * Maximum distance in kilometres the team travels in each direction.
+ * The limits are deliberately asymmetric: coverage reaches much further
+ * north and east than south and west.
+ */
+const DIRECTIONAL_LIMITS_KM = {
+  north: 30,
+  south: 10,
+  east: 30,
+  west: 20,
 }
 
 /**
@@ -22,7 +31,7 @@ type DirectionalLimits = {
  */
 @inject()
 export default class AddressService {
-  constructor(private service: RouteService) {}
+  constructor(private routeService: RouteService) {}
 
   async getActiveAddress(user: User): Promise<Address | null> {
     return Address.query().where('user_id', user.id).andWhere('is_active', true).first()
@@ -47,18 +56,13 @@ export default class AddressService {
     }
 
     return db.transaction(async (trx) => {
-      const address = await Address.query()
+      const currentAddress = await Address.query()
         .where('user_id', user.id)
         .andWhere('is_active', true)
         .first()
 
-      if (address) {
-        await address
-          .merge({
-            isActive: false,
-          })
-          .useTransaction(trx)
-          .save()
+      if (currentAddress) {
+        await currentAddress.merge({ isActive: false }).useTransaction(trx).save()
       }
 
       return Address.create(
@@ -73,80 +77,43 @@ export default class AddressService {
   }
 
   /**
-   * Validates whether a location falls within the configured service area.
+   * Checks whether a location falls within the supported service area.
    *
-   * The service area is asymmetric, allowing different maximum distances
-   * for the north, south, east, and west directions.
+   * The area is not a plain circle: the allowed distance is blended from
+   * the two directional limits the location sits between, weighted by how
+   * much of its offset is vertical versus horizontal. An address due north
+   * therefore gets the full northern limit, while a north-east address gets
+   * something in between the northern and eastern limits.
    */
   validateRadius(latitude: number, longitude: number): boolean {
-    try {
-      const LATITUDE = -6.9555305
-      const LONGITUDE = 107.6540353
+    const latitudeOffset = latitude - SERVICE_CENTER_LATITUDE
+    const longitudeOffset = longitude - SERVICE_CENTER_LONGITUDE
+    const totalOffset = Math.abs(latitudeOffset) + Math.abs(longitudeOffset)
 
-      const limits: DirectionalLimits = {
-        north: 30,
-        south: 10,
-        east: 30,
-        west: 20,
-      }
-
-      return this.checkDirectionalLimits(LATITUDE, LONGITUDE, latitude, longitude, limits)
-    } catch (error) {
-      throw new Error('Gagal memvalidasi radius order')
+    // The service center itself is always inside the area.
+    if (totalOffset === 0) {
+      return true
     }
-  }
 
-  /**
-   * Compares the actual distance with the maximum distance allowed
-   * for the target direction.
-   */
-  private checkDirectionalLimits(
-    centerLat: number,
-    centerLng: number,
-    targetLat: number,
-    targetLng: number,
-    limits: DirectionalLimits
-  ): boolean {
-    const latDiff = targetLat - centerLat
-    const lngDiff = targetLng - centerLng
+    const verticalWeight = Math.abs(latitudeOffset) / totalOffset
+    const horizontalWeight = Math.abs(longitudeOffset) / totalOffset
 
-    const totalDistance = this.service.calculateDistanceInKm(
-      centerLat,
-      centerLng,
-      targetLat,
-      targetLng
+    const verticalLimit =
+      latitudeOffset >= 0 ? DIRECTIONAL_LIMITS_KM.north : DIRECTIONAL_LIMITS_KM.south
+    const horizontalLimit =
+      longitudeOffset >= 0 ? DIRECTIONAL_LIMITS_KM.east : DIRECTIONAL_LIMITS_KM.west
+
+    const maxAllowedDistanceKm = Math.sqrt(
+      (verticalLimit * verticalWeight) ** 2 + (horizontalLimit * horizontalWeight) ** 2
     )
-    const maxAllowedDistance = this.calculateMaxAllowedDistance(latDiff, lngDiff, limits)
 
-    return totalDistance <= maxAllowedDistance
-  }
-
-  /**
-   * Calculates the maximum allowed distance by blending the directional
-   * limits based on the target's latitude and longitude offsets.
-   *
-   * This produces an asymmetric service area instead of a simple
-   * circular radius.
-   */
-  private calculateMaxAllowedDistance(
-    latDiff: number,
-    lngDiff: number,
-    limits: DirectionalLimits
-  ): number {
-    const totalLatDiff = Math.abs(latDiff)
-    const totalLngDiff = Math.abs(lngDiff)
-    const totalDiff = totalLatDiff + totalLngDiff
-
-    if (totalDiff === 0) return Math.max(...Object.values(limits))
-
-    const latRatio = totalLatDiff / totalDiff
-    const lngRatio = totalLngDiff / totalDiff
-
-    const verticalLimit = latDiff >= 0 ? limits.north : limits.south
-    const horizontalLimit = lngDiff >= 0 ? limits.east : limits.west
-
-    return Math.sqrt(
-      Math.pow(verticalLimit * latRatio, 2) + Math.pow(horizontalLimit * lngRatio, 2)
+    const distanceKm = this.routeService.calculateDistanceInKm(
+      SERVICE_CENTER_LATITUDE,
+      SERVICE_CENTER_LONGITUDE,
+      latitude,
+      longitude
     )
+
+    return distanceKm <= maxAllowedDistanceKm
   }
 }

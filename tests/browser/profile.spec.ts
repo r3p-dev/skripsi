@@ -22,7 +22,10 @@ test.group('Address', (group) => {
     await page.assertTextContains('body', address.street)
   })
 
-  test('user can visit address create page', async ({ visit, route }) => {
+  test('user can visit address create page', async ({ visit, route, browserContext }) => {
+    const user = await UserFactory.create()
+
+    await browserContext.loginAs(user)
     const page = await visit(route('customer.address.create'))
 
     await page.assertPath('/address/create')

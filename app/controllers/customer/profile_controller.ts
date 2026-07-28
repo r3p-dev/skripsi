@@ -8,14 +8,14 @@ import { changeNameValidator } from '#validators/profile_validator'
 @inject()
 export default class ProfileController {
   constructor(
-    protected service: ProfileService,
+    protected profileService: ProfileService,
     protected addressService: AddressService
   ) {}
 
   async show({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const totalOrders = await this.service.getTotalOrders(user)
+    const totalOrders = await this.profileService.getTotalOrders(user)
     const address = await this.addressService.getActiveAddress(user)
 
     return inertia.render('customer/profile/show', {
@@ -28,7 +28,7 @@ export default class ProfileController {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(changeNameValidator)
 
-    await this.service.changeName(payload, user)
+    await this.profileService.changeName(payload, user)
     session.flash('success', 'Nama berhasil diperbarui')
 
     return response.redirect().toRoute('customer.profile.show')

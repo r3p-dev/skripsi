@@ -31,6 +31,7 @@ export type ScannedRoutes = {
     'customer.order.store': { paramsTuple?: []; params?: {} }
     'customer.order.index': { paramsTuple?: []; params?: {} }
     'customer.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.order.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.order.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -45,14 +46,36 @@ export type ScannedRoutes = {
     'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.order.create': { paramsTuple?: []; params?: {} }
     'staff.order.store': { paramsTuple?: []; params?: {} }
+    'staff.order.edit': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.order.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
-    'admin.profile.edit': { paramsTuple?: []; params?: {} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
+    'admin.phone.store': { paramsTuple?: []; params?: {} }
+    'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
+    'admin.order.index': { paramsTuple?: []; params?: {} }
+    'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.service.index': { paramsTuple?: []; params?: {} }
+    'admin.service.create': { paramsTuple?: []; params?: {} }
+    'admin.service.store': { paramsTuple?: []; params?: {} }
+    'admin.service.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.service.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.service.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.index': { paramsTuple?: []; params?: {} }
+    'admin.user.create': { paramsTuple?: []; params?: {} }
+    'admin.user.store': { paramsTuple?: []; params?: {} }
+    'admin.user.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.report.index': { paramsTuple?: []; params?: {} }
+    'admin.reconciliation.index': { paramsTuple?: []; params?: {} }
+    'admin.reconciliation.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
   }
   GET: {
     'drive.fs.serve': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -77,10 +100,22 @@ export type ScannedRoutes = {
     'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.order.create': { paramsTuple?: []; params?: {} }
+    'staff.order.edit': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
-    'admin.profile.edit': { paramsTuple?: []; params?: {} }
+    'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
+    'admin.order.index': { paramsTuple?: []; params?: {} }
+    'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.service.index': { paramsTuple?: []; params?: {} }
+    'admin.service.create': { paramsTuple?: []; params?: {} }
+    'admin.service.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.index': { paramsTuple?: []; params?: {} }
+    'admin.user.create': { paramsTuple?: []; params?: {} }
+    'admin.user.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.report.index': { paramsTuple?: []; params?: {} }
+    'admin.reconciliation.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'drive.fs.serve': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
@@ -105,10 +140,22 @@ export type ScannedRoutes = {
     'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.order.create': { paramsTuple?: []; params?: {} }
+    'staff.order.edit': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
-    'admin.profile.edit': { paramsTuple?: []; params?: {} }
+    'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
+    'admin.order.index': { paramsTuple?: []; params?: {} }
+    'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.service.index': { paramsTuple?: []; params?: {} }
+    'admin.service.create': { paramsTuple?: []; params?: {} }
+    'admin.service.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.index': { paramsTuple?: []; params?: {} }
+    'admin.user.create': { paramsTuple?: []; params?: {} }
+    'admin.user.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.report.index': { paramsTuple?: []; params?: {} }
+    'admin.reconciliation.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -126,18 +173,29 @@ export type ScannedRoutes = {
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'staff.order.store': { paramsTuple?: []; params?: {} }
     'staff.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.phone.store': { paramsTuple?: []; params?: {} }
+    'admin.service.store': { paramsTuple?: []; params?: {} }
+    'admin.user.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'customer.password.update': { paramsTuple?: []; params?: {} }
+    'customer.order.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.trip.update': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.order.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
+    'admin.service.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.reconciliation.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
   }
   DELETE: {
     'staff.trip.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'admin.service.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.user.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

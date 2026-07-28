@@ -2,8 +2,9 @@ import ImageSlider from '@/components/molecules/image_slide'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
-import { areas, reviews, steps, services } from '@/lib/constants'
-import { formatRupiah } from '@/lib/utils'
+import { areas, reviews, steps } from '@/lib/constants'
+import type { Data } from '@/generated/data'
+import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import {
   IconBrandInstagram,
@@ -15,7 +16,11 @@ import {
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 
-export default function Home() {
+type PageProps = InertiaProps<{
+  services: Data.Service[]
+}>
+
+export default function Home({ services }: PageProps) {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState<number>(0)
 
@@ -166,7 +171,7 @@ export default function Home() {
                             {service.type}
                           </span>
                           <span className="text-base font-semibold tracking-wide text-black">
-                            {formatRupiah(service.price)}
+                            {service.price}
                           </span>
                         </div>
                       </div>

@@ -1,12 +1,21 @@
 import StaffLayout from '@/components/layouts/staff_layout'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import StaticMap from '@/components/organisms/static_map'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
+import { whatsappUrl } from '@/lib/utils'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft, IconLock, IconMapPin, IconPhone, IconUser } from '@tabler/icons-react'
+import {
+  IconArrowLeft,
+  IconLock,
+  IconMapPin,
+  IconNavigation,
+  IconPhone,
+  IconUser,
+} from '@tabler/icons-react'
 
 type TripType = 'pickup' | 'delivery'
 
@@ -24,13 +33,20 @@ const typeLabels: Record<TripType, string> = {
 export default function Show({ type, order, blocked }: PageProps) {
   return (
     <StaffLayout title={`${typeLabels[type]} - ${order.orderNumber}`} description="Detail tugas">
+      {/*
+        No back link on purpose: claiming a task holds it against everyone
+        else, so it has to be finished or cancelled rather than abandoned.
+        A blocked task is the exception — nothing was claimed.
+      */}
       <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="staff.trip.index"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
+        {blocked && (
+          <Link
+            route="staff.trip.index"
+            className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          >
+            <IconArrowLeft className="size-5" />
+          </Link>
+        )}
         <div>
           <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">
             {typeLabels[type]}
@@ -64,27 +80,64 @@ export default function Show({ type, order, blocked }: PageProps) {
             </Card>
 
             {order.address && (
-              <Card className="rounded-2xl border border-gray-200 bg-gray-50">
-                <CardHeader>
-                  <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
-                    Alamat
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <IconUser className="mt-0.5 size-4 shrink-0 text-gray-500" />
-                    <p className="text-sm font-medium text-black">{order.address.name}</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <IconPhone className="mt-0.5 size-4 shrink-0 text-gray-500" />
-                    <p className="text-sm text-gray-700">{order.address.phone}</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <IconMapPin className="mt-0.5 size-4 shrink-0 text-gray-500" />
-                    <p className="text-sm leading-relaxed text-gray-700">{order.address.street}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <>
+                <div className="overflow-hidden rounded-2xl border border-gray-200">
+                  <StaticMap
+                    latitude={order.address.latitude}
+                    longitude={order.address.longitude}
+                  />
+                </div>
+
+                <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+                  <CardHeader>
+                    <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+                      Alamat
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <IconUser className="mt-0.5 size-4 shrink-0 text-gray-500" />
+                      <p className="text-sm font-medium text-black">{order.address.name}</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <IconPhone className="mt-0.5 size-4 shrink-0 text-gray-500" />
+                      <a
+                        href={whatsappUrl(order.address.phone)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-gray-700 underline underline-offset-4"
+                      >
+                        {order.address.phone}
+                      </a>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <IconMapPin className="mt-0.5 size-4 shrink-0 text-gray-500" />
+                      <p className="text-sm leading-relaxed text-gray-700">
+                        {order.address.street}
+                      </p>
+                    </div>
+
+                    {/*
+                      Turn-by-turn is handed off to Google Maps rather than
+                      rebuilt here — the driver already has it installed and it
+                      knows the roads. `dir` starts navigation from wherever
+                      they are now.
+                    */}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.latitude},${order.address.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        className:
+                          'h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
+                      })}
+                    >
+                      <IconNavigation className="size-5" />
+                      Buka di Google Maps
+                    </a>
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             <Form

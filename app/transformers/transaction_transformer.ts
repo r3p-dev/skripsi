@@ -16,6 +16,7 @@ export default class TransactionTransformer extends BaseTransformer<Transaction>
 
       paymentMethod: PaymentMethodLabel[this.resource.paymentMethod as PaymentMethod],
       status: TransactionStatusLabel[this.resource.status as TransactionStatus],
+      statusValue: this.resource.status as TransactionStatus,
       createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
 
       order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),

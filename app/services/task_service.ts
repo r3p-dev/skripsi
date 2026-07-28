@@ -6,14 +6,19 @@ import Item from '#models/item'
 import OrderItem from '#models/order_item'
 import Service from '#models/service'
 import type User from '#models/user'
-import type { CompleteTaskData, InspectionData } from '#validators/order_validator'
+import type {
+  CleaningData,
+  CompleteTaskData,
+  InspectionData,
+  OrderItemsData,
+} from '#validators/order_validator'
 import type { ItemData } from '#validators/shared'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { errors as vineErrors } from '@vinejs/vine'
 import { DateTime } from 'luxon'
-import RouteService from '#services/route_service'
+import RouteService, { type RouteItem } from '#services/route_service'
 import drive from '@adonisjs/drive/services/main'
 import { createReadStream } from 'node:fs'
 import { randomUUID } from 'node:crypto'
@@ -25,10 +30,17 @@ import { randomUUID } from 'node:crypto'
 export type TaskType =
   typeof ActionName.PICKUP | typeof ActionName.DELIVERY | typeof ActionName.INSPECTION
 
-const TASK_STATUS: Record<TaskType, OrderStatus> = {
-  [ActionName.PICKUP]: OrderStatus.PICKUP_SCHEDULED,
-  [ActionName.DELIVERY]: OrderStatus.IN_DELIVERY,
-  [ActionName.INSPECTION]: OrderStatus.IN_INSPECTION,
+/**
+ * Statuses an order may be in while it is still eligible for a task.
+ *
+ * Pickup accepts two: claiming a pickup flips the order to IN_PICKUP so the
+ * customer can see a staff member is on the way, and the task must remain
+ * reachable afterwards.
+ */
+const TASK_STATUSES: Record<TaskType, OrderStatus[]> = {
+  [ActionName.PICKUP]: [OrderStatus.PICKUP_SCHEDULED, OrderStatus.IN_PICKUP],
+  [ActionName.DELIVERY]: [OrderStatus.IN_DELIVERY],
+  [ActionName.INSPECTION]: [OrderStatus.IN_INSPECTION],
 }
 
 const ATTEMPT_ACTION: Record<TaskType, ActionName> = {
@@ -56,49 +68,132 @@ const NEXT_STATUS: Record<PhotoTaskType, OrderStatus> = {
 }
 
 /**
+ * How long a proof photo's signed URL stays valid.
+ *
+ * Matched to how long the files themselves are kept: proofs are retained for
+ * three months for cleaning purposes and then deleted, so a longer-lived URL
+ * would only ever point at something that no longer exists.
+ */
+const PHOTO_RETENTION = '90d'
+
+/**
  * Manages staff pickup, delivery, and inspection tasks: route
  * planning, per-task locking, and task completion.
  */
 @inject()
 export default class TaskService {
-  constructor(private service: RouteService) {}
+  constructor(private routeService: RouteService) {}
 
   /**
-   * Builds pickup and delivery routes grouped into today's
-   * schedule and overdue orders.
+   * Returns the pickup and delivery stops that are free to be worked on,
+   * as one list ordered nearest-first from the shop.
+   *
+   * Only PICKUP_SCHEDULED and IN_DELIVERY are candidates: IN_PICKUP means a
+   * staff member has already claimed that stop and is on their way to it, so
+   * it is somebody's current task rather than available work.
+   *
+   * Overdue stops are mixed in with today's rather than listed separately:
+   * a stop that was missed yesterday is simply another stop on the route.
    */
-  async getUnifiedRoutePlanForDate(originLat: number, originLng: number) {
+  async getTripQueue(originLat: number, originLng: number): Promise<RouteItem[]> {
     const today = DateTime.now().startOf('day')
 
     const orders = await Order.query()
-      .where('pickup_date', '<=', today.toISODate()!)
-      .whereIn('status', [OrderStatus.PICKUP_SCHEDULED, OrderStatus.IN_DELIVERY])
+      .where((pickups) => {
+        pickups
+          .where('status', OrderStatus.PICKUP_SCHEDULED)
+          .where('pickup_date', '<=', today.toISODate()!)
+      })
+      .orWhere('status', OrderStatus.IN_DELIVERY)
       .preload('address')
+      .preload('actions')
 
-    const [todayOrders, missedOrders] = this.splitOrdersByDate(orders, today)
-    const input = { originLat, originLng }
+    const available = orders.filter((order) => {
+      const type =
+        order.status === OrderStatus.IN_DELIVERY ? ActionName.DELIVERY : ActionName.PICKUP
 
-    return {
-      today: this.service.buildRoutePlanForOrders(this.toRouteOrders(todayOrders), input),
-      missed: this.service.buildRoutePlanForOrders(this.toRouteOrders(missedOrders), input),
-    }
+      return this.resolveTaskLock(order, type) === null
+    })
+
+    return this.routeService.buildRoutePlanForOrders(this.toRouteOrders(available), {
+      originLat,
+      originLng,
+    })
   }
 
   /**
-   * Returns the inspection queue ordered by arrival time.
+   * Returns the orders waiting to be inspected that no one is working on,
+   * oldest first so shoes are not left sitting on the shelf.
    */
   async getInspectionQueue(): Promise<Order[]> {
-    return Order.query().where('status', OrderStatus.IN_INSPECTION).orderBy('created_at', 'asc')
+    const orders = await Order.query()
+      .whereIn('status', TASK_STATUSES[ActionName.INSPECTION])
+      .orderBy('created_at', 'asc')
+      .preload('actions')
+
+    return orders.filter((order) => this.resolveTaskLock(order, ActionName.INSPECTION) === null)
+  }
+
+  /**
+   * Returns the orders currently being cleaned, oldest first.
+   *
+   * Cleaning is not a claimable task — several staff work the same batch of
+   * shoes — so unlike the other queues nothing is filtered out here.
+   *
+   * Actions come along so each card can show the inspection photo as the
+   * "before" shot the washer compares their work against.
+   */
+  async getCleaningQueue(): Promise<Order[]> {
+    return Order.query()
+      .where('status', OrderStatus.IN_CLEANING)
+      .orderBy('created_at', 'asc')
+      .preload('items', (itemsQuery) => {
+        itemsQuery.preload('service').preload('item')
+      })
+      .preload('actions')
+  }
+
+  /**
+   * Finds the task a staff member is currently holding, if any.
+   *
+   * A staff member may only work one task at a time, so the queue redirects
+   * them back to this task until they finish or cancel it.
+   */
+  async findActiveTask(staff: User): Promise<{ orderNumber: string; type: TaskType } | null> {
+    const claimable = [ActionName.PICKUP, ActionName.DELIVERY, ActionName.INSPECTION] as const
+
+    const orders = await Order.query()
+      .whereIn(
+        'status',
+        claimable.flatMap((type) => TASK_STATUSES[type])
+      )
+      .whereHas('actions', (actionsQuery) => {
+        actionsQuery.where('staff_id', staff.id).whereIn(
+          'name',
+          claimable.map((type) => ATTEMPT_ACTION[type])
+        )
+      })
+      .preload('actions')
+
+    for (const order of orders) {
+      for (const type of claimable) {
+        if (this.resolveTaskLock(order, type)?.staffId === staff.id) {
+          return { orderNumber: order.orderNumber, type }
+        }
+      }
+    }
+
+    return null
   }
 
   /**
    * Retrieves an order for a given task type, only matching
-   * orders currently in the status that task type expects.
+   * orders currently in a status that task type expects.
    */
   async getTaskOrder(orderNumber: string, type: TaskType): Promise<Order> {
     return Order.query()
       .where('order_number', orderNumber)
-      .where('status', TASK_STATUS[type])
+      .whereIn('status', TASK_STATUSES[type])
       .preload('address')
       .preload('items', (itemsQuery) => {
         itemsQuery.preload('service').preload('item')
@@ -129,6 +224,33 @@ export default class TaskService {
   }
 
   /**
+   * Retrieves a task order and asserts the staff member is the one
+   * currently holding its lock.
+   *
+   * Guards every action that mutates a task, so a staff member can never
+   * complete or release work another staff member claimed.
+   */
+  private async getTaskOrderHeldBy(
+    staff: User,
+    orderNumber: string,
+    type: TaskType
+  ): Promise<Order> {
+    const order = await this.getTaskOrder(orderNumber, type)
+    const lock = this.resolveTaskLock(order, type)
+
+    if (!lock || lock.staffId !== staff.id) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'status',
+          message: 'Anda tidak sedang memproses tugas ini.',
+        },
+      ])
+    }
+
+    return order
+  }
+
+  /**
    * Claims a task for a staff member so no other staff can process
    * the same pickup, delivery, or inspection at the same time.
    *
@@ -148,12 +270,26 @@ export default class TaskService {
       return { order, lock }
     }
 
-    await OrderAction.create({
-      orderId: order.id,
-      staffId: staff.id,
-      name: ATTEMPT_ACTION[type],
-      photoPath: null,
-      note: null,
+    await db.transaction(async (trx) => {
+      await OrderAction.create(
+        {
+          orderId: order.id,
+          staffId: staff.id,
+          name: ATTEMPT_ACTION[type],
+          photoPath: null,
+          note: null,
+        },
+        { client: trx }
+      )
+
+      /**
+       * Claiming a pickup is visible to the customer as "Dalam Penjemputan",
+       * so they know someone is on the way. The other task types have no
+       * equivalent in-progress status to show.
+       */
+      if (type === ActionName.PICKUP) {
+        await order.merge({ status: OrderStatus.IN_PICKUP }).useTransaction(trx).save()
+      }
     })
 
     return { order, lock: { staffId: staff.id } }
@@ -170,19 +306,8 @@ export default class TaskService {
     type: PhotoTaskType,
     data: CompleteTaskData
   ): Promise<Order> {
-    const order = await this.getTaskOrder(orderNumber, type)
-    const lock = this.resolveTaskLock(order, type)
-
-    if (!lock || lock.staffId !== staff.id) {
-      throw new vineErrors.E_VALIDATION_ERROR([
-        {
-          field: 'status',
-          message: 'Anda tidak sedang memproses tugas ini.',
-        },
-      ])
-    }
-
-    const photoPath = await this.storePhoto(data.photo)
+    const order = await this.getTaskOrderHeldBy(staff, orderNumber, type)
+    const photoPath = await this.storePhoto(type, data.photo)
 
     return db.transaction(async (trx) => {
       await OrderAction.create(
@@ -205,19 +330,8 @@ export default class TaskService {
    * storing a proof photo and moving the order to await payment.
    */
   async completeInspection(staff: User, orderNumber: string, data: InspectionData): Promise<Order> {
-    const order = await this.getTaskOrder(orderNumber, ActionName.INSPECTION)
-    const lock = this.resolveTaskLock(order, ActionName.INSPECTION)
-
-    if (!lock || lock.staffId !== staff.id) {
-      throw new vineErrors.E_VALIDATION_ERROR([
-        {
-          field: 'status',
-          message: 'Anda tidak sedang memproses tugas ini.',
-        },
-      ])
-    }
-
-    const photoPath = await this.storePhoto(data.photo)
+    const order = await this.getTaskOrderHeldBy(staff, orderNumber, ActionName.INSPECTION)
+    const photoPath = await this.storePhoto(ActionName.INSPECTION, data.photo)
 
     return db.transaction(async (trx) => {
       const totalPrice = await this.createOrderItems(order, data.items, trx)
@@ -241,30 +355,126 @@ export default class TaskService {
   }
 
   /**
-   * Releases a task lock previously claimed by the staff member.
+   * Releases a task lock previously claimed by the staff member, putting the
+   * order back in the queue for someone else to pick up.
    */
   async releaseTask(staff: User, orderNumber: string, type: TaskType): Promise<Order> {
-    const order = await this.getTaskOrder(orderNumber, type)
-    const lock = this.resolveTaskLock(order, type)
+    const order = await this.getTaskOrderHeldBy(staff, orderNumber, type)
 
-    if (!lock || lock.staffId !== staff.id) {
-      throw new vineErrors.E_VALIDATION_ERROR([
+    return db.transaction(async (trx) => {
+      await OrderAction.create(
         {
-          field: 'status',
-          message: 'Anda tidak sedang memproses tugas ini.',
+          orderId: order.id,
+          staffId: staff.id,
+          name: RELEASE_ACTION[type],
+          photoPath: null,
+          note: null,
         },
-      ])
-    }
+        { client: trx }
+      )
 
-    await OrderAction.create({
-      orderId: order.id,
-      staffId: staff.id,
-      name: RELEASE_ACTION[type],
-      photoPath: null,
-      note: null,
+      // Undo the in-progress status the claim put the order into.
+      if (type === ActionName.PICKUP) {
+        return order.merge({ status: OrderStatus.PICKUP_SCHEDULED }).useTransaction(trx).save()
+      }
+
+      return order
     })
+  }
 
-    return order
+  /**
+   * Marks an order as finished cleaning, recording the "after" photo that
+   * pairs with the inspection photo taken before the shoes were washed.
+   *
+   * Walk-in orders have no pickup address — the customer collects them at the
+   * counter — so there is nothing to deliver and they are done. Everything
+   * else joins the delivery half of the trip queue.
+   */
+  async markCleaningDone(staff: User, orderNumber: string, data: CleaningData): Promise<Order> {
+    const order = await Order.query()
+      .where('order_number', orderNumber)
+      .where('status', OrderStatus.IN_CLEANING)
+      .firstOrFail()
+
+    const photoPath = await this.storePhoto('cleaning', data.photo)
+
+    return db.transaction(async (trx) => {
+      await OrderAction.create(
+        {
+          orderId: order.id,
+          staffId: staff.id,
+          name: ActionName.CLEANING_DONE,
+          photoPath,
+          note: null,
+        },
+        { client: trx }
+      )
+
+      const nextStatus = order.addressId ? OrderStatus.IN_DELIVERY : OrderStatus.COMPLETED
+
+      return order.merge({ status: nextStatus }).useTransaction(trx).save()
+    })
+  }
+
+  /**
+   * Retrieves an order whose items may still be corrected, with everything the
+   * edit form needs: the current lines and the inspection photo staff took.
+   *
+   * Only an order that has been inspected but not yet paid matches. Once the
+   * customer pays, the price they agreed to is fixed and the order is already
+   * moving through cleaning, so there is nothing to correct any more.
+   */
+  async getEditableItemsOrder(orderNumber: string): Promise<Order> {
+    return Order.query()
+      .where('order_number', orderNumber)
+      .where('status', OrderStatus.AWAITING_PAYMENT)
+      .preload('items', (itemsQuery) => {
+        itemsQuery.preload('service').preload('item')
+      })
+      .preload('actions', (actionsQuery) => {
+        actionsQuery.preload('staff')
+      })
+      .firstOrFail()
+  }
+
+  /**
+   * Replaces the items on an order that is still awaiting payment and reprices
+   * it, for when staff mistyped a brand or picked the wrong service.
+   *
+   * The whole list is rewritten rather than diffed: the form always submits
+   * every row, and an order at this stage has only a handful of lines.
+   */
+  async replaceOrderItems(staff: User, orderNumber: string, data: OrderItemsData): Promise<Order> {
+    const order = await this.getEditableItemsOrder(orderNumber)
+
+    return db.transaction(async (trx) => {
+      /**
+       * Items belong to exactly one order's lines — they are created during
+       * inspection or at the counter — so clearing the lines clears the items.
+       */
+      const replacedItemIds = order.items.map((orderItem) => orderItem.itemId)
+
+      await OrderItem.query({ client: trx }).where('order_id', order.id).delete()
+
+      if (replacedItemIds.length > 0) {
+        await Item.query({ client: trx }).whereIn('id', replacedItemIds).delete()
+      }
+
+      const totalPrice = await this.createOrderItems(order, data.items, trx)
+
+      await OrderAction.create(
+        {
+          orderId: order.id,
+          staffId: staff.id,
+          name: ActionName.ITEMS_EDITED,
+          photoPath: null,
+          note: null,
+        },
+        { client: trx }
+      )
+
+      return order.merge({ totalPrice }).useTransaction(trx).save()
+    })
   }
 
   /**
@@ -276,6 +486,18 @@ export default class TaskService {
     items: ItemData[],
     trx: TransactionClientContract
   ): Promise<number> {
+    /**
+     * Every service the payload mentions, main and additional, fetched in one
+     * query and kept by id. Pricing used to run a query per line, which made an
+     * order of five pairs of shoes ten round trips.
+     */
+    const requestedServiceIds = new Set(
+      items.flatMap((itemData) => [itemData.service, ...(itemData.additionalServices ?? [])])
+    )
+
+    const services = await Service.query({ client: trx }).whereIn('id', [...requestedServiceIds])
+    const servicesById = new Map(services.map((service) => [service.id, service]))
+
     let totalPrice = 0
 
     for (const itemData of items) {
@@ -295,7 +517,9 @@ export default class TaskService {
       const serviceIds = [itemData.service, ...(itemData.additionalServices ?? [])]
 
       for (const serviceId of serviceIds) {
-        const service = await Service.findOrFail(serviceId, { client: trx })
+        // A service id the payload made up is still a 404, the way findOrFail
+        // has always answered it — one throwaway query on a bad payload only.
+        const service = servicesById.get(serviceId) ?? (await Service.findOrFail(serviceId))
         const price = Number(service.price)
 
         await OrderItem.create(
@@ -318,32 +542,22 @@ export default class TaskService {
   }
 
   /**
-   * Stores an uploaded proof photo and returns a long-lived signed
-   * URL for it, since the drive disk is configured as private.
+   * Stores an uploaded proof photo and returns a signed URL for it, since the
+   * drive disk is configured as private.
+   *
+   * Photos are grouped by the kind of proof they are — storage/pickup,
+   * storage/delivery, storage/inspection, storage/cleaning — so a whole
+   * category can be browsed, audited, or archived without picking through
+   * unrelated images.
    */
-  private async storePhoto(photo: CompleteTaskData['photo']): Promise<string> {
-    const key = `order-actions/${randomUUID()}.${photo.extname}`
+  private async storePhoto(
+    folder: TaskType | 'cleaning',
+    photo: CompleteTaskData['photo']
+  ): Promise<string> {
+    const key = `${folder}/${randomUUID()}.${photo.extname}`
     await drive.use().putStream(key, createReadStream(photo.tmpPath!))
 
-    return drive.use().getSignedUrl(key, { expiresIn: '3650d' })
-  }
-
-  /**
-   * Splits orders into today's schedule and overdue orders.
-   */
-  private splitOrdersByDate(orders: Order[], today: DateTime): [Order[], Order[]] {
-    const todayOrders: Order[] = []
-    const missedOrders: Order[] = []
-
-    for (const order of orders) {
-      if (order.pickupDate?.hasSame(today, 'day')) {
-        todayOrders.push(order)
-      } else {
-        missedOrders.push(order)
-      }
-    }
-
-    return [todayOrders, missedOrders]
+    return drive.use().getSignedUrl(key, { expiresIn: PHOTO_RETENTION })
   }
 
   /**

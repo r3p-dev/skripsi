@@ -5,7 +5,7 @@ import { inject } from '@adonisjs/core'
 
 @inject()
 export default class PasswordResetController {
-  constructor(protected service: AuthService) {}
+  constructor(protected authService: AuthService) {}
 
   async create({ inertia }: HttpContext) {
     return inertia.render('auth/forgot_password', {})
@@ -15,20 +15,24 @@ export default class PasswordResetController {
     const payload = await request.validateUsing(forgotPasswordValidator)
 
     try {
-      await this.service.requestPasswordReset(payload)
+      await this.authService.requestPasswordReset(payload)
 
+      /**
+       * Worded so it reveals nothing about whether the number is registered,
+       * matching the service's silent handling of unknown numbers.
+       */
       session.flash(
         'success',
         'Jika akun dengan nomor telepon tersebut ada, tautan atur ulang kata sandi telah dikirim melalui WhatsApp.'
       )
-      return response.redirect().back()
     } catch (error) {
       session.flash(
         'error',
         error instanceof Error ? error.message : 'Gagal mengirim pesan WhatsApp.'
       )
-      return response.redirect().back()
     }
+
+    return response.redirect().back()
   }
 
   async edit({ request, inertia }: HttpContext) {
@@ -48,7 +52,7 @@ export default class PasswordResetController {
 
     const payload = await request.validateUsing(resetPasswordValidator)
 
-    await this.service.resetPassword(payload, phone)
+    await this.authService.resetPassword(payload, phone)
 
     session.flash(
       'success',

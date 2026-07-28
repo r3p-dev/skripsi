@@ -11,7 +11,10 @@ export const ActionName = {
   RELEASE_PICKUP: 'release_pickup',
   RELEASE_DELIVERY: 'release_delivery',
   RELEASE_INSPECTION: 'release_inspection',
+  CLEANING_DONE: 'cleaning_done',
   OFFLINE_ORDER: 'offline_order',
+  ITEMS_EDITED: 'items_edited',
+  PAYMENT_OVERRIDE: 'payment_override',
 } as const
 
 /**
@@ -28,7 +31,10 @@ export const ActionNameLabel = {
   [ActionName.RELEASE_PICKUP]: 'Tugas Penjemputan Dibatalkan',
   [ActionName.RELEASE_DELIVERY]: 'Tugas Pengantaran Dibatalkan',
   [ActionName.RELEASE_INSPECTION]: 'Tugas Inspeksi Dibatalkan',
+  [ActionName.CLEANING_DONE]: 'Pencucian Selesai',
   [ActionName.OFFLINE_ORDER]: 'Pesanan Offline',
+  [ActionName.ITEMS_EDITED]: 'Barang Diperbarui',
+  [ActionName.PAYMENT_OVERRIDE]: 'Pembayaran Dikonfirmasi Manual',
 } as const
 
 /**

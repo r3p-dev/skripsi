@@ -6,7 +6,6 @@ import type {
   ResetPasswordData,
 } from '#validators/auth_validator'
 import { inject } from '@adonisjs/core'
-import db from '@adonisjs/lucid/services/db'
 import FonnteService from '#services/fonnte_service'
 import type { Authenticator } from '@adonisjs/auth'
 import type { Authenticators } from '@adonisjs/auth/types'
@@ -14,9 +13,12 @@ import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { appUrl } from '#config/app'
 import { Role } from '#enums/role_enum'
 
+/**
+ * Handles signup, login/logout, and the WhatsApp password reset flow.
+ */
 @inject()
 export default class AuthService {
-  constructor(private service: FonnteService) {}
+  constructor(private fonnteService: FonnteService) {}
 
   /**
    * Create a new customer account and log the user in.
@@ -49,29 +51,33 @@ export default class AuthService {
   }
 
   /**
-   * Generate and send a password reset link.
+   * Generate and send a password reset link over WhatsApp.
    *
-   * Does nothing when the phone number is not registered.
+   * Unknown phone numbers are silently ignored so the response cannot be
+   * used to discover which numbers have an account.
    *
    * @throws When the message provider fails.
    */
   async requestPasswordReset(data: ForgotPasswordData): Promise<void> {
     const user = await User.findBy('phone', data.phone)
-    if (user) {
-      const resetUrl = signedUrlFor(
-        'password_reset.edit',
-        {},
-        {
-          qs: {
-            phone: user.phone,
-          },
-          expiresIn: '15m',
-          prefixUrl: appUrl,
-        }
-      )
 
-      await this.service.sendPasswordResetLink(user.phone, resetUrl)
+    if (!user) {
+      return
     }
+
+    const resetUrl = signedUrlFor(
+      'password_reset.edit',
+      {},
+      {
+        qs: {
+          phone: user.phone,
+        },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    await this.fonnteService.sendPasswordResetLink(user.phone, resetUrl)
   }
 
   /**
@@ -82,13 +88,6 @@ export default class AuthService {
   async resetPassword(data: ResetPasswordData, phone: string): Promise<void> {
     const user = await User.findByOrFail('phone', phone)
 
-    return db.transaction(async (trx) => {
-      await user
-        .merge({
-          password: data.password,
-        })
-        .useTransaction(trx)
-        .save()
-    })
+    await user.merge({ password: data.password }).save()
   }
 }

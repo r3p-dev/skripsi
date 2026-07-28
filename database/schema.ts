@@ -173,6 +173,7 @@ export class OrderSchema extends BaseModel {
     'pickupDate',
     'status',
     'totalPrice',
+    'type',
     'updatedAt',
     'userId',
   ] as const
@@ -195,6 +196,8 @@ export class OrderSchema extends BaseModel {
   declare status: string
   @column()
   declare totalPrice: number | null
+  @column()
+  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()

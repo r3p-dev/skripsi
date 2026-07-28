@@ -27,6 +27,7 @@ export default class extends BaseSchema {
       table.string('status').notNullable().index()
       table.date('pickup_date').nullable().index()
       table.decimal('total_price', 10, 2).nullable()
+      table.string('type').notNullable().index()
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

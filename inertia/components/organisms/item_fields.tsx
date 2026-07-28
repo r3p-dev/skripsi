@@ -17,19 +17,37 @@ const itemTypeByCategory: Record<string, string> = {
   helmet_wash: 'helmet',
 }
 
+/**
+ * The values an already-recorded item starts the form with, used when staff
+ * correct the items on an order that has been inspected but not yet paid.
+ */
+export type ItemDefaults = {
+  brand: string
+  model: string
+  material: string
+  size: string
+  condition: string
+  note: string
+  additionalServiceIds: number[]
+}
+
 export type ItemRow = {
   key: number
   serviceId: string
+  defaults?: ItemDefaults
 }
 
 /**
  * Manages a dynamic, addable/removable list of inspected or
  * offline-order items, each tracking only the service it needs
  * to derive the item's physical type.
+ *
+ * Pass `initialRows` to edit items that already exist; a new item form starts
+ * with one empty row.
  */
-export function useItemRows() {
-  const [items, setItems] = useState<ItemRow[]>([{ key: 0, serviceId: '' }])
-  const nextKey = useRef(1)
+export function useItemRows(initialRows?: ItemRow[]) {
+  const [items, setItems] = useState<ItemRow[]>(initialRows ?? [{ key: 0, serviceId: '' }])
+  const nextKey = useRef(items.length)
 
   function addItem() {
     setItems((prev) => [...prev, { key: nextKey.current++, serviceId: '' }])
@@ -55,11 +73,13 @@ function ItemFields({
   index,
   services,
   serviceId,
+  defaults,
   onServiceChange,
 }: {
   index: number
   services: Data.Service[]
   serviceId: string
+  defaults?: ItemDefaults
   onServiceChange: (serviceId: string) => void
 }) {
   const mainServices = services.filter((service) => service.categoryValue !== 'additional')
@@ -74,32 +94,61 @@ function ItemFields({
       <div className="grid grid-cols-2 gap-3">
         <Field>
           <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Merek</FieldLabel>
-          <Input name={`items[${index}][brand]`} required className="h-11 rounded-xl" />
+          <Input
+            name={`items[${index}][brand]`}
+            defaultValue={defaults?.brand}
+            required
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field>
           <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Model</FieldLabel>
-          <Input name={`items[${index}][model]`} required className="h-11 rounded-xl" />
+          <Input
+            name={`items[${index}][model]`}
+            defaultValue={defaults?.model}
+            required
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field>
           <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Bahan</FieldLabel>
-          <Input name={`items[${index}][material]`} required className="h-11 rounded-xl" />
+          <Input
+            name={`items[${index}][material]`}
+            defaultValue={defaults?.material}
+            required
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field>
           <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
             Ukuran
           </FieldLabel>
-          <Input name={`items[${index}][size]`} required className="h-11 rounded-xl" />
+          <Input
+            name={`items[${index}][size]`}
+            defaultValue={defaults?.size}
+            required
+            className="h-11 rounded-xl"
+          />
         </Field>
       </div>
 
       <Field>
         <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Kondisi</FieldLabel>
-        <Input name={`items[${index}][condition]`} required className="h-11 rounded-xl" />
+        <Input
+          name={`items[${index}][condition]`}
+          defaultValue={defaults?.condition}
+          required
+          className="h-11 rounded-xl"
+        />
       </Field>
 
       <Field>
         <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Catatan</FieldLabel>
-        <Textarea name={`items[${index}][note]`} className="rounded-xl" />
+        <Textarea
+          name={`items[${index}][note]`}
+          defaultValue={defaults?.note}
+          className="rounded-xl"
+        />
       </Field>
 
       <Field>
@@ -132,6 +181,7 @@ function ItemFields({
                   type="checkbox"
                   name={`items[${index}][additionalServices][]`}
                   value={service.id}
+                  defaultChecked={defaults?.additionalServiceIds.includes(service.id)}
                   className="size-4 rounded border-gray-300"
                 />
                 {service.name} - {service.price}
@@ -173,6 +223,7 @@ export function ItemCard({
           <button
             type="button"
             onClick={onRemove}
+            aria-label={`Hapus barang ${index + 1}`}
             className="flex size-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
           >
             <IconTrash className="size-4" />
@@ -184,6 +235,7 @@ export function ItemCard({
         index={index}
         services={services}
         serviceId={item.serviceId}
+        defaults={item.defaults}
         onServiceChange={onServiceChange}
       />
     </Card>

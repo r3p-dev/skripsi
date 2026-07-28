@@ -8,7 +8,7 @@ import { errors as vineErrors } from '@vinejs/vine'
 
 @inject()
 export default class SessionController {
-  constructor(protected service: AuthService) {}
+  constructor(protected authService: AuthService) {}
 
   async create({ inertia }: HttpContext) {
     return inertia.render('auth/login', {})
@@ -18,7 +18,7 @@ export default class SessionController {
     try {
       const payload = await request.validateUsing(loginValidator)
 
-      const user = await this.service.login(payload, auth)
+      const user = await this.authService.login(payload, auth)
 
       session.flash('success', 'Berhasil masuk.')
       return response.redirect().toRoute(RoleRedirect[user.role as Role])
@@ -41,7 +41,7 @@ export default class SessionController {
   }
 
   async destroy({ auth, response, session }: HttpContext) {
-    await this.service.logout(auth)
+    await this.authService.logout(auth)
 
     session.flash('success', 'Berhasil keluar.')
     return response.redirect().toRoute('home')

@@ -52,7 +52,7 @@ export const forgotPasswordLimiter = limiter.define('forgot-password', (ctx) => 
   return limiter
     .allowRequests(1)
     .every('15 minutes')
-    .blockFor('30 minute')
+    .blockFor('15 minute')
     .usingKey(`forgot-password:${ctx.request.ip()}`)
     .limitExceeded(() => {
       throw new errors.E_VALIDATION_ERROR([
@@ -81,8 +81,18 @@ export const resetPasswordLimiter = limiter.define('reset-password', (ctx) => {
     })
 })
 
-export const paymentLimiter = limiter.use({
-  requests: 1,
+/**
+ * Caps how often a single order may be charged at Midtrans.
+ *
+ * Applied around the charge itself rather than on the route, because asking to
+ * pay usually returns the existing pending QR without contacting Midtrans at
+ * all — only a genuinely new charge should count against the limit.
+ *
+ * The allowance leaves room for legitimate retries after a QR expires or a
+ * payment fails, while stopping a loop from hammering the provider.
+ */
+export const midtransChargeLimiter = limiter.use({
+  requests: 5,
   duration: '15 minutes',
-  blockDuration: '30 minute',
+  blockDuration: '15 minutes',
 })

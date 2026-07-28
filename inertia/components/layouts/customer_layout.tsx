@@ -4,6 +4,31 @@ import { IconCalendarPlus, IconReceipt2, IconUser } from '@tabler/icons-react'
 import { type PropsWithChildren } from 'react'
 import { usePage } from '@inertiajs/react'
 
+/**
+ * Bottom navigation tabs. `match` lists the Inertia page components that
+ * should light the tab up, so detail pages stay under their parent tab.
+ */
+const NAV_ITEMS = [
+  {
+    route: 'customer.order.create',
+    match: ['customer/order/create'],
+    label: 'Pesan',
+    icon: IconCalendarPlus,
+  },
+  {
+    route: 'customer.order.index',
+    match: ['customer/order/index', 'customer/order/show', 'customer/order/receipt'],
+    label: 'Pesanan',
+    icon: IconReceipt2,
+  },
+  {
+    route: 'customer.profile.show',
+    match: ['customer/profile/show', 'customer/address/show', 'customer/address/create'],
+    label: 'Profil',
+    icon: IconUser,
+  },
+] as const
+
 export default function CustomerLayout({
   children,
   title,
@@ -13,27 +38,6 @@ export default function CustomerLayout({
   description: string
 }>) {
   const { component } = usePage()
-
-  const items = [
-    {
-      route: 'customer.order.create',
-      match: ['customer/order/create'],
-      label: 'Pesan',
-      icon: IconCalendarPlus,
-    },
-    {
-      route: 'customer.order.index',
-      match: ['customer/order/index', 'customer/order/show', 'customer/order/receipt'],
-      label: 'Pesanan',
-      icon: IconReceipt2,
-    },
-    {
-      route: 'customer.profile.show',
-      match: ['customer/profile/show', 'customer/address/show', 'customer/address/create'],
-      label: 'Profil',
-      icon: IconUser,
-    },
-  ] as const
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
@@ -46,7 +50,7 @@ export default function CustomerLayout({
 
       <nav className="fixed inset-x-0 bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 z-50 border-t border-gray-200 bg-white">
         <div className="mx-auto flex max-w-md items-center justify-around px-6 py-2.5">
-          {items.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = (item.match as readonly string[]).includes(component)
 
             return (

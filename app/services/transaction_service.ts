@@ -3,6 +3,7 @@ import { OrderStatus, OrderStatusLabel } from '#enums/order_status_enum'
 import { PaymentMethod, TransactionStatus, TransactionStatusLabel } from '#enums/transaction_enum'
 import type Order from '#models/order'
 import Transaction from '#models/transaction'
+import { midtransChargeLimiter } from '#start/limiter'
 import transmit from '@adonisjs/transmit/services/main'
 import db from '@adonisjs/lucid/services/db'
 import { errors as vineErrors } from '@vinejs/vine'
@@ -38,6 +39,21 @@ export default class TransactionService {
 
     if (pending) {
       return pending
+    }
+
+    /**
+     * Only a real charge is metered — reusing a pending transaction above
+     * never reaches Midtrans, so it must not count against the order's budget.
+     */
+    try {
+      await midtransChargeLimiter.consume(`midtrans_charge:${order.id}`)
+    } catch {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'status',
+          message: 'Terlalu banyak percobaan pembayaran. Silakan coba lagi nanti.',
+        },
+      ])
     }
 
     const midtransOrderId = `${order.orderNumber}-${Date.now()}`

@@ -51,6 +51,7 @@ export interface ApiDefinition {
       store: typeof routes['customer.order.store']
       index: typeof routes['customer.order.index']
       show: typeof routes['customer.order.show']
+      update: typeof routes['customer.order.update']
       receipt: typeof routes['customer.order.receipt']
     }
     transaction: {
@@ -78,9 +79,17 @@ export interface ApiDefinition {
       update: typeof routes['staff.inspection.update']
       destroy: typeof routes['staff.inspection.destroy']
     }
+    cleaning: {
+      update: typeof routes['staff.cleaning.update']
+    }
     order: {
       create: typeof routes['staff.order.create']
       store: typeof routes['staff.order.store']
+      edit: typeof routes['staff.order.edit']
+      update: typeof routes['staff.order.update']
+    }
+    tag: {
+      show: typeof routes['staff.tag.show']
     }
     transaction: {
       store: typeof routes['staff.transaction.store']
@@ -90,11 +99,41 @@ export interface ApiDefinition {
   admin: {
     profile: {
       show: typeof routes['admin.profile.show']
-      edit: typeof routes['admin.profile.edit']
       update: typeof routes['admin.profile.update']
+    }
+    phone: {
+      store: typeof routes['admin.phone.store']
+      update: typeof routes['admin.phone.update']
     }
     dashboard: {
       index: typeof routes['admin.dashboard.index']
+    }
+    order: {
+      index: typeof routes['admin.order.index']
+      show: typeof routes['admin.order.show']
+    }
+    service: {
+      index: typeof routes['admin.service.index']
+      create: typeof routes['admin.service.create']
+      store: typeof routes['admin.service.store']
+      edit: typeof routes['admin.service.edit']
+      update: typeof routes['admin.service.update']
+      destroy: typeof routes['admin.service.destroy']
+    }
+    user: {
+      index: typeof routes['admin.user.index']
+      create: typeof routes['admin.user.create']
+      store: typeof routes['admin.user.store']
+      edit: typeof routes['admin.user.edit']
+      update: typeof routes['admin.user.update']
+      destroy: typeof routes['admin.user.destroy']
+    }
+    report: {
+      index: typeof routes['admin.report.index']
+    }
+    reconciliation: {
+      index: typeof routes['admin.reconciliation.index']
+      update: typeof routes['admin.reconciliation.update']
     }
   }
 }

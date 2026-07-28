@@ -9,6 +9,7 @@ export default class UserTransformer extends BaseTransformer<User> {
       ...this.pick(this.resource, ['id', 'name', 'phone']),
 
       role: RoleLabel[this.resource.role as Role],
+      roleValue: this.resource.role as Role,
       createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
     }
   }

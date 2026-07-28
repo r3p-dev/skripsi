@@ -1,4 +1,5 @@
 import CustomerLayout from '@/components/layouts/customer_layout'
+import ImageSlider from '@/components/molecules/image_slide'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import type { Data } from '@/generated/data'
@@ -11,39 +12,68 @@ import {
   IconCreditCard,
   IconMapPin,
   IconReceipt,
+  IconX,
 } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
   order: Data.Order
+  canCancel: boolean
 }>
 
-export default function Show({ order }: PageProps) {
-  const steps = [
-    {
-      key: 'pickup',
-      actionLabel: 'Penjemputan Selesai',
-      photoLabel: 'Penjemputan',
-      dateLabel: 'Dijemput',
-    },
-    {
-      key: 'inspection',
-      actionLabel: 'Inspeksi Selesai',
-      photoLabel: 'Inspeksi',
-      dateLabel: 'Diproses',
-    },
-    {
-      key: 'delivery',
-      actionLabel: 'Pengantaran Selesai',
-      photoLabel: 'Pengantaran',
-      dateLabel: 'Diantar',
-    },
-  ] as const
+/**
+ * The three milestones shown on the customer timeline.
+ *
+ * Order actions reach the page already translated by the transformer, so
+ * they are matched on their Indonesian label. Changing a label in
+ * `ActionNameLabel` means changing `actionLabel` here too.
+ */
+const ORDER_STEPS = [
+  {
+    key: 'pickup',
+    actionLabel: 'Penjemputan Selesai',
+    photoLabel: 'Penjemputan',
+    dateLabel: 'Dijemput',
+  },
+  {
+    key: 'inspection',
+    actionLabel: 'Inspeksi Selesai',
+    photoLabel: 'Inspeksi',
+    dateLabel: 'Diproses',
+  },
+  {
+    key: 'delivery',
+    actionLabel: 'Pengantaran Selesai',
+    photoLabel: 'Pengantaran',
+    dateLabel: 'Diantar',
+  },
+] as const
 
-  const stepActions = steps.map((step) => ({
+export default function Show({ order, canCancel }: PageProps) {
+  const stepActions = ORDER_STEPS.map((step) => ({
     ...step,
     action: order.actions?.find((action) => action.name === step.actionLabel),
   }))
-  const photoSteps = stepActions.filter((step) => step.action?.photoPath)
+
+  const proofPhotos: { key: string; label: string; path: string }[] = []
+  for (const step of stepActions) {
+    if (step.action?.photoPath) {
+      proofPhotos.push({ key: step.key, label: step.photoLabel, path: step.action.photoPath })
+    }
+  }
+
+  /**
+   * The pair worth comparing: the shoes as they arrived (inspection) against the
+   * shoes as they left (cleaning). Only shown once both exist — walk-ins are
+   * never inspected, and an order still being washed has no "after" yet.
+   */
+  const inspectionPhoto = order.actions?.find(
+    (action) => action.name === 'Inspeksi Selesai'
+  )?.photoPath
+  const cleaningPhoto = order.actions?.find(
+    (action) => action.name === 'Pencucian Selesai'
+  )?.photoPath
+  const beforeAfter =
+    inspectionPhoto && cleaningPhoto ? { before: inspectionPhoto, after: cleaningPhoto } : null
 
   const needsPayment = order.status === 'Menunggu Pelunasan'
   const pendingTransaction = order.transactions?.find(
@@ -121,7 +151,20 @@ export default function Show({ order }: PageProps) {
           </Card>
         )}
 
-        {photoSteps.length > 0 && (
+        {beforeAfter && (
+          <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+            <CardHeader>
+              <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+                Sebelum &amp; Sesudah
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ImageSlider beforeImage={beforeAfter.before} afterImage={beforeAfter.after} />
+            </CardContent>
+          </Card>
+        )}
+
+        {proofPhotos.length > 0 && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
             <CardHeader>
               <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
@@ -129,12 +172,12 @@ export default function Show({ order }: PageProps) {
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {photoSteps.map((step) => (
-                <div key={step.key}>
-                  <p className="mb-2 text-sm font-medium text-black">{step.photoLabel}</p>
+              {proofPhotos.map((photo) => (
+                <div key={photo.key}>
+                  <p className="mb-2 text-sm font-medium text-black">{photo.label}</p>
                   <img
-                    src={step.action!.photoPath!}
-                    alt={step.photoLabel}
+                    src={photo.path}
+                    alt={photo.label}
                     className="aspect-video w-full rounded-xl border border-gray-200 object-cover"
                   />
                 </div>
@@ -234,6 +277,32 @@ export default function Show({ order }: PageProps) {
           Lihat Struk
           <IconChevronRight className="size-4" />
         </Link>
+
+        {/*
+          Always rendered, disabled once the pickup day arrives, so the rule
+          stays visible instead of the button silently disappearing.
+        */}
+        <Form route="customer.order.update" routeParams={{ number: order.orderNumber }}>
+          {({ processing }) => (
+            <>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={!canCancel || processing}
+                className="h-12 w-full rounded-xl border-destructive/30 text-base font-semibold tracking-wide text-destructive hover:bg-red-50 active:scale-95 disabled:opacity-50"
+              >
+                <IconX className="size-5" />
+                Batalkan Pesanan
+              </Button>
+
+              {!canCancel && (
+                <p className="mt-2 text-center text-xs leading-relaxed text-gray-500">
+                  Pesanan hanya dapat dibatalkan sebelum tanggal penjemputan.
+                </p>
+              )}
+            </>
+          )}
+        </Form>
       </div>
     </CustomerLayout>
   )

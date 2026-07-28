@@ -23,6 +23,34 @@ export const steps = [
   },
 ]
 
+/**
+ * Badge colour per order status, keyed by the raw enum value the transformer
+ * sends as `statusValue` rather than by the Indonesian label. Matching on the
+ * label works until someone rewords one — see "labels are the wire format"
+ * in the docs.
+ */
+export const orderStatusStyles: Record<string, string> = {
+  pickup_scheduled: 'bg-gray-200 text-gray-700',
+  in_pickup: 'bg-blue-100 text-blue-700',
+  in_inspection: 'bg-blue-100 text-blue-700',
+  awaiting_payment: 'bg-amber-100 text-amber-700',
+  in_cleaning: 'bg-blue-100 text-blue-700',
+  in_delivery: 'bg-blue-100 text-blue-700',
+  completed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-red-100 text-red-700',
+}
+
+/**
+ * Badge colour per transaction status, keyed the same way.
+ */
+export const transactionStatusStyles: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  paid: 'bg-green-100 text-green-700',
+  expired: 'bg-gray-200 text-gray-700',
+  cancelled: 'bg-gray-200 text-gray-700',
+  failed: 'bg-red-100 text-red-700',
+}
+
 export const areas = ['Kota Bandung', 'Kota Cimahi', 'Kabupaten Bandung', 'Kabupaten Bandung Barat']
 
 export const reviews = [
@@ -45,165 +73,5 @@ export const reviews = [
     comment:
       'Layanan pickup dan delivery sangat membantu. Harga reasonable untuk kualitas yang didapat.',
     date: '3 minggu lalu',
-  },
-]
-
-export const services = [
-  {
-    name: 'Premium For Suede',
-    description:
-      'Perawatan khusus untuk sepatu suede agar kembali memiliki dua side gelap dan terang serta lembut kembali.',
-    price: 120000,
-    category: 'Cuci Sepatu',
-    type: 'Mulai dari',
-  },
-  {
-    name: 'Mild',
-    description: 'Pencucian bagian luar dan dalam untuk menjaga sepatu tetap bersih.',
-    price: 60000,
-    category: 'Cuci Sepatu',
-    type: 'Harga',
-  },
-  {
-    name: 'Medium',
-    description: 'Pencucian bagian luar dan dalam pada sepatu yang terdapat noda cenderung ringan.',
-    price: 65000,
-    category: 'Cuci Sepatu',
-    type: 'Harga',
-  },
-  {
-    name: 'Hard',
-    description:
-      'Pencucian bagian luar dan dalam pada sepatu yang terdapat noda berat atau cenderung berat.',
-    price: 70000,
-    category: 'Cuci Sepatu',
-    type: 'Harga',
-  },
-  {
-    name: 'Kids Shoes',
-    description: 'Pencucian bagian luar dan dalam untuk menjaga sepatu anak tetap bersih.',
-    price: 40000,
-    category: 'Cuci Sepatu',
-    type: 'Mulai dari',
-  },
-  {
-    name: 'Just For Her',
-    description:
-      'Pencucian bagian luar dan dalam untuk menjaga sepatu wanita tetap bersih. (Flat shoes, heels, wedges, dan flip flops)',
-    price: 45000,
-    category: 'Cuci Sepatu',
-    type: 'Mulai dari',
-  },
-  {
-    name: 'Unyellowing',
-    description: 'Pencucian untuk menghilangkan warna kuning.',
-    price: 30000,
-    category: 'Cuci Sepatu',
-    type: 'Mulai dari',
-  },
-  {
-    name: 'White Shoes / Mummy',
-    description: 'Tambahan jasa perawatan khusus sepatu putih',
-    price: 10000,
-    category: 'Cuci Sepatu',
-    type: 'Tambahan',
-  },
-  {
-    name: 'Nubuck Suede',
-    description: 'Perawatan khusus sepatu nubuck suede',
-    price: 10000,
-    category: 'Cuci Sepatu',
-    type: 'Tambahan',
-  },
-  {
-    name: 'Small Canvas/Fabric',
-    description: 'Cuci tas kecil berbahan Canvas/Fabric',
-    price: 40000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Medium Canvas/Fabric',
-    description: 'Cuci tas sedang berbahan Canvas/Fabric',
-    price: 55000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Large Canvas/Fabric',
-    description: 'Cuci tas besar berbahan Canvas/Fabric',
-    price: 70000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Extra Large Canvas/Fabric',
-    description: 'Cuci tas extra besar berbahan Canvas/Fabric',
-    price: 85000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Small Leather/Nubuck',
-    description: 'Cuci tas kecil berbahan Leather/Nubuck',
-    price: 60000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Medium Leather/Nubuck',
-    description: 'Cuci tas sedang berbahan Leather/Nubuck',
-    price: 75000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Large Leather/Nubuck',
-    description: 'Cuci tas besar berbahan Leather/Nubuck',
-    price: 85000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Extra Large Leather/Nubuck',
-    description: 'Cuci tas extra besar berbahan Leather/Nubuck',
-    price: 100000,
-    category: 'Cuci Tas',
-    type: 'Harga',
-  },
-  {
-    name: 'Helmet SPA Reguler',
-    description: 'Cuci helm SPA reguler',
-    price: 35000,
-    category: 'Cuci Helm',
-    type: 'Harga',
-  },
-  {
-    name: 'Helmet SPA Premium',
-    description: 'Cuci helm SPA premium',
-    price: 70000,
-    category: 'Cuci Helm',
-    type: 'Harga',
-  },
-  {
-    name: 'Premium Repaint',
-    description: 'Pewarnaan sepatu di bagian upper sepatu',
-    price: 150000,
-    category: 'Perbaikan Sepatu',
-    type: 'Mulai dari',
-  },
-  {
-    name: 'Midsole Repaint / Recolour',
-    description: 'Pewarnaan sepatu di bagian midsole sepatu',
-    price: 180000,
-    category: 'Perbaikan Sepatu',
-    type: 'Harga',
-  },
-  {
-    name: 'One Day Service',
-    description: 'Pencucian sepatu dalam satu hari',
-    price: 10000,
-    category: 'Tambahan',
-    type: 'Tambahan',
   },
 ]

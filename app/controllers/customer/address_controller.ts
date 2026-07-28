@@ -6,11 +6,11 @@ import { inject } from '@adonisjs/core'
 
 @inject()
 export default class AddressController {
-  constructor(protected service: AddressService) {}
+  constructor(protected addressService: AddressService) {}
 
   async show({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
-    const address = await this.service.getActiveAddress(user)
+    const address = await this.addressService.getActiveAddress(user)
 
     return inertia.render('customer/address/show', {
       address: AddressTransformer.transform(address),
@@ -19,7 +19,7 @@ export default class AddressController {
 
   async create({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
-    const address = await this.service.getActiveAddress(user)
+    const address = await this.addressService.getActiveAddress(user)
 
     return inertia.render('customer/address/create', {
       address: AddressTransformer.transform(address),
@@ -30,7 +30,7 @@ export default class AddressController {
     const payload = await request.validateUsing(addressValidator)
     const user = auth.getUserOrFail()
 
-    await this.service.replaceActiveAddress(user, payload)
+    await this.addressService.replaceActiveAddress(user, payload)
 
     session.flash('success', 'Berhasil menambahkan alamat.')
     return response.redirect().toRoute('customer.address.show')

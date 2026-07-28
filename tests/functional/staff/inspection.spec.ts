@@ -91,7 +91,8 @@ test.group('Staff Inspection', (group) => {
       .file('photo', photoPath)
       .withCsrfToken()
 
-    response.assertRedirectsTo('/staff/trips')
+    // Straight to the correction form while staff still remember what they typed.
+    response.assertRedirectsTo(`/staff/orders/${order.orderNumber}/items`)
 
     await order.refresh()
     assert.equal(order.status, 'awaiting_payment')

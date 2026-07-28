@@ -5,16 +5,60 @@ import type {
   ChangePhoneData,
 } from '#validators/profile_validator'
 import { errors } from '@vinejs/vine'
-import db from '@adonisjs/lucid/services/db'
+import OrderAction from '#models/order_action'
+import { ActionName } from '#enums/order_action_enum'
 import { OrderStatus } from '#enums/order_status_enum'
+import { Role } from '#enums/role_enum'
 import FonnteService from '#services/fonnte_service'
 import { inject } from '@adonisjs/core'
 import { appUrl } from '#config/app'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 
+/**
+ * The actions that mean a staff member finished a piece of work, as opposed to
+ * claiming or releasing one.
+ */
+const COMPLETED_TASK_ACTIONS: string[] = [
+  ActionName.PICKUP,
+  ActionName.DELIVERY,
+  ActionName.INSPECTION,
+  ActionName.CLEANING_DONE,
+]
+
+/**
+ * The route each role opens to confirm a new phone number. Mirrors
+ * `RoleRedirect`: every role has its own copy of the screen behind its own
+ * role middleware, so the verification link must match the requesting user.
+ */
+const PHONE_VERIFICATION_ROUTE = {
+  [Role.CUSTOMER]: 'customer.phone.update',
+  [Role.STAFF]: 'staff.phone.update',
+  [Role.ADMIN]: 'admin.phone.update',
+} as const
+
+/**
+ * Manages a user's own account details: name, password, and the
+ * WhatsApp-verified phone number change flow.
+ */
 @inject()
 export default class ProfileService {
-  constructor(private service: FonnteService) {}
+  constructor(private fonnteService: FonnteService) {}
+
+  /**
+   * Counts the tasks a staff member has finished.
+   *
+   * Staff place no orders of their own, so the customer's "total orders" figure
+   * reads zero for them and says nothing. What their profile should show is
+   * work done, which lives in the actions they recorded against orders.
+   */
+  async getCompletedTaskCount(staff: User): Promise<number> {
+    const result = await OrderAction.query()
+      .where('staff_id', staff.id)
+      .whereIn('name', COMPLETED_TASK_ACTIONS)
+      .count('* as total')
+
+    return Number(result[0].$extras.total)
+  }
 
   /**
    * Get the total number of completed orders for a user.
@@ -33,10 +77,9 @@ export default class ProfileService {
    * @throws Validation error when current password is incorrect.
    */
   async changePassword(data: ChangePasswordData, user: User): Promise<User> {
-    const { currentPassword, password } = data
+    const isCurrentPasswordCorrect = await user.verifyPassword(data.currentPassword)
 
-    const isValid = await user.verifyPassword(currentPassword)
-    if (!isValid) {
+    if (!isCurrentPasswordCorrect) {
       throw new errors.E_VALIDATION_ERROR([
         {
           field: 'currentPassword',
@@ -45,32 +88,20 @@ export default class ProfileService {
       ])
     }
 
-    return db.transaction((trx) =>
-      user
-        .merge({
-          password,
-        })
-        .useTransaction(trx)
-        .save()
-    )
+    return user.merge({ password: data.password }).save()
   }
 
   /**
    * Change the user's name.
    */
   async changeName(data: ChangeNameData, user: User): Promise<User> {
-    return db.transaction((trx) =>
-      user
-        .merge({
-          name: data.name,
-        })
-        .useTransaction(trx)
-        .save()
-    )
+    return user.merge({ name: data.name }).save()
   }
 
   /**
-   * Change the user's phone number.
+   * Starts a phone number change by sending a signed verification link to
+   * the new number over WhatsApp. The number is only swapped once that link
+   * is opened, which proves the customer actually owns it.
    *
    * @throws Validation error when the new phone number is the same as the old one or already in use.
    */
@@ -93,8 +124,12 @@ export default class ProfileService {
       ])
     }
 
-    const resetUrl = signedUrlFor(
-      'customer.phone.update',
+    /**
+     * Each role verifies on its own route: role middleware would bounce a staff
+     * member off the customer route, so the link has to match who asked for it.
+     */
+    const verificationUrl = signedUrlFor(
+      PHONE_VERIFICATION_ROUTE[user.role as Role],
       {},
       {
         qs: {
@@ -105,20 +140,13 @@ export default class ProfileService {
       }
     )
 
-    await this.service.sendVerificationLink(data.phone, resetUrl)
+    await this.fonnteService.sendVerificationLink(data.phone, verificationUrl)
   }
 
   /**
-   * Change the user's phone number after verifying the request.
+   * Applies a phone number change once the verification link has been opened.
    */
   async verifyPhoneChange(phone: string, user: User): Promise<User> {
-    return db.transaction((trx) =>
-      user
-        .merge({
-          phone,
-        })
-        .useTransaction(trx)
-        .save()
-    )
+    return user.merge({ phone }).save()
   }
 }

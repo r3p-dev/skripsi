@@ -10,8 +10,6 @@ import { Calendar } from '@/components/ui/calendar'
 import { Card, CardAction, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
-import { services } from '@/lib/constants'
-import { formatRupiah } from '@/lib/utils'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconChevronRight, IconMapPin, IconPencil, IconTag } from '@tabler/icons-react'
@@ -20,18 +18,25 @@ import { useMemo, useState } from 'react'
 
 type PageProps = InertiaProps<{
   address: Data.Address | null
+  services: Data.Service[]
 }>
 
-export default function Create({ address }: PageProps) {
+/**
+ * Formats a date as YYYY-MM-DD in the browser's local time. `toISOString()`
+ * is deliberately avoided: it converts to UTC, which shifts the date back a
+ * day for evening pickups in Indonesia's timezone.
+ */
+function toLocalDateString(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export default function Create({ address, services }: PageProps) {
   const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
   const today = useMemo(() => new Date(new Date().setHours(0, 0, 0, 0)), [])
-
-  function formatDate(date: Date) {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
 
   const priceListByCategory = Object.groupBy(services, (service) => service.category)
 
@@ -121,12 +126,12 @@ export default function Create({ address }: PageProps) {
                                 </p>
                               </div>
                               <p className="shrink-0 text-sm font-semibold whitespace-nowrap text-black">
-                                {item.type === 'Mulai dari' && (
+                                {item.typeValue === 'start_from' && (
                                   <span className="mr-1 text-xs font-normal text-gray-500">
                                     mulai
                                   </span>
                                 )}
-                                {formatRupiah(item.price)}
+                                {item.price}
                               </p>
                             </div>
                           ))}
@@ -145,7 +150,7 @@ export default function Create({ address }: PageProps) {
                   <input
                     type="hidden"
                     name="pickupDate"
-                    value={pickupDate ? formatDate(pickupDate) : ''}
+                    value={pickupDate ? toLocalDateString(pickupDate) : ''}
                     readOnly
                   />
 

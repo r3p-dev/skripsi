@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { ItemCard, useItemRows } from '@/components/organisms/item_fields'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
+import { whatsappUrl } from '@/lib/utils'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft, IconLock, IconMapPin, IconPhone, IconUser } from '@tabler/icons-react'
 
@@ -20,13 +21,20 @@ export default function Show({ order, services, blocked }: PageProps) {
 
   return (
     <StaffLayout title={`Inspeksi - ${order.orderNumber}`} description="Detail tugas inspeksi">
+      {/*
+        No back link on purpose: claiming a task holds it against everyone
+        else, so it has to be finished or cancelled rather than abandoned.
+        A blocked task is the exception — nothing was claimed.
+      */}
       <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="staff.trip.index"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
+        {blocked && (
+          <Link
+            route="staff.trip.index"
+            className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          >
+            <IconArrowLeft className="size-5" />
+          </Link>
+        )}
         <div>
           <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Inspeksi</p>
           <h1 className="text-2xl font-bold tracking-tight text-black">{order.orderNumber}</h1>
@@ -71,7 +79,14 @@ export default function Show({ order, services, blocked }: PageProps) {
                   </div>
                   <div className="flex items-start gap-3">
                     <IconPhone className="mt-0.5 size-4 shrink-0 text-gray-500" />
-                    <p className="text-sm text-gray-700">{order.address.phone}</p>
+                    <a
+                      href={whatsappUrl(order.address.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-700 underline underline-offset-4"
+                    >
+                      {order.address.phone}
+                    </a>
                   </div>
                   <div className="flex items-start gap-3">
                     <IconMapPin className="mt-0.5 size-4 shrink-0 text-gray-500" />

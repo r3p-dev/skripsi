@@ -5,13 +5,13 @@ import { changePhoneValidator } from '#validators/profile_validator'
 
 @inject()
 export default class PhoneController {
-  constructor(protected service: ProfileService) {}
+  constructor(protected profileService: ProfileService) {}
 
   async store({ auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(changePhoneValidator)
 
-    await this.service.requestChangePhone(payload, user)
+    await this.profileService.requestChangePhone(payload, user)
     session.flash('success', 'Permintaan perubahan nomor telepon berhasil dikirim')
 
     return response.redirect().toRoute('staff.profile.show')
@@ -25,7 +25,7 @@ export default class PhoneController {
       return inertia.render('errors/invalid_signature', {})
     }
 
-    await this.service.verifyPhoneChange(phone, user)
+    await this.profileService.verifyPhoneChange(phone, user)
     session.flash('success', 'Nomor telepon berhasil diverifikasi')
 
     return response.redirect().toRoute('staff.profile.show')

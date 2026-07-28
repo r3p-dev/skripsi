@@ -10,7 +10,7 @@ import type { HttpContext } from '@adonisjs/core/http'
  */
 @inject()
 export default class TransactionController {
-  constructor(protected service: TransactionService) {}
+  constructor(protected transactionService: TransactionService) {}
 
   async update({ request, response }: HttpContext) {
     const payload = request.body() as MidtransNotification
@@ -19,7 +19,7 @@ export default class TransactionController {
       return response.forbidden({ message: 'Invalid signature' })
     }
 
-    await this.service.handleNotification(payload)
+    await this.transactionService.handleNotification(payload)
 
     return response.ok({ message: 'OK' })
   }

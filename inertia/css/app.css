@@ -118,6 +118,29 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/**
+ * Shadows on whichever edge of a horizontally scrolling box still has content
+ * beyond it, and on neither once you reach an end.
+ *
+ * The admin tables are built for a desktop and scroll sideways on a phone.
+ * Without this the columns simply stop at the card's edge and there is nothing
+ * to say the row continues — an admin reads "Rp" as the last column and never
+ * learns there is a total. The four layers are two opaque covers that scroll
+ * with the content and two shadows pinned to the box, so a cover sits over its
+ * shadow exactly when that edge is reached. Pure CSS, no scroll listener.
+ */
+@utility scroll-shadow-x {
+  background:
+    linear-gradient(to right, var(--color-card) 30%, transparent) left center / 2rem 100% no-repeat
+      local,
+    linear-gradient(to left, var(--color-card) 30%, transparent) right center / 2rem 100% no-repeat
+      local,
+    radial-gradient(farthest-side at 0 50%, --alpha(var(--color-foreground) / 12%), transparent)
+      left center / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, --alpha(var(--color-foreground) / 12%), transparent)
+      right center / 0.75rem 100% no-repeat scroll;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
