@@ -104,7 +104,7 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                   name="role"
                   required
                   disabled={isSelf}
-                  defaultValue={account.roleValue}
+                  defaultValue={account.role}
                   className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                 >
                   {roleOptions.map((option) => (
@@ -116,13 +116,57 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                 {isSelf && (
                   <>
                     {/* Disabled inputs are not submitted, so send it explicitly. */}
-                    <input type="hidden" name="role" value={account.roleValue} />
+                    <input type="hidden" name="role" value={account.role} />
                     <p className="text-xs text-gray-500">
                       Anda tidak dapat mengubah peran akun Anda sendiri.
                     </p>
                   </>
                 )}
                 <FieldError>{errors.role}</FieldError>
+              </Field>
+
+              {/*
+                Switching an account off is how somebody stops working here.
+                Their name is on every collection, inspection and delivery they
+                ever recorded, and those belong to the shop's history, so the
+                account cannot be deleted — it stops opening instead, from
+                their very next request.
+
+                An admin cannot switch off their own, for the same reason they
+                cannot demote it: it is a one-way door out of the admin area.
+              */}
+              <Field data-invalid={errors.isActive ? 'true' : undefined}>
+                <FieldLabel
+                  htmlFor="isActive"
+                  className="text-xs tracking-widest text-gray-700 uppercase"
+                >
+                  Status Akun
+                </FieldLabel>
+                <select
+                  id="isActive"
+                  name="isActive"
+                  required
+                  disabled={isSelf}
+                  defaultValue={account.isActive ? 'true' : 'false'}
+                  className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                >
+                  <option value="true">Aktif</option>
+                  <option value="false">Nonaktif — tidak dapat masuk</option>
+                </select>
+                {isSelf ? (
+                  <>
+                    <input type="hidden" name="isActive" value="true" />
+                    <p className="text-xs text-gray-500">
+                      Anda tidak dapat menonaktifkan akun Anda sendiri.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Akun nonaktif tidak bisa masuk, tetapi seluruh riwayat pesanan dan tugasnya
+                    tetap tersimpan.
+                  </p>
+                )}
+                <FieldError>{errors.isActive}</FieldError>
               </Field>
             </Card>
 

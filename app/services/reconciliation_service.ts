@@ -1,15 +1,16 @@
 import { ActionName } from '#enums/order_action_enum'
-import { OrderStatus, OrderStatusLabel } from '#enums/order_status_enum'
-import { TransactionStatus, TransactionStatusLabel } from '#enums/transaction_enum'
+import { OrderStatus } from '#enums/order_status_enum'
+import { TransactionStatus } from '#enums/transaction_enum'
 import Order from '#models/order'
 import OrderAction from '#models/order_action'
 import Transaction from '#models/transaction'
 import type User from '#models/user'
+import BroadcastService from '#services/broadcast_service'
 import { EXPORT_ROW_LIMIT } from '#services/excel_service'
 import type { ReconciliationData } from '#validators/reconciliation_validator'
 import type { Filters } from '#validators/shared'
+import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
-import transmit from '@adonisjs/transmit/services/main'
 import type { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { errors as vineErrors } from '@vinejs/vine'
 
@@ -23,7 +24,10 @@ import { errors as vineErrors } from '@vinejs/vine'
  * and it is admin-only because overriding a payment state should be rare,
  * deliberate, and attributable to a person.
  */
+@inject()
 export default class ReconciliationService {
+  constructor(private broadcastService: BroadcastService) {}
+
   /**
    * The orders stuck awaiting payment, oldest first — the longer one has sat
    * there, the more likely it is a lost callback rather than a customer who
@@ -104,6 +108,7 @@ export default class ReconciliationService {
             midtransTransactionId: null,
             status: TransactionStatus.PAID,
             qrCode: null,
+            cashReceived: null,
           },
           { client: trx }
         )
@@ -128,10 +133,8 @@ export default class ReconciliationService {
      * payment page watching the QR code sees the order move on rather than
      * waiting on a code that will never be scanned.
      */
-    transmit.broadcast(`orders/${order.orderNumber}`, {
-      transactionStatusLabel: TransactionStatusLabel[TransactionStatus.PAID],
-      orderStatusLabel: OrderStatusLabel[OrderStatus.IN_CLEANING],
-    })
+    this.broadcastService.orderChanged(order, TransactionStatus.PAID)
+    this.broadcastService.orderPaid(order)
 
     return order
   }

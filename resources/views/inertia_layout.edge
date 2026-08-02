@@ -2,7 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {{--
+      `viewport-fit=cover` is what makes `env(safe-area-inset-*)` report real
+      numbers. Without it every inset is 0 and the fixed bottom tab bar sits
+      underneath the iPhone home indicator, where the first tap is swallowed by
+      the system gesture rather than by the app.
+    --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
     <title inertia>
       UmimaClean
     </title>

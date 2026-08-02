@@ -41,6 +41,41 @@ export default class FonnteService {
   }
 
   /**
+   * Reminds a customer that an order is still waiting to be paid for.
+   *
+   * Sent by hand from the counter rather than on a timer: staff are the ones
+   * who can see that a customer simply forgot, as opposed to one who is
+   * deciding, and an automatic nag to the second group costs goodwill.
+   */
+  async sendPaymentReminder(target: string, orderNumber: string, amount: string): Promise<void> {
+    await this.sendMessage(
+      target,
+      [
+        `Halo! Pesanan ${orderNumber} di Umima.Clean masih menunggu pembayaran sebesar ${amount}.`,
+        'Silakan selesaikan pembayaran agar pesanan Anda dapat segera kami proses.',
+        'Abaikan pesan ini jika Anda sudah membayar.',
+      ].join('\n\n')
+    )
+  }
+
+  /**
+   * Tells a walk-in customer their shoes are washed and waiting at the shop.
+   *
+   * Only counter orders get this. An order that is being delivered needs no
+   * message — it turns up at the door on its own.
+   */
+  async sendReadyForCollection(target: string, orderNumber: string): Promise<void> {
+    await this.sendMessage(
+      target,
+      [
+        `Kabar baik! Pesanan ${orderNumber} sudah selesai dicuci.`,
+        'Barang Anda sudah siap diambil di toko Umima.Clean pada jam operasional.',
+        'Terima kasih sudah mempercayakan perawatan barang Anda kepada kami.',
+      ].join('\n\n')
+    )
+  }
+
+  /**
    * Delivers a message and fails loudly when it is not accepted.
    *
    * Fonnte answers with HTTP 200 even when it rejects a message, so the

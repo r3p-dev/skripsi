@@ -31,7 +31,7 @@ ApiRequest.addParser(XLSX_MIME, (response, callback) => {
  */
 async function readSheet(response: ApiResponse, name: string): Promise<unknown[][]> {
   const workbook = new ExcelJS.Workbook()
-  await workbook.xlsx.load(response.body())
+  await workbook.xlsx.load(response.body() as never)
 
   const worksheet = workbook.getWorksheet(name)
   if (!worksheet) {
@@ -234,7 +234,7 @@ test.group('Admin Export', (group) => {
     const response = await client.get('/admin/users/export').loginAs(admin)
 
     const workbook = new ExcelJS.Workbook()
-    await workbook.xlsx.load(response.body())
+    await workbook.xlsx.load(response.body() as never)
 
     const headers = workbook.getWorksheet('Pengguna')!.getRow(1).values as string[]
 
@@ -253,7 +253,7 @@ test.group('Admin Export', (group) => {
     const response = await client.get('/admin/reports/export').loginAs(admin)
 
     const workbook = new ExcelJS.Workbook()
-    await workbook.xlsx.load(response.body())
+    await workbook.xlsx.load(response.body() as never)
 
     assert.deepEqual(
       workbook.worksheets.map((worksheet) => worksheet.name),
@@ -284,7 +284,7 @@ test.group('Admin Export', (group) => {
     const response = await client.get('/admin/dashboard/export').loginAs(admin)
 
     const workbook = new ExcelJS.Workbook()
-    await workbook.xlsx.load(response.body())
+    await workbook.xlsx.load(response.body() as never)
 
     assert.deepEqual(
       workbook.worksheets.map((worksheet) => worksheet.name),

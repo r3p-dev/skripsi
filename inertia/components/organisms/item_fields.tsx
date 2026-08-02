@@ -3,6 +3,8 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import type { Data } from '@/generated/data'
+import { ItemType, ServiceCategory } from '@/enums/service_enum'
+import { formatRupiah } from '@/lib/format'
 import { IconTrash } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 
@@ -11,10 +13,10 @@ import { useRef, useState } from 'react'
  * so staff don't have to pick the item type separately.
  */
 const itemTypeByCategory: Record<string, string> = {
-  shoe_wash: 'shoe',
-  shoe_repair: 'shoe',
-  bag_wash: 'bag',
-  helmet_wash: 'helmet',
+  [ServiceCategory.SHOE_WASH]: ItemType.SHOE,
+  [ServiceCategory.SHOE_REPAIR]: ItemType.SHOE,
+  [ServiceCategory.BAG_WASH]: ItemType.BAG,
+  [ServiceCategory.HELMET_WASH]: ItemType.HELMET,
 }
 
 /**
@@ -82,10 +84,12 @@ function ItemFields({
   defaults?: ItemDefaults
   onServiceChange: (serviceId: string) => void
 }) {
-  const mainServices = services.filter((service) => service.categoryValue !== 'additional')
-  const additionalServices = services.filter((service) => service.categoryValue === 'additional')
+  const mainServices = services.filter((service) => service.category !== ServiceCategory.ADDITIONAL)
+  const additionalServices = services.filter(
+    (service) => service.category === ServiceCategory.ADDITIONAL
+  )
   const selectedService = services.find((service) => String(service.id) === serviceId)
-  const itemType = selectedService ? (itemTypeByCategory[selectedService.categoryValue] ?? '') : ''
+  const itemType = selectedService ? (itemTypeByCategory[selectedService.category] ?? '') : ''
 
   return (
     <div className="space-y-3">
@@ -163,7 +167,7 @@ function ItemFields({
           <option value="">Pilih layanan</option>
           {mainServices.map((service) => (
             <option key={service.id} value={service.id}>
-              {service.name} - {service.price}
+              {service.name} - {formatRupiah(service.price)}
             </option>
           ))}
         </select>
@@ -176,15 +180,18 @@ function ItemFields({
           </FieldLabel>
           <div className="space-y-2 rounded-xl border border-gray-300 bg-white p-3">
             {additionalServices.map((service) => (
-              <label key={service.id} className="flex items-center gap-2 text-sm text-gray-700">
+              <label
+                key={service.id}
+                className="flex min-h-11 items-center gap-3 text-sm text-gray-700"
+              >
                 <input
                   type="checkbox"
                   name={`items[${index}][additionalServices][]`}
                   value={service.id}
                   defaultChecked={defaults?.additionalServiceIds.includes(service.id)}
-                  className="size-4 rounded border-gray-300"
+                  className="size-5 shrink-0 rounded border-gray-300"
                 />
-                {service.name} - {service.price}
+                {service.name} - {formatRupiah(service.price)}
               </label>
             ))}
           </div>
@@ -224,7 +231,7 @@ export function ItemCard({
             type="button"
             onClick={onRemove}
             aria-label={`Hapus barang ${index + 1}`}
-            className="flex size-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
+            className="-my-2 flex size-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
           >
             <IconTrash className="size-4" />
           </button>

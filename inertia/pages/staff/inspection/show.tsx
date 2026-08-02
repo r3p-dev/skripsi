@@ -7,11 +7,14 @@ import { ItemCard, useItemRows } from '@/components/organisms/item_fields'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { whatsappUrl } from '@/lib/utils'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { formatDate } from '@/lib/format'
+import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft, IconLock, IconMapPin, IconPhone, IconUser } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
+  order: Data.Order.Variants['toDetail']
   services: Data.Service[]
   blocked: boolean
 }>
@@ -30,7 +33,7 @@ export default function Show({ order, services, blocked }: PageProps) {
         {blocked && (
           <Link
             route="staff.trip.index"
-            className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
           >
             <IconArrowLeft className="size-5" />
           </Link>
@@ -41,7 +44,7 @@ export default function Show({ order, services, blocked }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 px-6 pb-28">
+      <div className="flex-1 space-y-4 px-6 pb-nav">
         {blocked ? (
           <Card className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
             <IconLock className="size-8 text-gray-500" />
@@ -57,11 +60,13 @@ export default function Show({ order, services, blocked }: PageProps) {
             <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs tracking-widest text-gray-500 uppercase">Status Pesanan</p>
-                <p className="text-sm font-semibold text-black">{order.status}</p>
+                <p className="text-sm font-semibold text-black">
+                  {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+                </p>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Jadwal Jemput</span>
-                <span className="font-medium text-black">{order.pickupDate ?? '-'}</span>
+                <span className="font-medium text-black">{formatDate(order.pickupDate)}</span>
               </div>
             </Card>
 
@@ -97,6 +102,7 @@ export default function Show({ order, services, blocked }: PageProps) {
             )}
 
             <Form
+              id="complete-inspection"
               route="staff.inspection.update"
               routeParams={{ number: order.orderNumber }}
               className="space-y-4"
@@ -144,29 +150,34 @@ export default function Show({ order, services, blocked }: PageProps) {
                     <FieldError>{errors.photo}</FieldError>
                   </Field>
 
-                  <Button
-                    type="submit"
-                    disabled={processing}
-                    className="h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95"
+                  <ConfirmDialog
+                    triggerClassName="h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white transition-colors hover:bg-black/90 active:scale-95"
+                    label="Selesaikan Inspeksi"
+                    title="Selesaikan inspeksi?"
+                    description={`Harga pesanan ${order.orderNumber} akan dikunci dan pelanggan akan diminta membayar. Rincian barang masih bisa diperbaiki di layar berikutnya.`}
                   >
-                    Selesaikan Inspeksi
-                  </Button>
+                    <ConfirmFooter
+                      label="Konfirmasi Selesai"
+                      processing={processing}
+                      formId="complete-inspection"
+                    />
+                  </ConfirmDialog>
                 </>
               )}
             </Form>
 
-            <Form route="staff.inspection.destroy" routeParams={{ number: order.orderNumber }}>
-              {({ processing }) => (
-                <Button
-                  type="submit"
-                  disabled={processing}
-                  variant="outline"
-                  className="h-12 w-full rounded-xl text-base font-semibold tracking-wide text-black active:scale-95"
-                >
-                  Batalkan Tugas
-                </Button>
-              )}
-            </Form>
+            <ConfirmDialog
+              triggerClassName="inline-flex h-12 w-full items-center justify-center rounded-xl border border-gray-300 text-base font-semibold tracking-wide text-black transition-colors hover:bg-gray-100 active:scale-95"
+              label="Batalkan Tugas"
+              title="Batalkan tugas ini?"
+              description={`Pesanan ${order.orderNumber} akan kembali ke antrean inspeksi dan bisa diambil petugas lain. Data barang yang sudah diisi tidak akan tersimpan.`}
+            >
+              <Form route="staff.inspection.destroy" routeParams={{ number: order.orderNumber }}>
+                {({ processing }) => (
+                  <ConfirmFooter label="Batalkan Tugas" processing={processing} destructive />
+                )}
+              </Form>
+            </ConfirmDialog>
           </>
         )}
       </div>

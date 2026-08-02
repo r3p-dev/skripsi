@@ -5,7 +5,7 @@ import { IconChevronRight, IconRefresh, IconServerOff } from '@tabler/icons-reac
 
 export default function ServerError() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>Terjadi Kesalahan</title>
         <meta name="description" content="Server kami sedang mengalami gangguan" />

@@ -60,11 +60,7 @@ test.group('Admin User Management', (group) => {
     await UserFactory.merge({ name: 'Budi Santoso', phone: '081330002003' }).create()
 
     for (const search of ['Siti', '081330002002']) {
-      const response = await client
-        .get('/admin/users')
-        .qs({ search })
-        .withInertia()
-        .loginAs(admin)
+      const response = await client.get('/admin/users').qs({ search }).withInertia().loginAs(admin)
 
       assert.lengthOf(response.inertiaProps.users.data, 1)
       assert.equal(response.inertiaProps.users.data[0].name, 'Siti Rahayu')
@@ -232,6 +228,79 @@ test.group('Admin User Management', (group) => {
 
     await admin.refresh()
     assert.equal(admin.name, 'Admin Baru')
+  })
+
+  /**
+   * How somebody stops working here. Their name is attached to every
+   * collection, inspection and delivery they ever recorded, and those are the
+   * shop's history, so the account cannot be deleted — it is switched off, and
+   * stops opening from their very next request.
+   */
+  test('an account can be deactivated without losing its history', async ({ client, assert }) => {
+    const admin = await UserFactory.apply('admin').merge({ phone: '081330009001' }).create()
+    const staff = await UserFactory.apply('staff').merge({ phone: '081330009002' }).create()
+    const order = await OrderFactory.create()
+    await OrderAction.create({
+      orderId: order.id,
+      staffId: staff.id,
+      name: ActionName.PICKUP,
+      photoPath: null,
+      note: null,
+    })
+
+    const response = await client
+      .put(`/admin/users/${staff.id}`)
+      .loginAs(admin)
+      .fields({ name: staff.name, phone: staff.phone, role: Role.STAFF, isActive: 'false' })
+      .withCsrfToken()
+
+    response.assertRedirectsTo('/admin/users')
+
+    await staff.refresh()
+    assert.isFalse(staff.isActive)
+
+    // The work they did is still attributed to them.
+    assert.lengthOf(await OrderAction.query().where('staff_id', staff.id), 1)
+  })
+
+  test('a deactivated account can be switched back on', async ({ client, assert }) => {
+    const admin = await UserFactory.apply('admin').merge({ phone: '081330010001' }).create()
+    const staff = await UserFactory.apply('staff')
+      .merge({ phone: '081330010002', isActive: false })
+      .create()
+
+    await client
+      .put(`/admin/users/${staff.id}`)
+      .loginAs(admin)
+      .fields({ name: staff.name, phone: staff.phone, role: Role.STAFF, isActive: 'true' })
+      .withCsrfToken()
+
+    await staff.refresh()
+    assert.isTrue(staff.isActive)
+  })
+
+  /**
+   * A one-way door out of the admin area, for the same reason demoting
+   * yourself is: the next request would be bounced, possibly leaving the shop
+   * with nobody who can get back in.
+   */
+  test('an admin cannot switch off their own account', async ({ client, assert }) => {
+    const admin = await UserFactory.apply('admin').merge({ phone: '081330011001' }).create()
+
+    const response = await client
+      .put(`/admin/users/${admin.id}`)
+      .withInertia()
+      .loginAs(admin)
+      .header('referer', `/admin/users/${admin.id}/edit`)
+      .fields({ name: admin.name, phone: admin.phone, role: Role.ADMIN, isActive: 'false' })
+      .withCsrfToken()
+
+    response.assertInertiaPropsContains({
+      errors: { isActive: 'Anda tidak dapat menonaktifkan akun Anda sendiri.' },
+    })
+
+    await admin.refresh()
+    assert.isTrue(admin.isActive)
   })
 
   test('DELETE /admin/users/:id removes an account with no history', async ({ client, assert }) => {

@@ -78,18 +78,26 @@ export default class UserService {
       phone: data.phone,
       password: data.password,
       role: data.role,
+      isActive: true,
     })
   }
 
   /**
    * Updates an account, leaving the password alone unless a new one was typed.
    *
-   * An admin may not change their own role. Demoting yourself is a one-way
-   * door — the moment it saved, role middleware would bounce you out of the
-   * admin area, possibly leaving the shop with no admin at all.
+   * An admin may neither change their own role nor switch their own account
+   * off. Both are one-way doors: the moment either saved, the next request
+   * would be bounced out of the admin area, possibly leaving the shop with
+   * nobody who can get back in.
+   *
+   * Switching somebody else off is how a staff member stops working here. It
+   * takes effect on their very next request rather than when their session
+   * happens to lapse, and none of the work attributed to them moves or
+   * disappears — see `AuthMiddleware`.
    */
   async updateUser(admin: User, id: number, data: UpdateUserData): Promise<User> {
     const user = await this.getUser(id)
+    const isActive = data.isActive ?? true
 
     if (user.id === admin.id && data.role !== user.role) {
       throw new vineErrors.E_VALIDATION_ERROR([
@@ -100,10 +108,20 @@ export default class UserService {
       ])
     }
 
+    if (user.id === admin.id && !isActive) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'isActive',
+          message: 'Anda tidak dapat menonaktifkan akun Anda sendiri.',
+        },
+      ])
+    }
+
     user.merge({
       name: data.name,
       phone: data.phone,
       role: data.role,
+      isActive,
     })
 
     if (data.password) {

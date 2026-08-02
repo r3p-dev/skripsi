@@ -2,7 +2,7 @@ import { OrderFactory } from '#database/factories/order_factory'
 import { UserFactory } from '#database/factories/user_factory'
 import { OrderStatus } from '#enums/order_status_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
-import Order from '#models/order'
+import type Order from '#models/order'
 import Transaction from '#models/transaction'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
@@ -30,7 +30,10 @@ test.group('Admin Dashboard', (group) => {
     await UserFactory.merge({ phone: '081300000002' }).create()
     await UserFactory.apply('staff').merge({ phone: '081300000003' }).create()
 
-    const paid = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 80000 }).create()
+    const paid = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 80000,
+    }).create()
     await payFor(paid)
     await OrderFactory.merge({ status: OrderStatus.AWAITING_PAYMENT, totalPrice: 50000 }).create()
 
@@ -54,15 +57,21 @@ test.group('Admin Dashboard', (group) => {
   test('revenue only counts orders with a paid transaction', async ({ client, assert }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081300001001' }).create()
 
-    const paid = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 80000 }).create()
+    const paid = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 80000,
+    }).create()
     await payFor(paid)
 
-    const pending = await OrderFactory.merge({ status: OrderStatus.AWAITING_PAYMENT, totalPrice: 50000 }).create()
+    const pending = await OrderFactory.merge({
+      status: OrderStatus.AWAITING_PAYMENT,
+      totalPrice: 50000,
+    }).create()
     await payFor(pending, TransactionStatus.PENDING)
 
     const response = await client.get('/admin/dashboard').withInertia().loginAs(admin)
 
-    assert.equal(response.inertiaProps.summary.revenueValue, 80000)
+    assert.equal(response.inertiaProps.summary.revenue, 80000)
   })
 
   /**
@@ -72,13 +81,16 @@ test.group('Admin Dashboard', (group) => {
   test('an order charged twice is not counted twice', async ({ client, assert }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081300001002' }).create()
 
-    const order = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 80000 }).create()
+    const order = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 80000,
+    }).create()
     await payFor(order)
     await payFor(order)
 
     const response = await client.get('/admin/dashboard').withInertia().loginAs(admin)
 
-    assert.equal(response.inertiaProps.summary.revenueValue, 80000)
+    assert.equal(response.inertiaProps.summary.revenue, 80000)
   })
 
   test('the status breakdown lists every status, including the empty ones', async ({
@@ -91,7 +103,7 @@ test.group('Admin Dashboard', (group) => {
     const response = await client.get('/admin/dashboard').withInertia().loginAs(admin)
 
     const breakdown = response.inertiaProps.statusBreakdown
-    assert.lengthOf(breakdown, 8)
+    assert.lengthOf(breakdown, Object.keys(OrderStatus).length)
 
     const cleaning = breakdown.find((slice: { value: string }) => slice.value === 'in_cleaning')
     assert.equal(cleaning.total, 1)
@@ -119,7 +131,10 @@ test.group('Admin Dashboard', (group) => {
   }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081300004001' }).create()
 
-    const order = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 60000 }).create()
+    const order = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 60000,
+    }).create()
     await payFor(order)
 
     const response = await client.get('/admin/dashboard').withInertia().loginAs(admin)

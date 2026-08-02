@@ -73,6 +73,7 @@ export const validationMessages = {
  */
 export const validationFields = {
   name: 'Nama lengkap',
+  serviceName: 'Nama layanan',
   phone: 'Nomor telepon',
   password: 'Kata sandi',
   passwordConfirmation: 'Konfirmasi kata sandi',

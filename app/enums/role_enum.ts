@@ -8,6 +8,13 @@ export const Role = {
 } as const
 
 /**
+ * The roles that belong to people who work here, as opposed to people who buy
+ * from here. These are the only accounts the admin sign-up form may create,
+ * and the only ones that have no public route into existence.
+ */
+export const PRIVILEGED_ROLES: string[] = [Role.STAFF, Role.ADMIN]
+
+/**
  * Type representing the role of a user.
  */
 export type Role = (typeof Role)[keyof typeof Role]

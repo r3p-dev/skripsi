@@ -86,12 +86,7 @@ export default class ReconciliationController {
     const orders = await this.reconciliationService.getStuckOrders(filters)
 
     return inertia.render('admin/reconciliation/index', {
-      /**
-       * Two levels deep: each row shows the order's own details and the
-       * transaction behind it, and a nested transformer stops at one level
-       * by default.
-       */
-      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()).depth(2),
+      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()).useVariant('toListItem'),
       filters,
       paymentMethodOptions: PAYMENT_METHOD_OPTIONS,
     })

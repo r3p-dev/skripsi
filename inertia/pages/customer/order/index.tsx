@@ -7,26 +7,14 @@ import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconChevronLeft, IconChevronRight, IconPlus, IconSearch } from '@tabler/icons-react'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { neutralBadgeStyle, orderStatusStyles } from '@/lib/constants'
+import { formatDate, formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
-  orders: { data: Data.Order[]; metadata: Metadata }
+  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
   filters: Filters
 }>
-
-/**
- * Badge colour per order status. Keyed by the translated status the
- * transformer sends, so it must stay in sync with `OrderStatusLabel`.
- */
-const STATUS_STYLES: Record<string, string> = {
-  'Penjemputan Dijadwalkan': 'bg-gray-200 text-gray-700',
-  'Dalam Penjemputan': 'bg-blue-100 text-blue-700',
-  'Dalam Inspeksi': 'bg-blue-100 text-blue-700',
-  'Menunggu Pelunasan': 'bg-amber-100 text-amber-700',
-  'Dalam Pencucian': 'bg-blue-100 text-blue-700',
-  'Dalam Pengantaran': 'bg-blue-100 text-blue-700',
-  'Selesai': 'bg-green-100 text-green-700',
-  'Dibatalkan': 'bg-red-100 text-red-700',
-}
 
 export default function Index({ orders, filters }: PageProps) {
   return (
@@ -40,13 +28,13 @@ export default function Index({ orders, filters }: PageProps) {
         <Link
           route="customer.order.create"
           aria-label="Buat pesanan baru"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all hover:bg-black/90 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all hover:bg-black/90 active:scale-95"
         >
           <IconPlus className="size-5" />
         </Link>
       </div>
 
-      <div className="flex-1 px-6 pb-28">
+      <div className="flex-1 px-6 pb-nav">
         <Form route="customer.order.index" className="mb-6">
           {() => (
             <div className="relative">
@@ -95,14 +83,18 @@ export default function Index({ orders, filters }: PageProps) {
                     <p className="text-sm font-bold tracking-wide text-black">
                       {order.orderNumber}
                     </p>
-                    <Badge className={STATUS_STYLES[order.status] ?? 'bg-gray-200 text-gray-700'}>
-                      {order.status}
+                    <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+                      {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Jadwal Jemput: {order.pickupDate ?? '-'}</span>
+                    <span className="text-gray-600">
+                      Jadwal Jemput: {formatDate(order.pickupDate)}
+                    </span>
                     <span className="font-semibold text-black">
-                      {order.totalPrice ?? 'Belum ada tagihan'}
+                      {order.totalPrice === null
+                        ? 'Belum ada tagihan'
+                        : formatRupiah(order.totalPrice)}
                     </span>
                   </div>
                 </Card>
@@ -119,8 +111,7 @@ export default function Index({ orders, filters }: PageProps) {
               preserveScroll
               className={buttonVariants({
                 variant: 'outline',
-                size: 'sm',
-                className: `rounded-lg ${orders.metadata.currentPage <= orders.metadata.firstPage ? 'pointer-events-none opacity-40' : ''}`,
+                className: `h-11 rounded-lg px-4 ${orders.metadata.currentPage <= orders.metadata.firstPage ? 'pointer-events-none opacity-40' : ''}`,
               })}
             >
               <IconChevronLeft className="size-4" />
@@ -137,8 +128,7 @@ export default function Index({ orders, filters }: PageProps) {
               preserveScroll
               className={buttonVariants({
                 variant: 'outline',
-                size: 'sm',
-                className: `rounded-lg ${orders.metadata.currentPage >= orders.metadata.lastPage ? 'pointer-events-none opacity-40' : ''}`,
+                className: `h-11 rounded-lg px-4 ${orders.metadata.currentPage >= orders.metadata.lastPage ? 'pointer-events-none opacity-40' : ''}`,
               })}
             >
               Selanjutnya

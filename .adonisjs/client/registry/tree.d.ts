@@ -82,14 +82,24 @@ export interface ApiDefinition {
     cleaning: {
       update: typeof routes['staff.cleaning.update']
     }
+    collection: {
+      update: typeof routes['staff.collection.update']
+    }
+    customer: {
+      index: typeof routes['staff.customer.index']
+    }
     order: {
       create: typeof routes['staff.order.create']
       store: typeof routes['staff.order.store']
       edit: typeof routes['staff.order.edit']
       update: typeof routes['staff.order.update']
+      receipt: typeof routes['staff.order.receipt']
     }
     tag: {
       show: typeof routes['staff.tag.show']
+    }
+    notification: {
+      store: typeof routes['staff.notification.store']
     }
     transaction: {
       store: typeof routes['staff.transaction.store']
@@ -107,13 +117,20 @@ export interface ApiDefinition {
     }
     dashboard: {
       index: typeof routes['admin.dashboard.index']
+      export: typeof routes['admin.dashboard.export']
+    }
+    signup: {
+      create: typeof routes['admin.signup.create']
+      store: typeof routes['admin.signup.store']
     }
     order: {
       index: typeof routes['admin.order.index']
+      export: typeof routes['admin.order.export']
       show: typeof routes['admin.order.show']
     }
     service: {
       index: typeof routes['admin.service.index']
+      export: typeof routes['admin.service.export']
       create: typeof routes['admin.service.create']
       store: typeof routes['admin.service.store']
       edit: typeof routes['admin.service.edit']
@@ -122,6 +139,7 @@ export interface ApiDefinition {
     }
     user: {
       index: typeof routes['admin.user.index']
+      export: typeof routes['admin.user.export']
       create: typeof routes['admin.user.create']
       store: typeof routes['admin.user.store']
       edit: typeof routes['admin.user.edit']
@@ -130,9 +148,11 @@ export interface ApiDefinition {
     }
     report: {
       index: typeof routes['admin.report.index']
+      export: typeof routes['admin.report.export']
     }
     reconciliation: {
       index: typeof routes['admin.reconciliation.index']
+      export: typeof routes['admin.reconciliation.export']
       update: typeof routes['admin.reconciliation.update']
     }
   }

@@ -1,7 +1,5 @@
-import { type ItemType, ItemTypeLabel } from '#enums/service_enum'
 import type Item from '#models/item'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { DateTime } from 'luxon'
 
 export default class ItemTransformer extends BaseTransformer<Item> {
   toObject() {
@@ -16,8 +14,8 @@ export default class ItemTransformer extends BaseTransformer<Item> {
         'size',
       ]),
 
-      type: ItemTypeLabel[this.resource.type as ItemType],
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      type: this.resource.type,
+      createdAt: this.resource.createdAt.toISO(),
     }
   }
 }

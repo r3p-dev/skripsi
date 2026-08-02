@@ -3,6 +3,7 @@ import Order from '#models/order'
 import { DateTime } from 'luxon'
 import { OrderStatus } from '#enums/order_status_enum'
 import { OrderType } from '#enums/order_type_enum'
+import { personName } from '#database/factories/support'
 
 /**
  * Order numbers are unique in the database, and a random suffix collides often
@@ -16,7 +17,7 @@ export const OrderFactory = factory
     orderSequence += 1
 
     return {
-      customerName: faker.person.fullName(),
+      customerName: personName(faker),
       customerPhone: `08${faker.string.numeric(10)}`,
       orderNumber: `ORD${DateTime.now().toFormat('yyLLdd')}-${String(orderSequence).padStart(3, '0')}`,
       pickupDate: DateTime.fromJSDate(faker.date.soon({ days: 30 })),

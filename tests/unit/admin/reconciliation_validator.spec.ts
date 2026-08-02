@@ -14,11 +14,23 @@ test.group('reconciliationValidator', () => {
     assert.equal(result.note, validOverride.note)
   })
 
-  test('accepts every payment method the shop takes', async ({ assert }) => {
-    for (const paymentMethod of ['cash', 'debit', 'qris']) {
+  test('accepts the two methods money can arrive by in person', async ({ assert }) => {
+    for (const paymentMethod of ['cash', 'debit']) {
       const result = await reconciliationValidator.validate({ ...validOverride, paymentMethod })
       assert.equal(result.paymentMethod, paymentMethod)
     }
+  })
+
+  /**
+   * A QRIS payment is always a Midtrans charge confirmed by Midtrans, so
+   * ticking one off by hand would be asserting something only the provider can
+   * know — and would paper over a broken webhook instead of surfacing it.
+   * Manual confirmation exists for the money somebody watched change hands.
+   */
+  test('refuses to settle a QRIS payment by hand', async ({ assert }) => {
+    await assert.rejects(() =>
+      reconciliationValidator.validate({ ...validOverride, paymentMethod: 'qris' })
+    )
   })
 
   /**

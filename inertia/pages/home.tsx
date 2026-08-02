@@ -183,14 +183,24 @@ export default function Home({ services }: PageProps) {
           </Carousel>
         </div>
 
-        <div className="flex justify-between space-x-3 pr-2">
+        {/*
+          The dot stays 10px — it is an indicator, not a button you are meant to
+          aim at. What grew is the invisible box around it, so the dot can be
+          hit with a thumb rather than only with a mouse.
+        */}
+        <div className="-my-3 flex justify-between">
           {Array.from({ length: count }).map((_, i) => (
             <button
               key={i}
               onClick={() => api?.scrollTo(i)}
-              className={`size-2.5 rounded-full cursor-pointer transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
+              className="flex flex-1 cursor-pointer items-center justify-center py-3"
+              aria-label={`Ke slide ${i + 1}`}
+              aria-current={i === current ? 'true' : undefined}
+            >
+              <span
+                className={`size-2.5 rounded-full transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
+              />
+            </button>
           ))}
         </div>
       </section>
@@ -242,7 +252,7 @@ export default function Home({ services }: PageProps) {
           {areas.map((area, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white p-5 transition-all hover:shadow-sm active:scale-95 touch-target flex-col text-center"
+              className="flex touch-target flex-col items-center gap-3 rounded-xl border border-gray-300 bg-white p-5 text-center transition-all hover:shadow-sm active:scale-95"
             >
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
                 <IconMapPin className="size-5 text-black" />
@@ -281,9 +291,7 @@ export default function Home({ services }: PageProps) {
                   ))}
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-700">
-                `&quot;`{review.comment}`&quot;`
-              </p>
+              <p className="text-sm leading-relaxed text-gray-700">&quot;{review.comment}&quot;</p>
             </div>
           ))}
         </div>

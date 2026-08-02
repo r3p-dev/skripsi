@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatRupiah } from '@/lib/utils'
+import { formatRupiah } from '@/lib/format'
 import type { InertiaProps } from '@/types'
 import { Form } from '@adonisjs/inertia/react'
 import { IconCash, IconReceipt2, IconTrendingUp } from '@tabler/icons-react'
@@ -25,8 +25,7 @@ type MoneyBreakdown = {
   value: string
   label: string
   orders: number
-  revenue: string
-  revenueValue: number
+  revenue: number
 }
 
 type PageProps = InertiaProps<{
@@ -34,10 +33,9 @@ type PageProps = InertiaProps<{
     from: string
     to: string
     label: string
-    totalRevenue: string
-    totalRevenueValue: number
+    totalRevenue: number
     paidOrders: number
-    averageOrderValue: string
+    averageOrderValue: number
     series: { date: string; label: string; total: number }[]
     byPaymentMethod: MoneyBreakdown[]
     byType: MoneyBreakdown[]
@@ -46,8 +44,7 @@ type PageProps = InertiaProps<{
       name: string
       category: string
       orders: number
-      revenue: string
-      revenueValue: number
+      revenue: number
     }[]
   }
 }>
@@ -76,7 +73,9 @@ function BreakdownTable({ title, rows }: { title: string; rows: MoneyBreakdown[]
               <TableRow key={row.value}>
                 <TableCell>{row.label}</TableCell>
                 <TableCell className="text-right">{row.orders}</TableCell>
-                <TableCell className="text-right font-semibold">{row.revenue}</TableCell>
+                <TableCell className="text-right font-semibold">
+                  {formatRupiah(row.revenue)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -143,11 +142,15 @@ export default function Index({ report }: PageProps) {
       </Form>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Total Pendapatan" value={report.totalRevenue} icon={IconCash} />
+        <StatCard
+          label="Total Pendapatan"
+          value={formatRupiah(report.totalRevenue)}
+          icon={IconCash}
+        />
         <StatCard label="Pesanan Terbayar" value={report.paidOrders} icon={IconReceipt2} />
         <StatCard
           label="Rata-rata per Pesanan"
-          value={report.averageOrderValue}
+          value={formatRupiah(report.averageOrderValue)}
           icon={IconTrendingUp}
         />
       </div>
@@ -203,7 +206,9 @@ export default function Index({ report }: PageProps) {
                   <TableRow key={service.id}>
                     <TableCell className="font-medium text-black">{service.name}</TableCell>
                     <TableCell className="text-right">{service.orders}</TableCell>
-                    <TableCell className="text-right font-semibold">{service.revenue}</TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {formatRupiah(service.revenue)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -14,6 +14,7 @@ import ReportService, {
   type ServiceRanking,
 } from '#services/report_service'
 import type { SeriesPoint } from '#utils/series'
+import { formatRupiah } from '#utils/currency'
 import { reportValidator } from '#validators/report_validator'
 import { DateTime } from 'luxon'
 
@@ -29,7 +30,7 @@ function breakdownSheet(name: string, heading: string, rows: MoneyBreakdown[]): 
     columns: [
       { header: heading, width: 22, value: (row) => row.label },
       { header: 'Pesanan', width: 12, value: (row) => row.orders },
-      { header: 'Pendapatan', width: 18, format: RUPIAH_FORMAT, value: (row) => row.revenueValue },
+      { header: 'Pendapatan', width: 18, format: RUPIAH_FORMAT, value: (row) => row.revenue },
     ],
   })
 }
@@ -98,7 +99,7 @@ export default class ReportController {
             header: 'Pendapatan',
             width: 18,
             format: RUPIAH_FORMAT,
-            value: (service) => service.revenueValue,
+            value: (service) => service.revenue,
           },
         ],
       }),
@@ -120,9 +121,9 @@ export default class ReportController {
         { label: 'Periode', value: report.label },
         { label: 'Dari', value: report.from },
         { label: 'Sampai', value: report.to },
-        { label: 'Total Pendapatan', value: report.totalRevenue },
+        { label: 'Total Pendapatan', value: formatRupiah(report.totalRevenue) },
         { label: 'Pesanan Terbayar', value: String(report.paidOrders) },
-        { label: 'Rata-rata per Pesanan', value: report.averageOrderValue },
+        { label: 'Rata-rata per Pesanan', value: formatRupiah(report.averageOrderValue) },
       ],
       columns: [
         { header: 'Metrik', width: 26, value: (row) => row.label },

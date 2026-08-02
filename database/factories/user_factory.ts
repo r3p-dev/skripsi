@@ -3,11 +3,12 @@ import User from '#models/user'
 import { Role } from '#enums/role_enum'
 import { OrderFactory } from '#database/factories/order_factory'
 import { AddressFactory } from '#database/factories/address_factory'
+import { personName } from '#database/factories/support'
 
 export const UserFactory = factory
   .define(User, async ({ faker }) => {
     return {
-      name: faker.person.fullName(),
+      name: personName(faker),
       phone: '081387882973',
       password: 'password123',
       role: Role.CUSTOMER,

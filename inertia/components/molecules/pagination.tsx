@@ -39,8 +39,7 @@ export function Pagination({ metadata }: { metadata: Metadata }) {
         aria-label="Halaman sebelumnya"
         className={buttonVariants({
           variant: 'outline',
-          size: 'sm',
-          className: `rounded-lg ${isFirst ? 'pointer-events-none opacity-40' : ''}`,
+          className: `h-11 rounded-lg px-4 md:h-9 ${isFirst ? 'pointer-events-none opacity-40' : ''}`,
         })}
       >
         <IconChevronLeft className="size-4" />
@@ -57,8 +56,7 @@ export function Pagination({ metadata }: { metadata: Metadata }) {
         aria-label="Halaman selanjutnya"
         className={buttonVariants({
           variant: 'outline',
-          size: 'sm',
-          className: `rounded-lg ${isLast ? 'pointer-events-none opacity-40' : ''}`,
+          className: `h-11 rounded-lg px-4 md:h-9 ${isLast ? 'pointer-events-none opacity-40' : ''}`,
         })}
       >
         Selanjutnya

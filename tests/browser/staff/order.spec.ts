@@ -73,16 +73,20 @@ test.group('Staff Offline Order', (group) => {
     await page.locator('input[name="items[0][size]"]').fill('42')
     await page.locator('input[name="items[0][condition]"]').fill('Kotor ringan')
     await page.locator('select[name="items[0][service]"]').selectOption(String(service.id))
+    await page.getByLabel('Foto Kondisi Barang').setInputFiles(photoPath)
     await page.locator('select[name="paymentMethod"]').selectOption('cash')
+    await page.getByLabel('Uang Diterima').fill('100000')
 
     await page.getByRole('button', { name: 'Buat Pesanan' }).click()
 
-    await page.assertPath('/staff/trips')
-    await page.locator('[data-sonner-toast]').waitFor({ state: 'visible' })
-    await page.assertTextContains('[data-sonner-toast]', 'Pesanan offline berhasil dibuat.')
+    await page.waitForURL(/\/staff\/orders\/.+\/receipt$/)
 
     const order = await Order.query().where('customerPhone', '081211119001').firstOrFail()
     assert.equal(order.status, 'in_cleaning')
+
+    // Two copies on one sheet: one for the customer, one for the shoes.
+    await page.assertTextContains('body', 'Salinan Pelanggan')
+    await page.assertTextContains('body', 'Salinan Toko')
 
     const transaction = await Transaction.query().where('orderId', order.id).firstOrFail()
     assert.equal(transaction.paymentMethod, 'cash')
@@ -129,11 +133,11 @@ test.group('Staff Offline Order', (group) => {
     })
     await page.locator('select[name="items[0][service]"]').selectOption(String(service.id))
     await page.locator('textarea[name="note"]').fill('Diambil sendiri di toko')
+    await page.getByLabel('Foto Kondisi Barang').setInputFiles(photoPath)
     await page.locator('select[name="paymentMethod"]').selectOption('debit')
 
     await page.getByRole('button', { name: 'Buat Pesanan' }).click()
-
-    await page.assertPath('/staff/trips')
+    await page.waitForURL(/\/staff\/orders\/.+\/receipt$/)
 
     const order = await Order.query().where('customerPhone', '081211119002').firstOrFail()
     assert.equal(order.type, 'offline')
@@ -180,10 +184,11 @@ test.group('Staff Offline Order', (group) => {
     })
     await page.locator('select[name="items[1][service]"]').selectOption(String(bagService.id))
 
+    await page.getByLabel('Foto Kondisi Barang').setInputFiles(photoPath)
     await page.locator('select[name="paymentMethod"]').selectOption('cash')
+    await page.getByLabel('Uang Diterima').fill('100000')
     await page.getByRole('button', { name: 'Buat Pesanan' }).click()
-
-    await page.assertPath('/staff/trips')
+    await page.waitForURL(/\/staff\/orders\/.+\/receipt$/)
 
     const order = await Order.query().where('customerPhone', '081211119003').firstOrFail()
     assert.equal(Number(order.totalPrice), 55000)
@@ -217,6 +222,7 @@ test.group('Staff Offline Order', (group) => {
       condition: 'Kotor ringan',
     })
     await page.locator('select[name="items[0][service]"]').selectOption(String(service.id))
+    await page.getByLabel('Foto Kondisi Barang').setInputFiles(photoPath)
     await page.locator('select[name="paymentMethod"]').selectOption('qris')
 
     await page.getByRole('button', { name: 'Buat Pesanan' }).click()
@@ -272,6 +278,7 @@ test.group('Staff Order Item Editing', (group) => {
     await inspection.locator('select[name="items[0][service]"]').selectOption(String(service.id))
     await inspection.locator('input[type="file"]').setInputFiles(photoPath)
     await inspection.getByRole('button', { name: 'Selesaikan Inspeksi' }).click()
+    await inspection.getByRole('button', { name: 'Konfirmasi Selesai' }).click()
 
     await inspection.assertPath(`/staff/orders/${order.orderNumber}/items`)
 

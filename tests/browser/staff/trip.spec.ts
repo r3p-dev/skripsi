@@ -7,6 +7,7 @@ import OrderAction from '#models/order_action'
 import OrderItem from '#models/order_item'
 import Service from '#models/service'
 import { ItemType, ServiceCategory, ServiceType } from '#enums/service_enum'
+import { OrderStatus } from '#enums/order_status_enum'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { fileURLToPath } from 'node:url'
@@ -48,7 +49,10 @@ test.group('Staff Trip Queue', (group) => {
     await page.assertPath('/staff/trips')
     await page.assertTextContains('body', order.orderNumber)
 
+    // Claiming holds the stop against everyone else for three hours, so the
+    // card asks before it opens the task.
     await page.getByText(order.orderNumber).click()
+    await page.getByRole('link', { name: 'Ambil Tugas' }).click()
 
     await page.assertPath(`/staff/trips/${order.orderNumber}/pickup`)
     await page.getByLabel('Foto Bukti Penjemputan').waitFor({ state: 'attached' })
@@ -94,6 +98,7 @@ test.group('Staff Trip Completion', (group) => {
 
     await page.locator('input[type="file"]').setInputFiles(photoPath)
     await page.getByRole('button', { name: 'Selesaikan Tugas' }).click()
+    await page.getByRole('button', { name: 'Konfirmasi Selesai' }).click()
 
     await page.assertPath('/staff/trips')
 
@@ -114,7 +119,8 @@ test.group('Staff Trip Completion', (group) => {
       route('staff.trip.show', { number: order.orderNumber, type: 'pickup' })
     )
 
-    await page.getByRole('button', { name: 'Batalkan Tugas' }).click()
+    await page.getByRole('button', { name: 'Batalkan Tugas' }).first().click()
+    await page.getByRole('button', { name: 'Batalkan Tugas' }).last().click()
 
     await page.assertPath('/staff/trips')
     await page.locator('[data-sonner-toast]').waitFor({ state: 'visible' })
@@ -246,7 +252,12 @@ test.group('Staff Cleaning Tab', (group) => {
     }
   }
 
-  test('each batch on the rack shows its owner, item count, and how it arrived', async ({
+  /**
+   * The card says what the washer needs — which batch, how many things are in
+   * it, and where it came from — and stops there. The customer's name is not
+   * something a queue on every phone on shift needs to carry.
+   */
+  test('each batch on the rack shows its item count and how it arrived', async ({
     visit,
     route,
     browserContext,
@@ -275,14 +286,15 @@ test.group('Staff Cleaning Tab', (group) => {
 
     const cleaningTab = await page.locator('body').innerText()
     assert.include(cleaningTab, walkIn.orderNumber)
-    assert.include(cleaningTab, 'Dewi')
     assert.include(cleaningTab, '2 item')
     assert.include(cleaningTab, 'Offline')
 
     assert.include(cleaningTab, booked.orderNumber)
-    assert.include(cleaningTab, 'Agus')
     assert.include(cleaningTab, '1 item')
     assert.include(cleaningTab, 'Online')
+
+    assert.notInclude(cleaningTab, 'Dewi')
+    assert.notInclude(cleaningTab, 'Agus')
   })
 
   test('Cetak Label opens the printable tag for the batch', async ({
@@ -303,7 +315,7 @@ test.group('Staff Cleaning Tab', (group) => {
     await page.assertTextContains('body', order.orderNumber)
   })
 
-  test('marking a walk-in batch washed completes it and clears the tab', async ({
+  test('marking a walk-in batch washed moves it to the collection tab', async ({
     visit,
     route,
     browserContext,
@@ -330,11 +342,16 @@ test.group('Staff Cleaning Tab', (group) => {
     await page.assertTextContains('[data-sonner-toast]', `Pencucian ${order.orderNumber} selesai.`)
 
     await order.refresh()
-    assert.equal(order.status, 'completed')
+    assert.equal(order.status, OrderStatus.CLEANING_DONE)
 
     await page.getByRole('button', { name: /Pencucian/ }).click()
     await page.assertTextContains('body', 'Belum ada barang yang sedang dicuci')
     assert.equal(await page.getByRole('button', { name: 'Selesai Dicuci' }).count(), 0)
+
+    // Washed, paid for, and still in the shop — not finished until somebody
+    // walks out with it.
+    await page.getByRole('button', { name: /Siap Diambil/ }).click()
+    await page.assertTextContains('body', order.orderNumber)
   })
 
   test('the confirm dialog can be dismissed without washing anything off the tab', async ({
@@ -384,7 +401,7 @@ test.group('Staff Cleaning Tab', (group) => {
     await page.getByRole('button', { name: /Pencucian/ }).click()
     await page.getByRole('button', { name: 'Selesai Dicuci' }).click()
 
-    const beforePhoto = page.getByAltText('Foto inspeksi')
+    const beforePhoto = page.getByAltText('Foto sebelum dicuci')
     await beforePhoto.waitFor({ state: 'attached' })
     assert.equal(await beforePhoto.getAttribute('src'), 'https://example.test/inspection-photo.png')
   })
@@ -523,7 +540,8 @@ test.group('Staff Trip Navigation', (group) => {
       route('staff.trip.show', { number: order.orderNumber, type: 'pickup' })
     )
 
-    await page.getByRole('button', { name: 'Batalkan Tugas' }).click()
+    await page.getByRole('button', { name: 'Batalkan Tugas' }).first().click()
+    await page.getByRole('button', { name: 'Batalkan Tugas' }).last().click()
 
     await page.assertPath('/staff/trips')
     await page.assertTextContains('body', order.orderNumber)
@@ -553,6 +571,7 @@ test.group('Staff Trip Navigation', (group) => {
 
     await page.locator('input[type="file"]').setInputFiles(photoPath)
     await page.getByRole('button', { name: 'Selesaikan Tugas' }).click()
+    await page.getByRole('button', { name: 'Konfirmasi Selesai' }).click()
 
     await page.assertPath('/staff/trips')
 

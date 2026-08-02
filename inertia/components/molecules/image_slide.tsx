@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
 
 interface Props {
   beforeImage: string
@@ -67,14 +73,41 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
     }
   }, [handleMouseMove, handleTouchMove])
 
+  /**
+   * Keyboard equivalent of the drag, so the comparison is not mouse-and-thumb
+   * only (WCAG 2.1.1). Arrow keys move the divider in 5% steps.
+   */
+  function handleKeyDown(event: ReactKeyboardEvent) {
+    const step =
+      event.key === 'ArrowLeft' || event.key === 'ArrowDown'
+        ? -5
+        : event.key === 'ArrowRight' || event.key === 'ArrowUp'
+          ? 5
+          : 0
+
+    if (step === 0) return
+
+    event.preventDefault()
+    setSliderPosition((current) => Math.max(0, Math.min(100, current + step)))
+  }
+
   return (
+    /*
+     * `touch-pan-y` hands vertical gestures back to the page. Without it the
+     * handle sat in the middle of a tall page and swallowed the swipe: trying
+     * to scroll past the comparison just dragged the divider, and the page
+     * appeared stuck.
+     */
     <div
       ref={containerRef}
-      className="relative aspect-4/3 w-full cursor-ew-resize overflow-hidden rounded-2xl select-none"
+      className="relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-2xl select-none"
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
       role="slider"
-      aria-valuenow={sliderPosition}
+      aria-label="Bandingkan foto sebelum dan sesudah"
+      aria-valuenow={Math.round(sliderPosition)}
       aria-valuemin={0}
       aria-valuemax={100}
     >

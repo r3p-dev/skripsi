@@ -2,7 +2,7 @@ import { serviceValidator } from '#validators/service_validator'
 import { test } from '@japa/runner'
 
 const validService = {
-  name: 'Deep Clean Sepatu',
+  serviceName: 'Deep Clean Sepatu',
   description: 'Pembersihan menyeluruh bagian luar dan dalam.',
   price: 35000,
   category: 'shoe_wash',
@@ -13,7 +13,7 @@ test.group('serviceValidator', () => {
   test('accepts a complete catalogue entry', async ({ assert }) => {
     const result = await serviceValidator.validate(validService)
 
-    assert.equal(result.name, 'Deep Clean Sepatu')
+    assert.equal(result.serviceName, 'Deep Clean Sepatu')
     assert.equal(result.price, 35000)
   })
 
@@ -24,14 +24,14 @@ test.group('serviceValidator', () => {
   test('accepts a name with digits and punctuation', async ({ assert }) => {
     const result = await serviceValidator.validate({
       ...validService,
-      name: 'Repaint Sepatu - 2 Warna',
+      serviceName: 'Repaint Sepatu - 2 Warna',
     })
 
-    assert.equal(result.name, 'Repaint Sepatu - 2 Warna')
+    assert.equal(result.serviceName, 'Repaint Sepatu - 2 Warna')
   })
 
   test('rejects a name shorter than three characters', async ({ assert }) => {
-    await assert.rejects(() => serviceValidator.validate({ ...validService, name: 'ab' }))
+    await assert.rejects(() => serviceValidator.validate({ ...validService, serviceName: 'ab' }))
   })
 
   test('rejects a free service', async ({ assert }) => {
@@ -43,15 +43,11 @@ test.group('serviceValidator', () => {
   })
 
   test('rejects a category that is not in the enum', async ({ assert }) => {
-    await assert.rejects(() =>
-      serviceValidator.validate({ ...validService, category: 'car_wash' })
-    )
+    await assert.rejects(() => serviceValidator.validate({ ...validService, category: 'car_wash' }))
   })
 
   test('rejects a price type that is not in the enum', async ({ assert }) => {
-    await assert.rejects(() =>
-      serviceValidator.validate({ ...validService, type: 'negotiable' })
-    )
+    await assert.rejects(() => serviceValidator.validate({ ...validService, type: 'negotiable' }))
   })
 
   test('accepts every category and price type the enums define', async ({ assert }) => {

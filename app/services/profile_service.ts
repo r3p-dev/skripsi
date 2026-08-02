@@ -127,6 +127,13 @@ export default class ProfileService {
     /**
      * Each role verifies on its own route: role middleware would bounce a staff
      * member off the customer route, so the link has to match who asked for it.
+     *
+     * The account id is signed into the link alongside the number. Without it
+     * the link says only "change some phone number to this one", and whoever
+     * happens to be signed in when it is opened is the account that changes —
+     * so a link sent to one person, opened on a shared machine or forwarded to
+     * a colleague, would quietly move somebody else's number. Signed in, it
+     * says whose request this is, and the route refuses anyone else.
      */
     const verificationUrl = signedUrlFor(
       PHONE_VERIFICATION_ROUTE[user.role as Role],
@@ -134,6 +141,7 @@ export default class ProfileService {
       {
         qs: {
           phone: data.phone,
+          userId: user.id,
         },
         expiresIn: '15m',
         prefixUrl: appUrl,
@@ -145,8 +153,39 @@ export default class ProfileService {
 
   /**
    * Applies a phone number change once the verification link has been opened.
+   *
+   * The number is checked again here, not only when the link was requested.
+   * Fifteen minutes pass between the two, and somebody else can register that
+   * number in the meantime — at which point the unique index would answer with
+   * a 500 and a customer who did everything right would be looking at a crash
+   * page. This turns that race into the sentence it actually is.
    */
   async verifyPhoneChange(phone: string, user: User): Promise<User> {
+    if (phone === user.phone) {
+      return user
+    }
+
+    const taken = await User.query().where('phone', phone).whereNot('id', user.id).first()
+
+    if (taken) {
+      throw new errors.E_VALIDATION_ERROR([
+        {
+          field: 'phone',
+          message: 'Nomor telepon tersebut sudah digunakan akun lain. Silakan ajukan ulang.',
+        },
+      ])
+    }
+
     return user.merge({ phone }).save()
+  }
+
+  /**
+   * Whether a verification link belongs to the person who opened it.
+   *
+   * The signature proves the link came from us and has not been edited; it
+   * says nothing about who is holding it. This is the part that does.
+   */
+  ownsPhoneChangeRequest(user: User, requestedUserId: unknown): boolean {
+    return Number(requestedUserId) === user.id
   }
 }

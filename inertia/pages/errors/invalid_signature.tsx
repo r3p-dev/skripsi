@@ -5,7 +5,7 @@ import { IconChevronRight, IconLinkOff } from '@tabler/icons-react'
 
 export default function InvalidSignature() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>Tautan Tidak Valid</title>
         <meta name="description" content="Tautan yang Anda gunakan sudah tidak valid" />

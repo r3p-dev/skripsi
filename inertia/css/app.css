@@ -141,12 +141,51 @@
       right center / 0.75rem 100% no-repeat scroll;
 }
 
+/**
+ * The minimum comfortable tap area — 44px, the floor both Apple's HIG and WCAG
+ * 2.5.5 land on. Applied to controls whose visible box is deliberately smaller
+ * than a thumb (a 10px carousel dot, a 18px pencil icon), so the target grows
+ * without the design growing with it.
+ */
+@utility touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/**
+ * Bottom padding for a page that sits inside one of the tab shells: enough to
+ * clear the fixed nav, plus whatever the phone reserves for its home indicator.
+ *
+ * This used to be a flat `pb-28`. On a notched phone the nav itself has to be
+ * pushed up by the inset, which ate most of that 112px and left the last card
+ * tucked under the tab bar — reachable only by over-scrolling.
+ */
+@utility pb-nav {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+
+/** The same idea for pages with no tab bar: clear the home indicator only. */
+@utility pb-page {
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+}
+
+/** Lifts a fixed bottom element out of the home indicator's gesture area. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    /*
+     * The app already answers every tap with `active:scale-95`. The browser's
+     * own grey flash arrives on top of that a beat later, which on Android
+     * reads as a second, laggy response to one tap.
+     */
+    -webkit-tap-highlight-color: transparent;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
@@ -154,5 +193,11 @@
   }
   html {
     @apply font-sans;
+    /*
+     * Stops iOS Safari inflating body text when the phone is turned sideways,
+     * which otherwise breaks every fixed-height row and badge on the page.
+     */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 }

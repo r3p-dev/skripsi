@@ -15,7 +15,7 @@ export default function AuthLayout({
   metaDescription: string
 }>) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
@@ -31,7 +31,7 @@ export default function AuthLayout({
         </Link>
       </div>
 
-      <div className="flex flex-1 flex-col px-6 pb-10">
+      <div className="flex flex-1 flex-col px-6 pb-page">
         <div className="mb-8 space-y-2">
           <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Akun</p>
           <h2 className="text-3xl font-bold tracking-tight text-black">{title}</h2>

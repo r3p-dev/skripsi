@@ -6,7 +6,6 @@ import Order from '#models/order'
 import Transaction from '#models/transaction'
 import User from '#models/user'
 import { DAILY_PICKUP_LIMIT } from '#services/order_service'
-import { formatRupiah } from '#utils/currency'
 import { buildDailySeries, eachDay, type SeriesPoint } from '#utils/series'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
@@ -42,8 +41,12 @@ export type Summary = {
   activeOrders: number
   completedOrders: number
   awaitingPayment: number
-  revenue: string
-  revenueValue: number
+  /**
+   * The number, not "Rp 1.200.000". This used to be sent both ways at once —
+   * a formatted `revenue` for the tile and a `revenueValue` for the chart —
+   * which is two names for one fact. Money is formatted where it is printed.
+   */
+  revenue: number
   customers: number
   staff: number
 }
@@ -100,8 +103,7 @@ export default class DashboardService {
       activeOrders: countFor(ACTIVE_STATUSES),
       completedOrders: countFor([OrderStatus.COMPLETED]),
       awaitingPayment: countFor([OrderStatus.AWAITING_PAYMENT]),
-      revenue: formatRupiah(revenue),
-      revenueValue: revenue,
+      revenue,
       customers: userCounts.get(Role.CUSTOMER) ?? 0,
       staff: userCounts.get(Role.STAFF) ?? 0,
     }

@@ -18,7 +18,7 @@ export default class SessionController {
     try {
       const payload = await request.validateUsing(loginValidator)
 
-      const user = await this.authService.login(payload, auth)
+      const user = await this.authService.login(payload, auth, session)
 
       session.flash('success', 'Berhasil masuk.')
       return response.redirect().toRoute(RoleRedirect[user.role as Role])

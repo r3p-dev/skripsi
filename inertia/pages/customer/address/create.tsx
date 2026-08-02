@@ -33,7 +33,7 @@ export default function Create({ address }: PageProps) {
       <div className="flex items-center gap-3 px-6 py-5">
         <Link
           route="customer.address.show"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -45,7 +45,7 @@ export default function Create({ address }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 px-6 pb-28">
+      <div className="flex-1 px-6 pb-nav">
         <p className="mb-6 text-sm leading-relaxed text-gray-700">
           Masukkan detail Anda di bawah ini untuk {address ? 'memperbarui' : 'menambahkan'} alamat
           penjemputan

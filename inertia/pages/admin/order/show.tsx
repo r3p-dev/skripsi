@@ -11,16 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { orderStatusStyles, transactionStatusStyles } from '@/lib/constants'
+import { neutralBadgeStyle, orderStatusStyles, transactionStatusStyles } from '@/lib/constants'
+import { ActionNameLabel } from '@/enums/order_action_enum'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { OrderTypeLabel } from '@/enums/order_type_enum'
+import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
+import { formatDate, formatDateTime, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
-  items: Data.OrderItem[]
-  actions: Data.OrderAction[]
+  order: Data.Order.Variants['toDetail']
 }>
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
@@ -32,13 +35,21 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
   )
 }
 
-export default function Show({ order, items, actions }: PageProps) {
+export default function Show({ order }: PageProps) {
+  /**
+   * The lines and the audit trail arrive nested inside the order now, at the
+   * depth the transformer asks for, rather than as two sibling props the
+   * controller assembled by hand.
+   */
+  const items = order.items ?? []
+  const actions = order.actions ?? []
+
   return (
     <AdminLayout title={order.orderNumber} description="Detail pesanan UmimaClean">
       <PageHeader
         eyebrow="Pesanan"
         title={order.orderNumber}
-        description={`${order.type} · dibuat ${order.createdAt}`}
+        description={`${OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]} · dibuat ${formatDate(order.createdAt)}`}
         action={
           <Link
             route="admin.order.index"
@@ -57,16 +68,21 @@ export default function Show({ order, items, actions }: PageProps) {
         <Card className="rounded-2xl border border-gray-200 bg-gray-50">
           <CardHeader className="flex items-center justify-between gap-3">
             <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">Ringkasan</p>
-            <Badge className={orderStatusStyles[order.statusValue] ?? 'bg-gray-200 text-gray-700'}>
-              {order.status}
+            <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+              {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
             </Badge>
           </CardHeader>
           <CardContent className="flex flex-col">
             <Detail label="Pelanggan" value={order.customerName} />
             <Detail label="Telepon" value={order.customerPhone} />
             <Detail label="Akun" value={order.user?.name ?? 'Tanpa akun (offline)'} />
-            <Detail label="Jadwal Jemput" value={order.pickupDate ?? '-'} />
-            <Detail label="Total" value={order.totalPrice ?? 'Belum ada tagihan'} />
+            <Detail label="Jadwal Jemput" value={formatDate(order.pickupDate)} />
+            <Detail
+              label="Total"
+              value={
+                order.totalPrice === null ? 'Belum ada tagihan' : formatRupiah(order.totalPrice)
+              }
+            />
           </CardContent>
         </Card>
 
@@ -120,7 +136,7 @@ export default function Show({ order, items, actions }: PageProps) {
                     <TableCell className="text-gray-600">
                       {item.item ? `${item.item.brand} ${item.item.model}` : '-'}
                     </TableCell>
-                    <TableCell className="text-right">{item.subtotal}</TableCell>
+                    <TableCell className="text-right">{formatRupiah(item.subtotal)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -149,18 +165,29 @@ export default function Show({ order, items, actions }: PageProps) {
                 <TableBody>
                   {order.transactions.map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell>{transaction.paymentMethod}</TableCell>
+                      <TableCell>
+                        {
+                          PaymentMethodLabel[
+                            transaction.paymentMethod as keyof typeof PaymentMethodLabel
+                          ]
+                        }
+                      </TableCell>
                       <TableCell>
                         <Badge
                           className={
-                            transactionStatusStyles[transaction.statusValue] ??
-                            'bg-gray-200 text-gray-700'
+                            transactionStatusStyles[transaction.status] ?? neutralBadgeStyle
                           }
                         >
-                          {transaction.status}
+                          {
+                            TransactionStatusLabel[
+                              transaction.status as keyof typeof TransactionStatusLabel
+                            ]
+                          }
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-600">{transaction.createdAt}</TableCell>
+                      <TableCell className="text-gray-600">
+                        {formatDateTime(transaction.createdAt)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -187,8 +214,11 @@ export default function Show({ order, items, actions }: PageProps) {
                 {actions.map((action) => (
                   <li key={action.id} className="py-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium text-black">{action.name}</p>
-                      <p className="text-xs text-gray-500">{action.createdAt}</p>
+                      <p className="text-sm font-medium text-black">
+                        {ActionNameLabel[action.name as keyof typeof ActionNameLabel] ??
+                          action.name}
+                      </p>
+                      <p className="text-xs text-gray-500">{formatDateTime(action.createdAt)}</p>
                     </div>
                     <p className="text-xs text-gray-600">
                       oleh {action.staff?.name ?? 'petugas tidak diketahui'}

@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 export type Option = { value: string; label: string }
 
 export type ServiceDefaults = {
-  name: string
+  serviceName: string
   description: string
   price: number
   category: string
@@ -33,19 +33,28 @@ export function ServiceFields({
 }) {
   return (
     <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-      <Field data-invalid={errors.name ? 'true' : undefined}>
-        <FieldLabel htmlFor="name" className="text-xs tracking-widest text-gray-700 uppercase">
+      {/*
+        The field is `serviceName`, not `name`, so it carries its own label
+        from the shared validation table. `name` is labelled "Nama lengkap"
+        app-wide, which is right on a signup form and wrong here — and naming
+        the field for what it holds is cheaper than overriding one word.
+      */}
+      <Field data-invalid={errors.serviceName ? 'true' : undefined}>
+        <FieldLabel
+          htmlFor="serviceName"
+          className="text-xs tracking-widest text-gray-700 uppercase"
+        >
           Nama Layanan
         </FieldLabel>
         <Input
-          id="name"
-          name="name"
-          defaultValue={defaults?.name}
+          id="serviceName"
+          name="serviceName"
+          defaultValue={defaults?.serviceName}
           required
-          aria-invalid={!!errors.name}
+          aria-invalid={!!errors.serviceName}
           className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
         />
-        <FieldError>{errors.name}</FieldError>
+        <FieldError>{errors.serviceName}</FieldError>
       </Field>
 
       <Field data-invalid={errors.description ? 'true' : undefined}>

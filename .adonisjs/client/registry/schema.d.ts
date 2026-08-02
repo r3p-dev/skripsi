@@ -523,6 +523,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/cleaning_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'staff.collection.update': {
+    methods: ["PUT"]
+    pattern: '/staff/collections/:number'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+    }
+  }
+  'staff.customer.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/customers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/customer_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/customer_controller').default['index']>>>
+    }
+  }
   'staff.order.create': {
     methods: ["GET","HEAD"]
     pattern: '/staff/orders/create'
@@ -581,6 +605,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
+    }
+  }
+  'staff.order.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/:number/receipt'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['receipt']>>>
+    }
+  }
+  'staff.notification.store': {
+    methods: ["POST"]
+    pattern: '/staff/orders/:number/notifications'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/notification_validator').orderNotificationValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/notification_validator').orderNotificationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.transaction.store': {
@@ -667,6 +715,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['index']>>>
     }
   }
+  'admin.dashboard.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/dashboard/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['export']>>>
+    }
+  }
+  'admin.signup.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/signup'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
+    }
+  }
+  'admin.signup.store': {
+    methods: ["POST"]
+    pattern: '/admin/signup'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.order.index': {
     methods: ["GET","HEAD"]
     pattern: '/admin/orders'
@@ -677,6 +761,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['index']>>>
+    }
+  }
+  'admin.order.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/orders/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['export']>>>
     }
   }
   'admin.order.show': {
@@ -701,6 +797,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['index']>>>
+    }
+  }
+  'admin.service.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/services/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['export']>>>
     }
   }
   'admin.service.create': {
@@ -775,6 +883,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['index']>>>
     }
   }
+  'admin.user.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['export']>>>
+    }
+  }
   'admin.user.create': {
     methods: ["GET","HEAD"]
     pattern: '/admin/users/create'
@@ -847,6 +967,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'admin.report.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reports/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/report_validator').reportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'admin.reconciliation.index': {
     methods: ["GET","HEAD"]
     pattern: '/admin/reconciliations'
@@ -857,6 +989,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
+    }
+  }
+  'admin.reconciliation.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reconciliations/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['export']>>>
     }
   }
   'admin.reconciliation.update': {

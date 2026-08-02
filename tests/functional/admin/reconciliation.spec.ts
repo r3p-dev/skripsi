@@ -3,7 +3,7 @@ import { UserFactory } from '#database/factories/user_factory'
 import { ActionName } from '#enums/order_action_enum'
 import { OrderStatus } from '#enums/order_status_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
-import Order from '#models/order'
+import type Order from '#models/order'
 import OrderAction from '#models/order_action'
 import Transaction from '#models/transaction'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -53,8 +53,8 @@ test.group('Admin Payment Reconciliation', (group) => {
     const response = await client.get('/admin/reconciliations').withInertia().loginAs(admin)
 
     const [row] = response.inertiaProps.orders.data
-    assert.equal(row.transactions[0].statusValue, TransactionStatus.PENDING)
-    assert.equal(row.transactions[0].paymentMethod, 'QRIS')
+    assert.equal(row.transactions[0].status, TransactionStatus.PENDING)
+    assert.equal(row.transactions[0].paymentMethod, PaymentMethod.QRIS)
   })
 
   test('the search matches the order number and the customer name', async ({ client, assert }) => {

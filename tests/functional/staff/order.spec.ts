@@ -9,6 +9,9 @@ import Service from '#models/service'
 import { ItemType, ServiceCategory, ServiceType } from '#enums/service_enum'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
+import { fileURLToPath } from 'node:url'
+
+const photoPath = fileURLToPath(new URL('../../fixtures/photo.png', import.meta.url))
 
 function createMainService() {
   return Service.create({
@@ -20,12 +23,20 @@ function createMainService() {
   })
 }
 
+/**
+ * The counter form's payload. `totalItems` is the form's own count — how many
+ * item forms the page drew — and stays separate from the items themselves.
+ *
+ * The intake photo is required: a counter order never goes through inspection,
+ * so this is the only record of what condition the shoes arrived in.
+ */
 function fillOfflineOrder(request: any, service: Service, phone: string) {
   return request
     .field('name', 'Budi')
     .field('phone', phone)
     .field('totalItems', '1')
     .field('note', 'Titipan sepatu')
+    .file('photo', photoPath)
     .field('items[0][brand]', 'Nike')
     .field('items[0][model]', 'Air Max')
     .field('items[0][material]', 'Kanvas')
@@ -62,11 +73,16 @@ test.group('Staff Offline Order', (group) => {
       '081211110001'
     )
       .field('paymentMethod', 'cash')
+      .field('cashReceived', '100000')
       .withCsrfToken()
 
-    response.assertRedirectsTo('/staff/trips')
-
     const order = await Order.query().where('customerPhone', '081211110001').firstOrFail()
+
+    /**
+     * Straight to the receipt rather than back to the queue: it carries the
+     * change owed and it is the slip that gets stapled to the shoes.
+     */
+    response.assertRedirectsTo(`/staff/orders/${order.orderNumber}/receipt`)
     assert.equal(order.status, 'in_cleaning')
     assert.equal(Number(order.totalPrice), 30000)
   })
@@ -80,12 +96,14 @@ test.group('Staff Offline Order', (group) => {
 
     await fillOfflineOrder(client.post('/staff/orders').loginAs(staff), service, '081211110005')
       .field('paymentMethod', 'cash')
+      .field('cashReceived', '100000')
       .withCsrfToken()
 
     const order = await Order.query().where('customerPhone', '081211110005').firstOrFail()
 
-    // The type is what the admin dashboard groups on, and the missing address is
-    // what makes cleaning complete the order instead of sending it for delivery.
+    // The type is what the admin dashboard groups on, and the missing address
+    // is what leaves the order on the shelf to be collected rather than
+    // sending it out on the van.
     assert.equal(order.type, 'offline')
     assert.isNull(order.userId)
     assert.isNull(order.addressId)
@@ -102,6 +120,7 @@ test.group('Staff Offline Order', (group) => {
 
     await fillOfflineOrder(client.post('/staff/orders').loginAs(staff), service, '081211110002')
       .field('paymentMethod', 'cash')
+      .field('cashReceived', '100000')
       .withCsrfToken()
 
     const order = await Order.query().where('customerPhone', '081211110002').firstOrFail()
@@ -195,8 +214,8 @@ test.group('Staff Order Item Editing', (group) => {
       .loginAs(staff)
 
     response.assertInertiaComponent('staff/order/edit')
-    assert.equal(response.inertiaProps.items[0].item.brand, 'Nike')
-    assert.equal(response.inertiaProps.items[0].service.id, service.id)
+    assert.equal(response.inertiaProps.order.items[0].item.brand, 'Nike')
+    assert.equal(response.inertiaProps.order.items[0].service.id, service.id)
     assert.isTrue(
       response.inertiaProps.services.some((item: { id: number }) => item.id === service.id)
     )

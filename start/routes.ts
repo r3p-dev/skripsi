@@ -13,9 +13,11 @@ import router from '@adonisjs/core/services/router'
 import { Role } from '#enums/role_enum'
 import Order from '#models/order'
 import transmit from '@adonisjs/transmit/services/main'
+import { ADMIN_ORDERS_CHANNEL } from '#services/broadcast_service'
 import {
   forgotPasswordLimiter,
   loginLimiter,
+  paymentLimiter,
   signupLimiter,
   resetPasswordLimiter,
 } from '#start/limiter'
@@ -34,6 +36,15 @@ transmit.authorize<{ orderNumber: string }>('orders/:orderNumber', async (ctx, {
 
   const order = await Order.query().where('order_number', orderNumber).first()
   return order?.userId === user.id
+})
+
+/**
+ * The shop-wide order feed, for administrators only. It carries every order
+ * that arrives, moves, or gets paid for, which is the whole business — not
+ * something a customer or a staff member has any reason to subscribe to.
+ */
+transmit.authorize(ADMIN_ORDERS_CHANNEL, async (ctx) => {
+  return ctx.auth.user?.role === Role.ADMIN
 })
 
 router.post('transaction/callback', [controllers.webhooks.Transaction, 'update'])
@@ -83,7 +94,15 @@ router
     router.put('orders/:number', [controllers.customer.Order, 'update'])
     router.get('orders/:number/receipt', [controllers.customer.Order, 'receipt'])
 
-    router.post('orders/:number/transactions', [controllers.customer.Transaction, 'store'])
+    /**
+     * Asking to pay is rate limited as well as the charge behind it. The
+     * charge limiter is per order and only counts requests that actually reach
+     * Midtrans, which leaves one account free to spray requests across many
+     * orders at once without any single order noticing.
+     */
+    router
+      .post('orders/:number/transactions', [controllers.customer.Transaction, 'store'])
+      .use(paymentLimiter)
     router.get('orders/:number/transactions/latest', [controllers.customer.Transaction, 'show'])
   })
   .use([middleware.auth(), middleware.role(Role.CUSTOMER)])
@@ -116,13 +135,32 @@ router
 
     router.put('cleanings/:number', [controllers.staff.Cleaning, 'update'])
 
+    /**
+     * Handing a washed walk-in order back over the counter. Separate from
+     * cleaning because the two are genuinely different moments: one is the
+     * shoes being finished, the other is somebody actually taking them home.
+     */
+    router.put('collections/:number', [controllers.staff.Collection, 'update'])
+
+    /**
+     * The registered-customer lookup the counter form uses, so a walk-in who
+     * has used the app before is bound to their account rather than typed in
+     * again as a second version of the same person.
+     */
+    router.get('customers', [controllers.staff.Customer, 'index'])
+
     router.get('orders/create', [controllers.staff.Order, 'create'])
     router.post('orders', [controllers.staff.Order, 'store'])
     router.get('orders/:number/items', [controllers.staff.Order, 'edit'])
     router.put('orders/:number/items', [controllers.staff.Order, 'update'])
     router.get('orders/:number/tag', [controllers.staff.Tag, 'show'])
+    router.get('orders/:number/receipt', [controllers.staff.Order, 'receipt'])
 
-    router.post('orders/:number/transactions', [controllers.staff.Transaction, 'store'])
+    router.post('orders/:number/notifications', [controllers.staff.Notification, 'store'])
+
+    router
+      .post('orders/:number/transactions', [controllers.staff.Transaction, 'store'])
+      .use(paymentLimiter)
     router.get('orders/:number/transactions/latest', [controllers.staff.Transaction, 'show'])
   })
   .use([middleware.auth(), middleware.role(Role.STAFF)])
@@ -140,6 +178,14 @@ router
     })
     router.get('dashboard', [controllers.admin.Dashboard, 'index'])
     router.get('dashboard/export', [controllers.admin.Dashboard, 'export'])
+
+    /**
+     * Registration for the people who work here. There is no public route to
+     * a staff or admin account by design, so this is the one that exists, and
+     * it sits inside the admin area behind the admin role.
+     */
+    router.get('signup', [controllers.admin.Signup, 'create'])
+    router.post('signup', [controllers.admin.Signup, 'store']).use(signupLimiter)
 
     router.get('orders', [controllers.admin.Order, 'index'])
     /**

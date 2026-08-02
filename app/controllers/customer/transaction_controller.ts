@@ -35,7 +35,7 @@ export default class TransactionController {
     }
 
     return inertia.render('order/payment', {
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
       transaction: TransactionTransformer.transform(transaction),
       backRoute: 'customer.order.show',
       retryRoute: 'customer.transaction.store',

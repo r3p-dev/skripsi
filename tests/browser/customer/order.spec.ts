@@ -17,6 +17,14 @@ import { DateTime } from 'luxon'
  * selectable and always inside the month on screen — no month navigation
  * needed regardless of when the suite runs.
  */
+/**
+ * The earliest day the calendar offers. Today is deliberately not selectable:
+ * the van is already out on a route planned this morning.
+ */
+function firstBookableCell() {
+  return `td[data-day="${DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd')}"] button`
+}
+
 function todayCell() {
   return `td[data-day="${DateTime.now().toFormat('yyyy-MM-dd')}"] button`
 }
@@ -92,8 +100,23 @@ test.group('Customer Booking', (group) => {
     const submit = page.getByRole('button', { name: 'Jadwalkan Penjemputan' })
     assert.isTrue(await submit.isDisabled())
 
-    await page.locator(todayCell()).click()
+    await page.locator(firstBookableCell()).click()
     assert.isFalse(await submit.isDisabled())
+  })
+
+  test('today cannot be chosen as a pickup day', async ({
+    visit,
+    route,
+    browserContext,
+    assert,
+  }) => {
+    const customer = await UserFactory.create()
+    await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+
+    await browserContext.loginAs(customer)
+    const page = await visit(route('customer.order.create'))
+
+    assert.isTrue(await page.locator(todayCell()).isDisabled())
   })
 
   test('a customer can book a pickup and lands on the new order', async ({
@@ -107,7 +130,7 @@ test.group('Customer Booking', (group) => {
     await browserContext.loginAs(customer)
     const page = await visit(route('customer.order.create'))
 
-    await page.locator(todayCell()).click()
+    await page.locator(firstBookableCell()).click()
     await page.getByRole('button', { name: 'Jadwalkan Penjemputan' }).click()
 
     await page.locator('[data-sonner-toast]').waitFor({ state: 'visible' })

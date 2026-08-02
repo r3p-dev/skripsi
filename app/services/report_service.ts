@@ -1,6 +1,5 @@
 import { OrderType, OrderTypeLabel } from '#enums/order_type_enum'
 import { PaymentMethod, PaymentMethodLabel, TransactionStatus } from '#enums/transaction_enum'
-import { formatRupiah } from '#utils/currency'
 import { buildDailySeries, type SeriesPoint } from '#utils/series'
 import type { ReportRange } from '#validators/report_validator'
 import db from '@adonisjs/lucid/services/db'
@@ -22,8 +21,7 @@ export type MoneyBreakdown = {
   value: string
   label: string
   orders: number
-  revenue: string
-  revenueValue: number
+  revenue: number
 }
 
 export type ServiceRanking = {
@@ -31,18 +29,16 @@ export type ServiceRanking = {
   name: string
   category: string
   orders: number
-  revenue: string
-  revenueValue: number
+  revenue: number
 }
 
 export type Report = {
   from: string
   to: string
   label: string
-  totalRevenue: string
-  totalRevenueValue: number
+  totalRevenue: number
   paidOrders: number
-  averageOrderValue: string
+  averageOrderValue: number
   series: SeriesPoint[]
   byPaymentMethod: MoneyBreakdown[]
   byType: MoneyBreakdown[]
@@ -84,12 +80,9 @@ export default class ReportService {
       from: from.toISODate()!,
       to: to.toISODate()!,
       label: `${from.setLocale('id').toFormat('d LLLL yyyy')} — ${to.setLocale('id').toFormat('d LLLL yyyy')}`,
-      totalRevenue: formatRupiah(totals.revenue),
-      totalRevenueValue: totals.revenue,
+      totalRevenue: totals.revenue,
       paidOrders: totals.orders,
-      averageOrderValue: formatRupiah(
-        totals.orders > 0 ? Math.round(totals.revenue / totals.orders) : 0
-      ),
+      averageOrderValue: totals.orders > 0 ? Math.round(totals.revenue / totals.orders) : 0,
       series,
       byPaymentMethod,
       byType,
@@ -142,8 +135,7 @@ export default class ReportService {
         value: method,
         label: PaymentMethodLabel[method],
         orders: Number(row?.orders ?? 0),
-        revenue: formatRupiah(Number(row?.revenue ?? 0)),
-        revenueValue: Number(row?.revenue ?? 0),
+        revenue: Number(row?.revenue ?? 0),
       }
     })
   }
@@ -164,8 +156,7 @@ export default class ReportService {
         value: type,
         label: OrderTypeLabel[type],
         orders: Number(row?.orders ?? 0),
-        revenue: formatRupiah(Number(row?.revenue ?? 0)),
-        revenueValue: Number(row?.revenue ?? 0),
+        revenue: Number(row?.revenue ?? 0),
       }
     })
   }
@@ -197,8 +188,7 @@ export default class ReportService {
       name: String(row.name),
       category: String(row.category),
       orders: Number(row.orders),
-      revenue: formatRupiah(Number(row.revenue)),
-      revenueValue: Number(row.revenue),
+      revenue: Number(row.revenue),
     }))
   }
 

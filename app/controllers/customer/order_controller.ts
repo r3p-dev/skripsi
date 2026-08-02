@@ -25,7 +25,7 @@ export default class OrderController {
     const orders = await this.orderService.getAllOrders(filters, user)
 
     return inertia.render('customer/order/index', {
-      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()),
+      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()).useVariant('toListItem'),
       filters,
     })
   }
@@ -59,7 +59,7 @@ export default class OrderController {
     const order = await this.orderService.getOrderByNumber(orderNumber, user)
 
     return inertia.render('customer/order/show', {
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
       canCancel: this.orderService.canCancel(order),
     })
   }
@@ -71,7 +71,7 @@ export default class OrderController {
     const order = await this.orderService.getOrderByNumber(orderNumber, user)
 
     return inertia.render('customer/order/receipt', {
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
     })
   }
 

@@ -6,7 +6,8 @@ import { PaymentMethod } from '#enums/transaction_enum'
 import Order from '#models/order'
 import OrderAction from '#models/order_action'
 import Service from '#models/service'
-import type User from '#models/user'
+import User from '#models/user'
+import { Role } from '#enums/role_enum'
 import type { OfflineOrderData, OrderData } from '#validators/order_validator'
 import { Filters, OrderFilters } from '#validators/shared'
 import { inject } from '@adonisjs/core'
@@ -17,6 +18,7 @@ import { errors as vineErrors } from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import TaskService from '#services/task_service'
 import TransactionService from '#services/transaction_service'
+import BroadcastService from '#services/broadcast_service'
 
 /**
  * Maximum number of pickups that may be scheduled for a single day,
@@ -49,7 +51,8 @@ function isDuplicateOrderNumber(error: unknown): boolean {
 export default class OrderService {
   constructor(
     private taskService: TaskService,
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private broadcastService: BroadcastService
   ) {}
 
   /**
@@ -187,7 +190,7 @@ export default class OrderService {
       ])
     }
 
-    return this.createWithUniqueOrderNumber((orderNumber) =>
+    const order = await this.createWithUniqueOrderNumber((orderNumber) =>
       Order.create({
         userId: user.id,
         customerName: address.name,
@@ -200,27 +203,57 @@ export default class OrderService {
         status: OrderStatus.PICKUP_SCHEDULED,
       })
     )
+
+    this.broadcastService.orderCreated(order)
+
+    return order
   }
 
   /**
-   * Creates an offline order.
+   * Creates an order recorded at the counter.
    *
-   * Unlike online orders, shoe details and selected services
-   * are already known, allowing the order to skip pickup,
-   * inspection, and payment waiting stages. Payment is collected
-   * immediately: cash and debit are marked paid on the spot, while
-   * QRIS starts a Midtrans payment for the customer to scan.
+   * Unlike a booked order, the shoes are already in the shop and the services
+   * are already chosen, so there is no pickup to drive and no inspection to
+   * schedule — the order starts in cleaning. Payment is taken on the spot:
+   * cash and debit are marked paid immediately, while QRIS opens a Midtrans
+   * charge for the customer to scan before they leave.
+   *
+   * Two things vary. The customer may already have an account, in which case
+   * the order is bound to it and shows up in their own history rather than
+   * being a stranger's row with the same phone number on it. And they may want
+   * the shoes delivered back rather than collecting them, which needs an
+   * address, which is why it needs the account.
    */
   async createOfflineOrder(staff: User, data: OfflineOrderData): Promise<Order> {
+    const { customer, address } = await this.resolveWalkInCustomer(data)
+
+    /**
+     * Checked before anything is written. The total is only knowable once the
+     * lines are priced, so this prices them without persisting — a payload
+     * that does not cover the bill then leaves no photo on disk and no half-
+     * built order behind it.
+     */
+    if (data.paymentMethod === PaymentMethod.CASH) {
+      this.assertCashCoversTotal(data.cashReceived, await this.taskService.priceItems(data.items))
+    }
+
+    /**
+     * A counter order never goes through inspection, so this is the only
+     * record of what condition the shoes arrived in — which is the record any
+     * later disagreement turns on.
+     */
+    const photoPath = await this.taskService.storePhoto('offline', data.photo)
+
     const createdOrder = await this.createWithUniqueOrderNumber((orderNumber) =>
       db.transaction(async (trx) => {
         const order = await Order.create(
           {
-            userId: null,
+            userId: customer?.id ?? null,
+            addressId: address?.id ?? null,
             customerName: data.name,
             customerPhone: data.phone,
             orderNumber,
-            type: OrderType.OFFLINE,
+            type: address ? OrderType.WALK_IN_DELIVERY : OrderType.OFFLINE,
             status: OrderStatus.IN_CLEANING,
             totalPrice: null,
           },
@@ -236,7 +269,7 @@ export default class OrderService {
             orderId: order.id,
             staffId: staff.id,
             name: ActionName.OFFLINE_ORDER,
-            photoPath: null,
+            photoPath,
             note: data.note ?? null,
           },
           { client: trx }
@@ -249,10 +282,119 @@ export default class OrderService {
     if (data.paymentMethod === PaymentMethod.QRIS) {
       await this.transactionService.createQrisTransaction(createdOrder)
     } else {
-      await this.transactionService.createManualTransaction(createdOrder, data.paymentMethod)
+      await this.transactionService.createManualTransaction(
+        createdOrder,
+        data.paymentMethod,
+        data.paymentMethod === PaymentMethod.CASH ? (data.cashReceived ?? null) : null
+      )
     }
 
+    this.broadcastService.orderCreated(createdOrder)
+
     return this.getOrderByNumber(createdOrder.orderNumber)
+  }
+
+  /**
+   * Works out which account, if any, a counter order belongs to, and where it
+   * should be delivered if the customer asked for that.
+   *
+   * Delivery is only offered to customers who already have an account with a
+   * live address, because those are the only two things that make a delivery
+   * possible. Staff typing a street into the order form would produce an
+   * address nobody has pinned on a map and no route can be planned from.
+   */
+  private async resolveWalkInCustomer(
+    data: OfflineOrderData
+  ): Promise<{ customer: User | null; address: Address | null }> {
+    if (!data.customerId) {
+      if (data.delivery) {
+        throw new vineErrors.E_VALIDATION_ERROR([
+          {
+            field: 'delivery',
+            message: 'Pengantaran hanya tersedia untuk pelanggan yang sudah terdaftar.',
+          },
+        ])
+      }
+
+      return { customer: null, address: null }
+    }
+
+    const customer = await User.query()
+      .where('id', data.customerId)
+      .where('role', Role.CUSTOMER)
+      .first()
+
+    if (!customer) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'customerId',
+          message: 'Akun pelanggan tidak ditemukan.',
+        },
+      ])
+    }
+
+    if (!data.delivery) {
+      return { customer, address: null }
+    }
+
+    const address = await Address.query()
+      .where('user_id', customer.id)
+      .where('is_active', true)
+      .first()
+
+    if (!address) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'delivery',
+          message: 'Pelanggan ini belum memiliki alamat aktif untuk pengantaran.',
+        },
+      ])
+    }
+
+    return { customer, address }
+  }
+
+  /**
+   * Refuses a cash payment that does not cover the bill.
+   *
+   * The counter form works out the change as staff type, so this should never
+   * fire from the interface — it is here because a payload that says the
+   * customer handed over less than the total would otherwise be recorded as a
+   * settled order with a negative amount of change owed.
+   */
+  private assertCashCoversTotal(cashReceived: number | undefined, totalPrice: number): void {
+    if (cashReceived === undefined || cashReceived < totalPrice) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'cashReceived',
+          message: 'Uang yang diterima kurang dari total pesanan.',
+        },
+      ])
+    }
+  }
+
+  /**
+   * Finds registered customers by name or phone number, so staff serving a
+   * walk-in can pick the account instead of typing the person in again.
+   *
+   * Capped hard and never returned for an empty search: this reads the whole
+   * customer list, and a lookup box is not a place to browse it from.
+   */
+  async searchCustomers(term: string): Promise<User[]> {
+    const search = term.trim()
+
+    if (search.length < 3) {
+      return []
+    }
+
+    return User.query()
+      .where('role', Role.CUSTOMER)
+      .where('is_active', true)
+      .where((matches) => {
+        matches.whereILike('name', `%${search}%`).orWhereILike('phone', `%${search}%`)
+      })
+      .orderBy('name', 'asc')
+      .limit(10)
   }
 
   /**
@@ -292,6 +434,8 @@ export default class OrderService {
     }
 
     await order.merge({ status: OrderStatus.CANCELLED }).save()
+
+    this.broadcastService.orderUpdated(order)
 
     return this.getOrderByNumber(order.orderNumber, user)
   }

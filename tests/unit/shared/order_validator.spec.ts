@@ -50,13 +50,72 @@ test.group('item validator', () => {
   })
 })
 
+/**
+ * A stand-in for the uploaded intake photo.
+ *
+ * `vine.file()` only asks that the value be a bodyparser multipart file and
+ * then delegates to the file's own `validate()`. A unit test of the payload's
+ * other rules has no upload to hand and no interest in one, so this is the
+ * smallest thing that satisfies the rule — the real upload path is covered in
+ * the functional suite.
+ */
+const uploadedPhoto = {
+  isMultipartFile: true as const,
+  extname: 'png',
+  errors: [] as { message: string; type: string }[],
+  isValid: true,
+  validate() {},
+}
+
 test.group('offlineOrderValidator', () => {
   const basePayload = {
     name: 'Budi',
     phone: '081387882973',
     totalItems: 1,
     items: [validItem],
+    photo: uploadedPhoto,
   }
+
+  /**
+   * `totalItems` is the form's own field: how many item forms the page should
+   * draw, stated before any of them is filled in. It is not `items.length`
+   * under another name, and the two legitimately differ while the form is
+   * being completed.
+   */
+  test("carries the form's own item count, separate from the items themselves", async ({
+    assert,
+  }) => {
+    const result = await offlineOrderValidator.validate({
+      ...basePayload,
+      totalItems: 3,
+      paymentMethod: 'cash',
+    })
+
+    assert.equal(result.totalItems, 3)
+    assert.lengthOf(result.items, 1)
+  })
+
+  test('accepts the cash tendered so the change can be worked out', async ({ assert }) => {
+    const result = await offlineOrderValidator.validate({
+      ...basePayload,
+      paymentMethod: 'cash',
+      cashReceived: 100000,
+    })
+
+    assert.equal(result.cashReceived, 100000)
+  })
+
+  test('accepts a delivery request bound to a registered customer', async ({ assert }) => {
+    const result = await offlineOrderValidator.validate({
+      ...basePayload,
+      paymentMethod: 'cash',
+      customerId: 7,
+      delivery: true,
+    })
+
+    assert.equal(result.customerId, 7)
+    assert.isTrue(result.delivery)
+  })
 
   test('accepts cash, debit, and qris as payment methods', async ({ assert }) => {
     for (const paymentMethod of ['cash', 'debit', 'qris']) {

@@ -60,11 +60,11 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
             <ServiceFields
               errors={errors}
               defaults={{
-                name: service.name,
+                serviceName: service.name,
                 description: service.description,
-                price: service.priceValue,
-                category: service.categoryValue,
-                type: service.typeValue,
+                price: service.price,
+                category: service.category,
+                type: service.type,
               }}
               categoryOptions={categoryOptions}
               typeOptions={typeOptions}

@@ -6,21 +6,22 @@ import RouteItemTransformer from '#transformers/route_item_transformer'
 import OrderTransformer from '#transformers/order_transformer'
 import { completeTaskValidator } from '#validators/order_validator'
 
-/**
- * Coordinates of the service center, used as the starting
- * point when building staff pickup and delivery routes.
- */
-const STORE_LATITUDE = -6.9555305
-const STORE_LONGITUDE = 107.6540353
-
 @inject()
 export default class TripController {
   constructor(protected taskService: TaskService) {}
 
   /**
-   * The staff home screen: one tabbed queue covering trips, inspections and
-   * cleaning. A staff member already holding a task is sent straight back to
-   * it, since they may only work one task at a time.
+   * The staff home screen: one tabbed queue covering trips, inspections,
+   * cleaning, and the shelf of washed walk-ins waiting to be collected. A
+   * staff member already holding a task is sent straight back to it, since
+   * they may only work one task at a time.
+   *
+   * The trip and inspection cards go out in the deliberately narrow queue
+   * shape — an order number, a badge, and for a trip how far away it is. This
+   * board is on the screen of everyone on shift whether or not they take the
+   * job, so it is not where customer names, numbers and front doors belong.
+   * Those arrive with the task once somebody claims it, at which point the
+   * claim is on the record under their name.
    */
   async index({ auth, response, inertia }: HttpContext) {
     const staff = auth.getUserOrFail()
@@ -40,14 +41,25 @@ export default class TripController {
       })
     }
 
-    const trips = await this.taskService.getTripQueue(STORE_LATITUDE, STORE_LONGITUDE)
-    const inspections = await this.taskService.getInspectionQueue()
-    const cleanings = await this.taskService.getCleaningQueue()
+    const [trips, inspections, cleanings, collections] = await Promise.all([
+      this.taskService.getTripQueue(),
+      this.taskService.getInspectionQueue(),
+      this.taskService.getCleaningQueue(),
+      this.taskService.getCollectionQueue(),
+    ])
 
     return inertia.render('staff/trip/index', {
       trips: RouteItemTransformer.transform(trips),
-      inspections: OrderTransformer.transform(inspections),
-      cleanings: OrderTransformer.transform(cleanings),
+      inspections: OrderTransformer.transform(inspections).useVariant('toQueue'),
+      /**
+       * The two counter queues carry more than a queue card usually would,
+       * and for reasons that are about the work rather than about the
+       * customer: the washer needs the inspection photo to compare against,
+       * and the person at the counter needs the phone number to tell somebody
+       * their shoes are ready.
+       */
+      cleanings: OrderTransformer.transform(cleanings).useVariant('toDetail'),
+      collections: OrderTransformer.transform(collections).useVariant('toDetail'),
     })
   }
 
@@ -59,7 +71,7 @@ export default class TripController {
 
     return inertia.render('staff/trip/show', {
       type,
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
       blocked: lock.staffId !== staff.id,
     })
   }

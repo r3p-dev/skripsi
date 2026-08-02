@@ -15,7 +15,7 @@ export default class TagController {
     const order = await this.orderService.getOrderByNumber(String(params.number))
 
     return inertia.render('staff/order/tag', {
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
     })
   }
 }

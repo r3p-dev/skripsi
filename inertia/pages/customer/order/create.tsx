@@ -11,6 +11,8 @@ import { Card, CardAction, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
+import { ServiceCategoryLabel, ServiceType } from '@/enums/service_enum'
+import { formatRupiah } from '@/lib/format'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconChevronRight, IconMapPin, IconPencil, IconTag } from '@tabler/icons-react'
 import { id } from 'date-fns/locale'
@@ -36,7 +38,21 @@ function toLocalDateString(date: Date) {
 
 export default function Create({ address, services }: PageProps) {
   const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
-  const today = useMemo(() => new Date(new Date().setHours(0, 0, 0, 0)), [])
+
+  /**
+   * The earliest day that can actually be collected.
+   *
+   * Not today: the van is already out on a route planned this morning, so a
+   * pickup booked for today is one nobody is coming to. The server refuses it
+   * either way — this is so the customer never gets as far as choosing it.
+   */
+  const earliestPickup = useMemo(() => {
+    const tomorrow = new Date()
+    tomorrow.setHours(0, 0, 0, 0)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    return tomorrow
+  }, [])
 
   const priceListByCategory = Object.groupBy(services, (service) => service.category)
 
@@ -47,7 +63,7 @@ export default function Create({ address, services }: PageProps) {
         <h1 className="text-3xl font-bold tracking-tight text-black">Buat Pesanan</h1>
       </div>
 
-      <div className="flex-1 px-6 pb-28">
+      <div className="flex-1 px-6 pb-nav">
         {!address ? (
           <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
             <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
@@ -113,7 +129,8 @@ export default function Create({ address, services }: PageProps) {
                   {Object.entries(priceListByCategory).map(([category, items]) => (
                     <AccordionItem key={category} value={category} className="border-gray-200">
                       <AccordionTrigger className="text-sm font-semibold text-black">
-                        {category}
+                        {ServiceCategoryLabel[category as keyof typeof ServiceCategoryLabel] ??
+                          category}
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="space-y-3">
@@ -126,12 +143,12 @@ export default function Create({ address, services }: PageProps) {
                                 </p>
                               </div>
                               <p className="shrink-0 text-sm font-semibold whitespace-nowrap text-black">
-                                {item.typeValue === 'start_from' && (
+                                {item.type === ServiceType.START_FROM && (
                                   <span className="mr-1 text-xs font-normal text-gray-500">
                                     mulai
                                   </span>
                                 )}
-                                {item.price}
+                                {formatRupiah(item.price)}
                               </p>
                             </div>
                           ))}
@@ -164,7 +181,7 @@ export default function Create({ address, services }: PageProps) {
                         locale={id}
                         selected={pickupDate}
                         onSelect={setPickupDate}
-                        disabled={{ before: today }}
+                        disabled={{ before: earliestPickup }}
                         className="[--cell-size:--spacing(10)]"
                       />
                     </div>

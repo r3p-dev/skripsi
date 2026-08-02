@@ -8,12 +8,14 @@ import { Head } from '@inertiajs/react'
 import { IconArrowLeft, IconCircleCheck, IconClock, IconRefresh } from '@tabler/icons-react'
 import { type PropsWithChildren, useEffect, useState } from 'react'
 import type { ComponentProps } from 'react'
+import { TransactionStatus, TransactionStatusLabel } from '@/enums/transaction_enum'
+import { formatRupiah } from '@/lib/format'
 
 type BackRoute = 'customer.order.show' | 'staff.trip.index'
 type RetryRoute = 'customer.transaction.store' | 'staff.transaction.store'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
+  order: Data.Order.Variants['toDetail']
   transaction: Data.Transaction
   backRoute: BackRoute
   retryRoute: RetryRoute
@@ -79,8 +81,8 @@ export default function Payment({
   retryRoute,
 }: PageProps) {
   const [transaction, setTransaction] = useState(initialTransaction)
-  const isPaid = transaction.status === 'Terbayar'
-  const isPending = transaction.status === 'Tertunda'
+  const isPaid = transaction.status === TransactionStatus.PAID
+  const isPending = transaction.status === TransactionStatus.PENDING
 
   useEffect(() => {
     if (!isPending) return
@@ -89,12 +91,20 @@ export default function Payment({
     const subscription = transmit.subscription(`orders/${order.orderNumber}`)
 
     subscription.create().then(() => {
+      /**
+       * The broadcast carries the stored status, the same value the page was
+       * rendered with, so it drops straight into state and every check above
+       * keeps working. A pre-translated label would have had to be matched
+       * against Indonesian prose to mean anything.
+       */
       subscription.onMessage<{
-        transactionStatusLabel: string
+        transactionStatus: string | null
       }>((message) => {
+        if (!message.transactionStatus) return
+
         setTransaction((current) => ({
           ...current,
-          status: message.transactionStatusLabel,
+          status: message.transactionStatus!,
         }))
       })
     })
@@ -106,7 +116,7 @@ export default function Payment({
   }, [isPending, order.orderNumber])
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{`Pembayaran ${order.orderNumber}`}</title>
         <meta name="description" content="Pembayaran pesanan UmimaClean Anda" />
@@ -116,7 +126,7 @@ export default function Payment({
         <BackLink
           backRoute={backRoute}
           orderNumber={order.orderNumber}
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </BackLink>
@@ -126,7 +136,7 @@ export default function Payment({
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 px-6 pb-10">
+      <div className="flex-1 space-y-4 px-6 pb-page">
         <div className="relative overflow-hidden rounded-2xl bg-black px-6 py-8 text-center text-white">
           <div
             className="absolute inset-0 opacity-5"
@@ -139,7 +149,9 @@ export default function Payment({
             <p className="text-xs tracking-[0.3em] text-white/70 uppercase font-medium">
               Total Tagihan
             </p>
-            <p className="text-3xl font-bold tracking-tight">{order.totalPrice ?? '-'}</p>
+            <p className="text-3xl font-bold tracking-tight">
+              {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+            </p>
           </div>
         </div>
 
@@ -199,7 +211,9 @@ export default function Payment({
           <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
             <div className="space-y-1">
               <p className="text-base font-semibold text-black">
-                {transaction.status ?? 'Pembayaran Gagal'}
+                {TransactionStatusLabel[
+                  transaction.status as keyof typeof TransactionStatusLabel
+                ] ?? 'Pembayaran Gagal'}
               </p>
               <p className="text-sm text-gray-600">
                 Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.

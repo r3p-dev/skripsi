@@ -1,25 +1,20 @@
-import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Transaction from '#models/transaction'
-import OrderTransformer from '#transformers/order_transformer'
-import { DateTime } from 'luxon'
-import {
-  type PaymentMethod,
-  PaymentMethodLabel,
-  type TransactionStatus,
-  TransactionStatusLabel,
-} from '#enums/transaction_enum'
+import { BaseTransformer } from '@adonisjs/core/transformers'
 
 export default class TransactionTransformer extends BaseTransformer<Transaction> {
   toObject() {
     return {
       ...this.pick(this.resource, ['id', 'midtransOrderId', 'midtransTransactionId', 'qrCode']),
 
-      paymentMethod: PaymentMethodLabel[this.resource.paymentMethod as PaymentMethod],
-      status: TransactionStatusLabel[this.resource.status as TransactionStatus],
-      statusValue: this.resource.status as TransactionStatus,
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
-
-      order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),
+      paymentMethod: this.resource.paymentMethod,
+      status: this.resource.status,
+      /**
+       * What the customer handed over at the counter, for the cash payments
+       * that have change to give back. Everything else settles for the exact
+       * amount and leaves this null.
+       */
+      cashReceived: this.resource.cashReceived === null ? null : Number(this.resource.cashReceived),
+      createdAt: this.resource.createdAt.toISO(),
     }
   }
 }

@@ -14,14 +14,14 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       <div className="relative">
         <Input
           type={showPassword ? 'text' : 'password'}
-          className={cn('hide-password-toggle pr-10', className)}
+          className={cn('hide-password-toggle pr-11', className)}
           ref={ref}
           {...props}
         />
         <Button
           type="button"
           variant="ghost"
-          className="absolute right-0 top-0 h-full hover:bg-transparent"
+          className="absolute right-0 top-0 h-full w-11 hover:bg-transparent"
           onClick={() => setShowPassword((prev) => !prev)}
         >
           {showPassword ? (

@@ -67,11 +67,7 @@ test.group('Admin Order Monitor', (group) => {
     await OrderFactory.merge({ customerName: 'Budi Santoso' }).create()
 
     for (const search of [order.orderNumber, 'Siti', '081310003999']) {
-      const response = await client
-        .get('/admin/orders')
-        .qs({ search })
-        .withInertia()
-        .loginAs(admin)
+      const response = await client.get('/admin/orders').qs({ search }).withInertia().loginAs(admin)
 
       assert.lengthOf(response.inertiaProps.orders.data, 1)
       assert.equal(response.inertiaProps.orders.data[0].orderNumber, order.orderNumber)
@@ -158,9 +154,14 @@ test.group('Admin Order Monitor', (group) => {
 
     response.assertInertiaComponent('admin/order/show')
     assert.equal(response.inertiaProps.order.orderNumber, order.orderNumber)
-    assert.equal(response.inertiaProps.items[0].item.brand, 'Nike')
-    assert.equal(response.inertiaProps.items[0].service.name, 'Cuci Sepatu Reguler')
-    assert.equal(response.inertiaProps.actions[0].staff.name, staff.name)
+    /**
+     * The lines and the audit trail arrive nested inside the order, at the
+     * depth the transformer asks for, rather than as sibling props the
+     * controller assembled by hand.
+     */
+    assert.equal(response.inertiaProps.order.items[0].item.brand, 'Nike')
+    assert.equal(response.inertiaProps.order.items[0].service.name, 'Cuci Sepatu Reguler')
+    assert.equal(response.inertiaProps.order.actions[0].staff.name, staff.name)
   })
 
   test('an unknown order number is a 404', async ({ client }) => {

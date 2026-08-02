@@ -28,6 +28,8 @@ import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconPencil, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react'
+import { ServiceCategoryLabel, ServiceTypeLabel } from '@/enums/service_enum'
+import { formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
   services: { data: Data.Service[]; metadata: Metadata }
@@ -99,10 +101,20 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                       <p className="text-xs text-gray-500">{service.description}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-gray-200 text-gray-700">{service.category}</Badge>
+                      <Badge className="bg-gray-200 text-gray-700">
+                        {
+                          ServiceCategoryLabel[
+                            service.category as keyof typeof ServiceCategoryLabel
+                          ]
+                        }
+                      </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">{service.type}</TableCell>
-                    <TableCell className="text-right font-semibold">{service.price}</TableCell>
+                    <TableCell className="text-gray-600">
+                      {ServiceTypeLabel[service.type as keyof typeof ServiceTypeLabel]}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {formatRupiah(service.price)}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Link

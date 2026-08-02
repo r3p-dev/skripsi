@@ -26,14 +26,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { transactionStatusStyles } from '@/lib/constants'
+import { neutralBadgeStyle, transactionStatusStyles } from '@/lib/constants'
+import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
+import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconAlertTriangle, IconSearch } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
-  orders: { data: Data.Order[]; metadata: Metadata }
+  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
   filters: Filters
   paymentMethodOptions: { value: string; label: string }[]
 }>
@@ -116,26 +118,37 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                         <p className="text-black">{order.customerName}</p>
                         <p className="text-xs text-gray-500">{order.customerPhone}</p>
                       </TableCell>
-                      <TableCell className="text-gray-600">{order.createdAt}</TableCell>
+                      <TableCell className="text-gray-600">
+                        {formatShortDate(order.createdAt)}
+                      </TableCell>
                       <TableCell>
                         {latest ? (
                           <div className="flex flex-col gap-1">
                             <Badge
                               className={
-                                transactionStatusStyles[latest.statusValue] ??
-                                'bg-gray-200 text-gray-700'
+                                transactionStatusStyles[latest.status] ?? neutralBadgeStyle
                               }
                             >
-                              {latest.status}
+                              {
+                                TransactionStatusLabel[
+                                  latest.status as keyof typeof TransactionStatusLabel
+                                ]
+                              }
                             </Badge>
-                            <span className="text-xs text-gray-500">{latest.paymentMethod}</span>
+                            <span className="text-xs text-gray-500">
+                              {
+                                PaymentMethodLabel[
+                                  latest.paymentMethod as keyof typeof PaymentMethodLabel
+                                ]
+                              }
+                            </span>
                           </div>
                         ) : (
                           <span className="text-xs text-gray-500">Belum pernah ditagih</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        {order.totalPrice ?? '-'}
+                        {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
                       </TableCell>
                       <TableCell className="text-right">
                         <AlertDialog>

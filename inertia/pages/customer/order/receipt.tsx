@@ -5,14 +5,16 @@ import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
 import { IconArrowLeft, IconPrinter } from '@tabler/icons-react'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { formatDate, formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
+  order: Data.Order.Variants['toDetail']
 }>
 
 export default function Receipt({ order }: PageProps) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{`Struk ${order.orderNumber}`}</title>
         <meta name="description" content="Struk pesanan UmimaClean Anda" />
@@ -22,7 +24,7 @@ export default function Receipt({ order }: PageProps) {
         <Link
           route="customer.order.show"
           routeParams={{ number: order.orderNumber }}
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -32,7 +34,7 @@ export default function Receipt({ order }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 px-6 pb-10">
+      <div className="flex-1 px-6 pb-page">
         <Card className="gap-0 rounded-2xl border border-gray-200 p-0">
           <div className="relative bg-black px-6 py-8 text-center text-white">
             <div
@@ -58,15 +60,17 @@ export default function Receipt({ order }: PageProps) {
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Status</span>
-                <span className="font-semibold text-black">{order.status}</span>
+                <span className="font-semibold text-black">
+                  {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Tanggal Pemesanan</span>
-                <span className="font-semibold text-black">{order.createdAt}</span>
+                <span className="font-semibold text-black">{formatDate(order.createdAt)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Tanggal Penjemputan</span>
-                <span className="font-semibold text-black">{order.pickupDate ?? '-'}</span>
+                <span className="font-semibold text-black">{formatDate(order.pickupDate)}</span>
               </div>
             </div>
           </div>
@@ -85,7 +89,7 @@ export default function Receipt({ order }: PageProps) {
               Total
             </span>
             <span className="text-xl font-bold tracking-tight text-black">
-              {order.totalPrice ?? 'Belum ada tagihan'}
+              {order.totalPrice === null ? 'Belum ada tagihan' : formatRupiah(order.totalPrice)}
             </span>
           </div>
         </Card>

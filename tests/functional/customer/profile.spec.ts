@@ -182,7 +182,11 @@ test.group('Customer Phone Change', (group) => {
     const verificationUrl = signedUrlFor(
       'customer.phone.update',
       {},
-      { qs: { phone: '081211118007' }, expiresIn: '15m', prefixUrl: appUrl }
+      {
+        qs: { phone: '081211118007', userId: customer.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
     )
 
     const response = await client.get(verificationUrl).withInertia().loginAs(customer)
@@ -196,13 +200,84 @@ test.group('Customer Phone Change', (group) => {
     assert.equal(customer.phone, '081211118007')
   })
 
+  /**
+   * The signature proves the link is ours and unedited; it says nothing about
+   * who is holding it. Without the account id signed in alongside the number,
+   * a link sent to one person and opened on a shared machine would move
+   * whichever account happened to be signed in.
+   */
+  test('a link signed for someone else changes nothing', async ({ client, assert }) => {
+    const owner = await UserFactory.merge({ phone: '081211118020' }).create()
+    const bystander = await UserFactory.merge({ phone: '081211118021' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118022', userId: owner.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client.get(verificationUrl).withInertia().loginAs(bystander)
+
+    response.assertInertiaComponent('errors/invalid_signature')
+
+    await bystander.refresh()
+    assert.equal(bystander.phone, '081211118021')
+  })
+
+  /**
+   * Fifteen minutes pass between asking for the link and opening it, and
+   * somebody else can register that number in the meantime. Without this the
+   * unique index answers with a 500 and a customer who did everything right
+   * is looking at a crash page.
+   */
+  test('a number claimed while the link was in flight is refused politely', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.merge({ phone: '081211118030' }).create()
+    await UserFactory.merge({ phone: '081211118031' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118031', userId: customer.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client
+      .get(verificationUrl)
+      .withInertia()
+      .header('referer', '/profile')
+      .loginAs(customer)
+
+    response.assertInertiaPropsContains({
+      errors: {
+        phone: 'Nomor telepon tersebut sudah digunakan akun lain. Silakan ajukan ulang.',
+      },
+    })
+
+    await customer.refresh()
+    assert.equal(customer.phone, '081211118030')
+  })
+
   test('a phone verification link stops working once it expires', async ({ client, assert }) => {
     const customer = await UserFactory.merge({ phone: '081211118008' }).create()
 
     const verificationUrl = signedUrlFor(
       'customer.phone.update',
       {},
-      { qs: { phone: '081211118009' }, expiresIn: '-1m', prefixUrl: appUrl }
+      {
+        qs: { phone: '081211118009', userId: customer.id },
+        expiresIn: '-1m',
+        prefixUrl: appUrl,
+      }
     )
 
     const response = await client.get(verificationUrl).withInertia().loginAs(customer)

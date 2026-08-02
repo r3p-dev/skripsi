@@ -1,4 +1,5 @@
 import { UserFactory } from '#database/factories/user_factory'
+import { OrderStatus } from '#enums/order_status_enum'
 import { OrderFactory } from '#database/factories/order_factory'
 import { AddressFactory } from '#database/factories/address_factory'
 import Order from '#models/order'
@@ -36,6 +37,103 @@ test.group('Staff Trip Queue', (group) => {
       (item: { orderNumber: string }) => item.orderNumber
     )
     assert.includeMembers(orderNumbers, [pickupOrder.orderNumber, deliveryOrder.orderNumber])
+  })
+
+  /**
+   * The whole reason claiming a task exists. The board is on the screen of
+   * everyone on shift whether or not they take the job, so it carries an order
+   * number, a badge and a distance and nothing else — a customer's name, phone
+   * number and front door are not a browsing list. They arrive with the task
+   * once somebody claims it, at which point the claim is on the record under
+   * their name.
+   */
+  test('the queue does not publish customer details to everyone on shift', async ({
+    client,
+    assert,
+  }) => {
+    const staff = await UserFactory.apply('staff').merge({ phone: '081200000050' }).create()
+    const customer = await UserFactory.merge({ phone: '081200000051' }).create()
+    const address = await AddressFactory.merge({
+      userId: customer.id,
+      isActive: true,
+      name: 'Rahasia Pelanggan',
+      street: 'Jalan Rahasia 42',
+    }).create()
+
+    await OrderFactory.merge({
+      userId: customer.id,
+      addressId: address.id,
+      pickupDate: DateTime.now(),
+    }).create()
+
+    const response = await client.get('/staff/trips').withInertia().loginAs(staff)
+
+    const [stop] = response.inertiaProps.trips
+
+    assert.deepEqual(Object.keys(stop).sort(), [
+      'distanceKm',
+      'id',
+      'orderNumber',
+      'pickupDate',
+      'status',
+      'type',
+    ])
+    assert.notInclude(JSON.stringify(response.inertiaProps.trips), 'Rahasia Pelanggan')
+    assert.notInclude(JSON.stringify(response.inertiaProps.trips), 'Jalan Rahasia 42')
+  })
+
+  /**
+   * A staff member who claims a stop and then loses signal, goes home, or
+   * simply forgets would otherwise keep that order out of everyone else's
+   * queue forever, and the only way back would be an admin editing rows.
+   */
+  test('a claim that has run out puts the stop back in the queue', async ({ client, assert }) => {
+    const holder = await UserFactory.apply('staff').merge({ phone: '081200000060' }).create()
+    const other = await UserFactory.apply('staff').merge({ phone: '081200000061' }).create()
+    const customer = await UserFactory.merge({ phone: '081200000062' }).create()
+    const address = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+
+    const lapsed = await OrderFactory.merge({
+      userId: customer.id,
+      addressId: address.id,
+      pickupDate: DateTime.now(),
+      lockedById: holder.id,
+      lockedTask: 'pickup',
+      lockedUntil: DateTime.now().minus({ minutes: 1 }),
+    }).create()
+
+    const response = await client.get('/staff/trips').withInertia().loginAs(other)
+
+    const orderNumbers = response.inertiaProps.trips.map(
+      (item: { orderNumber: string }) => item.orderNumber
+    )
+    assert.include(orderNumbers, lapsed.orderNumber)
+  })
+
+  test('a claim that is still running keeps the stop out of the queue', async ({
+    client,
+    assert,
+  }) => {
+    const holder = await UserFactory.apply('staff').merge({ phone: '081200000070' }).create()
+    const other = await UserFactory.apply('staff').merge({ phone: '081200000071' }).create()
+    const customer = await UserFactory.merge({ phone: '081200000072' }).create()
+    const address = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+
+    const held = await OrderFactory.merge({
+      userId: customer.id,
+      addressId: address.id,
+      pickupDate: DateTime.now(),
+      lockedById: holder.id,
+      lockedTask: 'pickup',
+      lockedUntil: DateTime.now().plus({ hours: 2 }),
+    }).create()
+
+    const response = await client.get('/staff/trips').withInertia().loginAs(other)
+
+    const orderNumbers = response.inertiaProps.trips.map(
+      (item: { orderNumber: string }) => item.orderNumber
+    )
+    assert.notInclude(orderNumbers, held.orderNumber)
   })
 
   test('GET /staff/trips mixes overdue orders into the same queue', async ({ client, assert }) => {
@@ -172,7 +270,12 @@ test.group('Staff Cleaning', (group) => {
     assert.isNotNull(action.photoPath)
   })
 
-  test('marking cleaning done completes a walk-in order with no address', async ({
+  /**
+   * A walk-in has nowhere to be delivered to, so washing it does not finish
+   * it — it puts it on the shelf. The order is not done until somebody
+   * actually walks out with it, which is a separate step at the counter.
+   */
+  test('marking cleaning done leaves a walk-in order waiting to be collected', async ({
     client,
     assert,
   }) => {
@@ -189,7 +292,27 @@ test.group('Staff Cleaning', (group) => {
       .withCsrfToken()
 
     await order.refresh()
-    assert.equal(order.status, 'completed')
+    assert.equal(order.status, OrderStatus.CLEANING_DONE)
+  })
+
+  test('a collected walk-in order is finished at the counter', async ({ client, assert }) => {
+    const staff = await UserFactory.apply('staff').merge({ phone: '081200000031' }).create()
+
+    const order = await OrderFactory.merge({
+      userId: null,
+      addressId: null,
+      status: OrderStatus.CLEANING_DONE,
+    }).create()
+
+    const response = await client
+      .put(`/staff/collections/${order.orderNumber}`)
+      .loginAs(staff)
+      .withCsrfToken()
+
+    response.assertRedirectsTo('/staff/trips')
+
+    await order.refresh()
+    assert.equal(order.status, OrderStatus.COMPLETED)
   })
 
   test('a batch cannot be marked washed without an after photo', async ({ client, assert }) => {

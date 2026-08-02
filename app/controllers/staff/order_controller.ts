@@ -3,7 +3,7 @@ import { inject } from '@adonisjs/core'
 import { PaymentMethod } from '#enums/transaction_enum'
 import OrderService from '#services/order_service'
 import TaskService from '#services/task_service'
-import OrderItemTransformer from '#transformers/order_item_transformer'
+import TransactionService from '#services/transaction_service'
 import OrderTransformer from '#transformers/order_transformer'
 import ServiceTransformer from '#transformers/service_transformer'
 import { offlineOrderValidator, orderItemsValidator } from '#validators/order_validator'
@@ -12,7 +12,8 @@ import { offlineOrderValidator, orderItemsValidator } from '#validators/order_va
 export default class OrderController {
   constructor(
     protected orderService: OrderService,
-    protected taskService: TaskService
+    protected taskService: TaskService,
+    protected transactionService: TransactionService
   ) {}
 
   async create({ inertia }: HttpContext) {
@@ -33,8 +34,35 @@ export default class OrderController {
       return response.redirect().toRoute('staff.transaction.show', { number: order.orderNumber })
     }
 
-    session.flash('success', 'Pesanan offline berhasil dibuat.')
-    return response.redirect().toRoute('staff.trip.index')
+    /**
+     * Cash and card are settled the moment the order is written up, so staff
+     * go straight to the receipt: it carries the change owed, and it is the
+     * slip that gets stapled to the shoes.
+     */
+    session.flash('success', 'Pesanan berhasil dibuat.')
+    return response.redirect().toRoute('staff.order.receipt', { number: order.orderNumber })
+  }
+
+  /**
+   * The counter receipt, printed twice on one sheet.
+   *
+   * One copy goes home with the customer and one is attached to the shoes, so
+   * the batch on the rack can be matched to the person who is coming back for
+   * it without anyone having to look it up. Printing the page twice would work
+   * too, and would also mean two trips to the printer during a queue.
+   */
+  async receipt({ params, inertia }: HttpContext) {
+    const order = await this.orderService.getOrderByNumber(String(params.number))
+    const transaction = await this.transactionService.getLatestTransaction(order)
+
+    return inertia.render('staff/order/receipt', {
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
+      /**
+       * Worked out on the server so the receipt, the confirmation on screen
+       * and any later look at the order all quote the same figure.
+       */
+      change: transaction ? this.transactionService.changeFor(order, transaction) : 0,
+    })
   }
 
   /**
@@ -47,13 +75,11 @@ export default class OrderController {
     const services = await this.orderService.getAvailableServices()
 
     return inertia.render('staff/order/edit', {
-      order: OrderTransformer.transform(order),
       /**
-       * The lines are sent on their own, two levels deep: the form fills itself
-       * from each line's item and the service picked for it, and a transformer
-       * nested inside another one stops at a single level by default.
+       * The order arrives with its lines already two levels deep, so the form
+       * can fill itself from each line's item and the service picked for it.
        */
-      items: OrderItemTransformer.transform(order.items).depth(2),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
       services: ServiceTransformer.transform(services),
     })
   }

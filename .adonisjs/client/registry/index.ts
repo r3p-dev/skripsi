@@ -264,6 +264,18 @@ const routes = {
     tokens: [{"old":"/staff/cleanings/:number","type":0,"val":"staff","end":""},{"old":"/staff/cleanings/:number","type":0,"val":"cleanings","end":""},{"old":"/staff/cleanings/:number","type":1,"val":"number","end":""}],
     types: placeholder as Registry['staff.cleaning.update']['types'],
   },
+  'staff.collection.update': {
+    methods: ["PUT"],
+    pattern: '/staff/collections/:number',
+    tokens: [{"old":"/staff/collections/:number","type":0,"val":"staff","end":""},{"old":"/staff/collections/:number","type":0,"val":"collections","end":""},{"old":"/staff/collections/:number","type":1,"val":"number","end":""}],
+    types: placeholder as Registry['staff.collection.update']['types'],
+  },
+  'staff.customer.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/staff/customers',
+    tokens: [{"old":"/staff/customers","type":0,"val":"staff","end":""},{"old":"/staff/customers","type":0,"val":"customers","end":""}],
+    types: placeholder as Registry['staff.customer.index']['types'],
+  },
   'staff.order.create': {
     methods: ["GET","HEAD"],
     pattern: '/staff/orders/create',
@@ -293,6 +305,18 @@ const routes = {
     pattern: '/staff/orders/:number/tag',
     tokens: [{"old":"/staff/orders/:number/tag","type":0,"val":"staff","end":""},{"old":"/staff/orders/:number/tag","type":0,"val":"orders","end":""},{"old":"/staff/orders/:number/tag","type":1,"val":"number","end":""},{"old":"/staff/orders/:number/tag","type":0,"val":"tag","end":""}],
     types: placeholder as Registry['staff.tag.show']['types'],
+  },
+  'staff.order.receipt': {
+    methods: ["GET","HEAD"],
+    pattern: '/staff/orders/:number/receipt',
+    tokens: [{"old":"/staff/orders/:number/receipt","type":0,"val":"staff","end":""},{"old":"/staff/orders/:number/receipt","type":0,"val":"orders","end":""},{"old":"/staff/orders/:number/receipt","type":1,"val":"number","end":""},{"old":"/staff/orders/:number/receipt","type":0,"val":"receipt","end":""}],
+    types: placeholder as Registry['staff.order.receipt']['types'],
+  },
+  'staff.notification.store': {
+    methods: ["POST"],
+    pattern: '/staff/orders/:number/notifications',
+    tokens: [{"old":"/staff/orders/:number/notifications","type":0,"val":"staff","end":""},{"old":"/staff/orders/:number/notifications","type":0,"val":"orders","end":""},{"old":"/staff/orders/:number/notifications","type":1,"val":"number","end":""},{"old":"/staff/orders/:number/notifications","type":0,"val":"notifications","end":""}],
+    types: placeholder as Registry['staff.notification.store']['types'],
   },
   'staff.transaction.store': {
     methods: ["POST"],
@@ -336,11 +360,35 @@ const routes = {
     tokens: [{"old":"/admin/dashboard","type":0,"val":"admin","end":""},{"old":"/admin/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['admin.dashboard.index']['types'],
   },
+  'admin.dashboard.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/dashboard/export',
+    tokens: [{"old":"/admin/dashboard/export","type":0,"val":"admin","end":""},{"old":"/admin/dashboard/export","type":0,"val":"dashboard","end":""},{"old":"/admin/dashboard/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.dashboard.export']['types'],
+  },
+  'admin.signup.create': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/signup',
+    tokens: [{"old":"/admin/signup","type":0,"val":"admin","end":""},{"old":"/admin/signup","type":0,"val":"signup","end":""}],
+    types: placeholder as Registry['admin.signup.create']['types'],
+  },
+  'admin.signup.store': {
+    methods: ["POST"],
+    pattern: '/admin/signup',
+    tokens: [{"old":"/admin/signup","type":0,"val":"admin","end":""},{"old":"/admin/signup","type":0,"val":"signup","end":""}],
+    types: placeholder as Registry['admin.signup.store']['types'],
+  },
   'admin.order.index': {
     methods: ["GET","HEAD"],
     pattern: '/admin/orders',
     tokens: [{"old":"/admin/orders","type":0,"val":"admin","end":""},{"old":"/admin/orders","type":0,"val":"orders","end":""}],
     types: placeholder as Registry['admin.order.index']['types'],
+  },
+  'admin.order.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/orders/export',
+    tokens: [{"old":"/admin/orders/export","type":0,"val":"admin","end":""},{"old":"/admin/orders/export","type":0,"val":"orders","end":""},{"old":"/admin/orders/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.order.export']['types'],
   },
   'admin.order.show': {
     methods: ["GET","HEAD"],
@@ -353,6 +401,12 @@ const routes = {
     pattern: '/admin/services',
     tokens: [{"old":"/admin/services","type":0,"val":"admin","end":""},{"old":"/admin/services","type":0,"val":"services","end":""}],
     types: placeholder as Registry['admin.service.index']['types'],
+  },
+  'admin.service.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/services/export',
+    tokens: [{"old":"/admin/services/export","type":0,"val":"admin","end":""},{"old":"/admin/services/export","type":0,"val":"services","end":""},{"old":"/admin/services/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.service.export']['types'],
   },
   'admin.service.create': {
     methods: ["GET","HEAD"],
@@ -390,6 +444,12 @@ const routes = {
     tokens: [{"old":"/admin/users","type":0,"val":"admin","end":""},{"old":"/admin/users","type":0,"val":"users","end":""}],
     types: placeholder as Registry['admin.user.index']['types'],
   },
+  'admin.user.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/users/export',
+    tokens: [{"old":"/admin/users/export","type":0,"val":"admin","end":""},{"old":"/admin/users/export","type":0,"val":"users","end":""},{"old":"/admin/users/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.user.export']['types'],
+  },
   'admin.user.create': {
     methods: ["GET","HEAD"],
     pattern: '/admin/users/create',
@@ -426,11 +486,23 @@ const routes = {
     tokens: [{"old":"/admin/reports","type":0,"val":"admin","end":""},{"old":"/admin/reports","type":0,"val":"reports","end":""}],
     types: placeholder as Registry['admin.report.index']['types'],
   },
+  'admin.report.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/reports/export',
+    tokens: [{"old":"/admin/reports/export","type":0,"val":"admin","end":""},{"old":"/admin/reports/export","type":0,"val":"reports","end":""},{"old":"/admin/reports/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.report.export']['types'],
+  },
   'admin.reconciliation.index': {
     methods: ["GET","HEAD"],
     pattern: '/admin/reconciliations',
     tokens: [{"old":"/admin/reconciliations","type":0,"val":"admin","end":""},{"old":"/admin/reconciliations","type":0,"val":"reconciliations","end":""}],
     types: placeholder as Registry['admin.reconciliation.index']['types'],
+  },
+  'admin.reconciliation.export': {
+    methods: ["GET","HEAD"],
+    pattern: '/admin/reconciliations/export',
+    tokens: [{"old":"/admin/reconciliations/export","type":0,"val":"admin","end":""},{"old":"/admin/reconciliations/export","type":0,"val":"reconciliations","end":""},{"old":"/admin/reconciliations/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['admin.reconciliation.export']['types'],
   },
   'admin.reconciliation.update': {
     methods: ["PUT"],

@@ -1,20 +1,33 @@
-import { BaseTransformer } from '@adonisjs/core/transformers'
 import type OrderAction from '#models/order_action'
-import { DateTime } from 'luxon'
+import { BaseTransformer } from '@adonisjs/core/transformers'
 import UserTransformer from '#transformers/user_transformer'
-import OrderTransformer from '#transformers/order_transformer'
-import { type ActionName, ActionNameLabel } from '#enums/order_action_enum'
 
 export default class OrderActionTransformer extends BaseTransformer<OrderAction> {
+  /**
+   * One entry in an order's audit trail.
+   *
+   * `name` is the stored action name rather than its Indonesian caption. The
+   * timeline matches on it to work out which photo is the "before" and which
+   * the "after", and that match has to survive somebody rewording the caption.
+   */
   toObject() {
     return {
       ...this.pick(this.resource, ['id', 'photoPath', 'note']),
 
-      name: ActionNameLabel[this.resource.name as ActionName],
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      name: this.resource.name,
+      createdAt: this.resource.createdAt.toISO(),
+    }
+  }
+
+  /**
+   * The entry together with the staff member it is attributed to, which is
+   * most of the point of keeping one.
+   */
+  toDetail() {
+    return {
+      ...this.toObject(),
 
       staff: UserTransformer.transform(this.whenLoaded(this.resource.staff)),
-      order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),
     }
   }
 }

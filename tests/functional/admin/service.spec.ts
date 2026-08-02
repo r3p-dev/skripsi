@@ -79,7 +79,7 @@ test.group('Admin Service Catalogue', (group) => {
       .post('/admin/services')
       .loginAs(admin)
       .json({
-        name: 'Deep Clean Sepatu',
+        serviceName: 'Deep Clean Sepatu',
         description: 'Pembersihan menyeluruh luar dan dalam',
         price: 35000,
         category: ServiceCategory.SHOE_WASH,
@@ -103,7 +103,7 @@ test.group('Admin Service Catalogue', (group) => {
       .loginAs(admin)
       .header('referer', '/admin/services/create')
       .json({
-        name: 'Gratis Saja',
+        serviceName: 'Gratis Saja',
         description: 'Tidak berbayar',
         price: 0,
         category: ServiceCategory.SHOE_WASH,
@@ -123,7 +123,7 @@ test.group('Admin Service Catalogue', (group) => {
       .put(`/admin/services/${service.id}`)
       .loginAs(admin)
       .json({
-        name: service.name,
+        serviceName: service.name,
         description: service.description,
         price: 45000,
         category: service.category,
@@ -150,7 +150,7 @@ test.group('Admin Service Catalogue', (group) => {
       .put(`/admin/services/${service.id}`)
       .loginAs(admin)
       .json({
-        name: service.name,
+        serviceName: service.name,
         description: service.description,
         price: 99000,
         category: service.category,
@@ -216,8 +216,8 @@ test.group('Admin Service Catalogue', (group) => {
       .loginAs(admin)
 
     response.assertInertiaComponent('admin/service/edit')
-    assert.strictEqual(response.inertiaProps.service.priceValue, 30000)
-    assert.equal(response.inertiaProps.service.categoryValue, ServiceCategory.SHOE_WASH)
+    assert.strictEqual(response.inertiaProps.service.price, 30000)
+    assert.equal(response.inertiaProps.service.category, ServiceCategory.SHOE_WASH)
     assert.isFalse(response.inertiaProps.isInUse)
   })
 

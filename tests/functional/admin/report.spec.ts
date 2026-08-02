@@ -4,11 +4,10 @@ import { ItemType, ServiceCategory, ServiceType } from '#enums/service_enum'
 import { OrderStatus } from '#enums/order_status_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
 import Item from '#models/item'
-import Order from '#models/order'
+import type Order from '#models/order'
 import OrderItem from '#models/order_item'
 import Service from '#models/service'
 import Transaction from '#models/transaction'
-import { formatRupiah } from '#utils/currency'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
@@ -37,16 +36,22 @@ test.group('Admin Report', (group) => {
   }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081340000001' }).create()
 
-    const paid = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 80000 }).create()
+    const paid = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 80000,
+    }).create()
     await payFor(paid)
 
-    const unpaid = await OrderFactory.merge({ status: OrderStatus.AWAITING_PAYMENT, totalPrice: 50000 }).create()
+    const unpaid = await OrderFactory.merge({
+      status: OrderStatus.AWAITING_PAYMENT,
+      totalPrice: 50000,
+    }).create()
     await payFor(unpaid, PaymentMethod.QRIS, TransactionStatus.PENDING)
 
     const response = await client.get('/admin/reports').withInertia().loginAs(admin)
 
     response.assertInertiaComponent('admin/report/index')
-    assert.equal(response.inertiaProps.report.totalRevenueValue, 80000)
+    assert.equal(response.inertiaProps.report.totalRevenue, 80000)
     assert.equal(response.inertiaProps.report.paidOrders, 1)
   })
 
@@ -67,7 +72,7 @@ test.group('Admin Report', (group) => {
     const response = await client.get('/admin/reports').withInertia().loginAs(admin)
 
     assert.equal(response.inertiaProps.report.paidOrders, 2)
-    assert.equal(response.inertiaProps.report.averageOrderValue, formatRupiah(50000))
+    assert.equal(response.inertiaProps.report.averageOrderValue, 50000)
   })
 
   test('an empty range reports zero rather than dividing by nothing', async ({
@@ -78,9 +83,9 @@ test.group('Admin Report', (group) => {
 
     const response = await client.get('/admin/reports').withInertia().loginAs(admin)
 
-    assert.equal(response.inertiaProps.report.totalRevenueValue, 0)
+    assert.equal(response.inertiaProps.report.totalRevenue, 0)
     assert.equal(response.inertiaProps.report.paidOrders, 0)
-    assert.equal(response.inertiaProps.report.averageOrderValue, formatRupiah(0))
+    assert.equal(response.inertiaProps.report.averageOrderValue, 0)
   })
 
   test('the payment mix names every method, including the unused ones', async ({
@@ -89,25 +94,34 @@ test.group('Admin Report', (group) => {
   }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081340002001' }).create()
 
-    const cash = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 30000 }).create()
+    const cash = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 30000,
+    }).create()
     await payFor(cash, PaymentMethod.CASH)
 
-    const qris = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 70000 }).create()
+    const qris = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 70000,
+    }).create()
     await payFor(qris, PaymentMethod.QRIS)
 
     const response = await client.get('/admin/reports').withInertia().loginAs(admin)
 
     const mix = response.inertiaProps.report.byPaymentMethod
     assert.lengthOf(mix, 3)
-    assert.equal(mix.find((row: { value: string }) => row.value === 'cash').revenueValue, 30000)
-    assert.equal(mix.find((row: { value: string }) => row.value === 'qris').revenueValue, 70000)
-    assert.equal(mix.find((row: { value: string }) => row.value === 'debit').revenueValue, 0)
+    assert.equal(mix.find((row: { value: string }) => row.value === 'cash').revenue, 30000)
+    assert.equal(mix.find((row: { value: string }) => row.value === 'qris').revenue, 70000)
+    assert.equal(mix.find((row: { value: string }) => row.value === 'debit').revenue, 0)
   })
 
   test('the type split separates walk-in revenue from app bookings', async ({ client, assert }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081340003001' }).create()
 
-    const online = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 40000 }).create()
+    const online = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 40000,
+    }).create()
     await payFor(online)
 
     const walkIn = await OrderFactory.apply('offline')
@@ -118,11 +132,8 @@ test.group('Admin Report', (group) => {
     const response = await client.get('/admin/reports').withInertia().loginAs(admin)
 
     const byType = response.inertiaProps.report.byType
-    assert.equal(byType.find((row: { value: string }) => row.value === 'online').revenueValue, 40000)
-    assert.equal(
-      byType.find((row: { value: string }) => row.value === 'offline').revenueValue,
-      25000
-    )
+    assert.equal(byType.find((row: { value: string }) => row.value === 'online').revenue, 40000)
+    assert.equal(byType.find((row: { value: string }) => row.value === 'offline').revenue, 25000)
   })
 
   /**
@@ -147,7 +158,10 @@ test.group('Admin Report', (group) => {
       price: 30000,
     })
 
-    const order = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 105000 }).create()
+    const order = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 105000,
+    }).create()
     await payFor(order)
 
     const item = await Item.create({
@@ -175,7 +189,7 @@ test.group('Admin Report', (group) => {
 
     const top = response.inertiaProps.report.topServices
     assert.equal(top[0].name, 'Deep Clean Premium')
-    assert.equal(top[0].revenueValue, 75000)
+    assert.equal(top[0].revenue, 75000)
     assert.equal(top[1].name, 'Cuci Sepatu Reguler')
   })
 
@@ -196,7 +210,10 @@ test.group('Admin Report', (group) => {
   test('orders outside the range are left out', async ({ client, assert }) => {
     const admin = await UserFactory.apply('admin').merge({ phone: '081340006001' }).create()
 
-    const order = await OrderFactory.merge({ status: OrderStatus.COMPLETED, totalPrice: 80000 }).create()
+    const order = await OrderFactory.merge({
+      status: OrderStatus.COMPLETED,
+      totalPrice: 80000,
+    }).create()
     await payFor(order)
 
     const lastMonth = DateTime.now().minus({ months: 2 })
@@ -207,7 +224,7 @@ test.group('Admin Report', (group) => {
       .withInertia()
       .loginAs(admin)
 
-    assert.equal(response.inertiaProps.report.totalRevenueValue, 0)
+    assert.equal(response.inertiaProps.report.totalRevenue, 0)
   })
 
   test('a report with no dates defaults to the last 30 days', async ({ client, assert }) => {

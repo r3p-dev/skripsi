@@ -27,7 +27,17 @@ import {
 import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconPencil, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react'
+import {
+  IconCircleOff,
+  IconPencil,
+  IconPlus,
+  IconSearch,
+  IconShieldLock,
+  IconTrash,
+} from '@tabler/icons-react'
+import { Role, RoleLabel } from '@/enums/role_enum'
+import { neutralBadgeStyle } from '@/lib/constants'
+import { formatShortDate } from '@/lib/format'
 
 type PageProps = InertiaProps<{
   users: { data: Data.User[]; metadata: Metadata }
@@ -39,9 +49,9 @@ type PageProps = InertiaProps<{
 }>
 
 const ROLE_STYLES: Record<string, string> = {
-  customer: 'bg-gray-200 text-gray-700',
-  staff: 'bg-blue-100 text-blue-700',
-  admin: 'bg-purple-100 text-purple-700',
+  [Role.CUSTOMER]: 'bg-gray-200 text-gray-700',
+  [Role.STAFF]: 'bg-blue-100 text-blue-700',
+  [Role.ADMIN]: 'bg-purple-100 text-purple-700',
 }
 
 export default function Index({
@@ -73,6 +83,20 @@ export default function Index({
         action={
           <div className="flex flex-wrap items-center gap-2">
             <ExportButton />
+            {/*
+              The dedicated sign-up form for the people who work here. Staff and
+              admin accounts have no public route into existence, so this is it.
+            */}
+            <Link
+              route="admin.signup.create"
+              className={buttonVariants({
+                variant: 'outline',
+                className: 'rounded-xl border-gray-300',
+              })}
+            >
+              <IconShieldLock className="size-4" />
+              Daftar Petugas
+            </Link>
             <Link
               route="admin.user.create"
               className={buttonVariants({
@@ -142,16 +166,32 @@ export default function Index({
               <TableBody>
                 {users.data.map((account) => (
                   <TableRow key={account.id}>
-                    <TableCell className="font-semibold text-black">{account.name}</TableCell>
+                    <TableCell className="font-semibold text-black">
+                      <span className={account.isActive ? '' : 'text-gray-400 line-through'}>
+                        {account.name}
+                      </span>
+                      {/*
+                        Somebody who has left keeps every collection and
+                        delivery they ever recorded, so their account is
+                        switched off rather than deleted — and the list has to
+                        say which of these people can still sign in.
+                      */}
+                      {!account.isActive && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+                          <IconCircleOff className="size-3" />
+                          Nonaktif
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-gray-600">{account.phone}</TableCell>
                     <TableCell>
-                      <Badge
-                        className={ROLE_STYLES[account.roleValue] ?? 'bg-gray-200 text-gray-700'}
-                      >
-                        {account.role}
+                      <Badge className={ROLE_STYLES[account.role] ?? neutralBadgeStyle}>
+                        {RoleLabel[account.role as keyof typeof RoleLabel]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">{account.createdAt}</TableCell>
+                    <TableCell className="text-gray-600">
+                      {formatShortDate(account.createdAt)}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Link

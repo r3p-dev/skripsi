@@ -37,14 +37,18 @@ function LocateButton({ onLocate }: { onLocate: () => void }) {
     <button
       type="button"
       onClick={onLocate}
+      aria-label="Gunakan lokasi saya"
       className="
         absolute
         bottom-4
         right-4
         z-1000
+        flex
+        size-11
+        items-center
+        justify-center
         rounded-md
         bg-white
-        p-2
         shadow-lg
         hover:bg-gray-100
       "

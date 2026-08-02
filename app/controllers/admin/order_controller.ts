@@ -19,8 +19,6 @@ import ExcelService, {
   type Column,
 } from '#services/excel_service'
 import OrderService from '#services/order_service'
-import OrderActionTransformer from '#transformers/order_action_transformer'
-import OrderItemTransformer from '#transformers/order_item_transformer'
 import OrderTransformer from '#transformers/order_transformer'
 import type { OrderFilters } from '#validators/shared'
 
@@ -112,7 +110,7 @@ export default class OrderController {
     const orders = await this.orderService.getMonitoredOrders(filters)
 
     return inertia.render('admin/order/index', {
-      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()),
+      orders: OrderTransformer.paginate(orders.all(), orders.getMeta()).useVariant('toListItem'),
       filters,
       statusOptions: STATUS_OPTIONS,
       typeOptions: TYPE_OPTIONS,
@@ -143,15 +141,13 @@ export default class OrderController {
     const order = await this.orderService.getOrderByNumber(orderNumber)
 
     return inertia.render('admin/order/show', {
-      order: OrderTransformer.transform(order),
       /**
-       * Sent alongside the order rather than nested inside it: the lines need
-       * their item and service, and the actions need the staff member who
-       * recorded them, and a transformer nested inside another one stops at a
-       * single level by default.
+       * One prop, nested as deeply as an order detail view needs. The lines
+       * carry their item and service and the actions carry the staff member
+       * who recorded them, and how far down that is lives in the transformer
+       * rather than being restated by every controller that wants an order.
        */
-      items: OrderItemTransformer.transform(order.items).depth(2),
-      actions: OrderActionTransformer.transform(order.actions).depth(2),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
     })
   }
 

@@ -17,7 +17,7 @@ export default function Show({ address }: PageProps) {
       <div className="flex items-center gap-3 px-6 py-5">
         <Link
           route="customer.profile.show"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -27,7 +27,7 @@ export default function Show({ address }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 px-6 pb-28">
+      <div className="flex-1 px-6 pb-nav">
         {address ? (
           <div className="space-y-4">
             <div className="overflow-hidden rounded-2xl border border-gray-200">

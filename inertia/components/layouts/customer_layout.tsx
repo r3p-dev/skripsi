@@ -40,7 +40,7 @@ export default function CustomerLayout({
   const { component } = usePage()
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -48,8 +48,8 @@ export default function CustomerLayout({
 
       {children}
 
-      <nav className="fixed inset-x-0 bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 z-50 border-t border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-around px-6 py-2.5">
+      <nav className="fixed inset-x-0 bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 z-50 border-t border-gray-200 bg-white pb-safe">
+        <div className="mx-auto flex max-w-md items-stretch justify-around px-4 py-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive = (item.match as readonly string[]).includes(component)
 
@@ -57,13 +57,14 @@ export default function CustomerLayout({
               <Link
                 key={item.route}
                 route={item.route}
-                className={`flex flex-col items-center gap-1 rounded-lg px-4 py-1.5 transition-colors active:scale-95 ${
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 transition-colors active:scale-95 touch-target ${
                   isActive ? 'text-black' : 'text-gray-400'
                 }`}
               >
                 <item.icon className="size-6" strokeWidth={isActive ? 2.25 : 1.75} />
                 <span
-                  className={`text-[11px] tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
+                  className={`text-xs tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
                 >
                   {item.label}
                 </span>

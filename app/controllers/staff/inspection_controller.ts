@@ -26,7 +26,7 @@ export default class InspectionController {
     const services = blocked ? [] : await this.orderService.getAvailableServices()
 
     return inertia.render('staff/inspection/show', {
-      order: OrderTransformer.transform(order),
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
       services: ServiceTransformer.transform(services),
       blocked,
     })

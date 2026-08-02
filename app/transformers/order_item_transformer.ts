@@ -1,23 +1,33 @@
 import type OrderItem from '#models/order_item'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { formatRupiah } from '#utils/currency'
-import { DateTime } from 'luxon'
 import ServiceTransformer from '#transformers/service_transformer'
-import OrderTransformer from '#transformers/order_transformer'
 import ItemTransformer from '#transformers/item_transformer'
 
 export default class OrderItemTransformer extends BaseTransformer<OrderItem> {
+  /**
+   * A priced line on an order, on its own.
+   */
   toObject() {
     return {
       ...this.pick(this.resource, ['id', 'name']),
 
-      price: formatRupiah(this.resource.price),
-      subtotal: formatRupiah(this.resource.subtotal),
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      price: Number(this.resource.price),
+      subtotal: Number(this.resource.subtotal),
+      createdAt: this.resource.createdAt.toISO(),
+    }
+  }
+
+  /**
+   * The line together with the thing being cleaned and the service picked for
+   * it, which is what the inspection correction form and the order detail view
+   * both read.
+   */
+  toDetail() {
+    return {
+      ...this.toObject(),
 
       service: ServiceTransformer.transform(this.whenLoaded(this.resource.service)),
       item: ItemTransformer.transform(this.whenLoaded(this.resource.item)),
-      order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),
     }
   }
 }

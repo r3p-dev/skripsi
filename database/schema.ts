@@ -169,6 +169,9 @@ export class OrderSchema extends BaseModel {
     'customerName',
     'customerPhone',
     'id',
+    'lockedById',
+    'lockedTask',
+    'lockedUntil',
     'orderNumber',
     'pickupDate',
     'status',
@@ -188,6 +191,12 @@ export class OrderSchema extends BaseModel {
   declare customerPhone: string
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare lockedById: number | null
+  @column()
+  declare lockedTask: string | null
+  @column.dateTime()
+  declare lockedUntil: DateTime | null
   @column()
   declare orderNumber: string
   @column.date()
@@ -264,6 +273,7 @@ export class ServiceSchema extends BaseModel {
 
 export class TransactionSchema extends BaseModel {
   static $columns = [
+    'cashReceived',
     'createdAt',
     'id',
     'midtransOrderId',
@@ -275,6 +285,8 @@ export class TransactionSchema extends BaseModel {
     'updatedAt',
   ] as const
   $columns = TransactionSchema.$columns
+  @column()
+  declare cashReceived: number | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -296,16 +308,30 @@ export class TransactionSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'name', 'password', 'phone', 'role', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'isActive',
+    'name',
+    'password',
+    'passwordChangedAt',
+    'phone',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
   declare id: number
   @column()
+  declare isActive: boolean
+  @column()
   declare name: string
   @column({ serializeAs: null })
   declare password: string
+  @column.dateTime()
+  declare passwordChangedAt: DateTime | null
   @column()
   declare phone: string
   @column()

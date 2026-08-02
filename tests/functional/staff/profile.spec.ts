@@ -157,7 +157,11 @@ test.group('Staff Phone Change', (group) => {
     const verificationUrl = signedUrlFor(
       'staff.phone.update',
       {},
-      { qs: { phone: '081244442005' }, expiresIn: '15m', prefixUrl: appUrl }
+      {
+        qs: { phone: '081244442005', userId: staff.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
     )
 
     const response = await client.get(verificationUrl).withInertia().loginAs(staff)
@@ -177,7 +181,11 @@ test.group('Staff Phone Change', (group) => {
     const verificationUrl = signedUrlFor(
       'staff.phone.update',
       {},
-      { qs: { phone: '081244442007' }, expiresIn: '-1m', prefixUrl: appUrl }
+      {
+        qs: { phone: '081244442007', userId: staff.id },
+        expiresIn: '-1m',
+        prefixUrl: appUrl,
+      }
     )
 
     const response = await client.get(verificationUrl).withInertia().loginAs(staff)
@@ -194,7 +202,11 @@ test.group('Staff Phone Change', (group) => {
     const customerUrl = signedUrlFor(
       'customer.phone.update',
       {},
-      { qs: { phone: '081244442009' }, expiresIn: '15m', prefixUrl: appUrl }
+      {
+        qs: { phone: '081244442009', userId: staff.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
     )
 
     const response = await client.get(customerUrl).loginAs(staff)

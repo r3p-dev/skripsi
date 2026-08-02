@@ -1,17 +1,13 @@
 import Address from '#models/address'
+import Order from '#models/order'
 import type User from '#models/user'
 import type { AddressData } from '#validators/address_validator'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { errors } from '@vinejs/vine'
 import RouteService from '#services/route_service'
-
-/**
- * Coordinates of the service center, used as the origin
- * when measuring how far away an address is.
- */
-const SERVICE_CENTER_LATITUDE = -6.9555305
-const SERVICE_CENTER_LONGITUDE = 107.6540353
+import { shop } from '#config/shop'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
 /**
  * Maximum distance in kilometres the team travels in each direction.
@@ -38,11 +34,16 @@ export default class AddressService {
   }
 
   /**
-   * Replaces the customer's active address while preserving previous
-   * addresses for historical purposes, such as completed orders.
+   * Replaces the customer's active address, keeping the one it replaced only
+   * for as long as something still refers to it.
    *
-   * The update is executed within a database transaction to ensure
-   * only one address remains active.
+   * An address that has priced or routed an order is history — the record of
+   * where those shoes were collected from — and is retired rather than
+   * removed. One that never did is simply a typo the customer corrected a
+   * minute later, and keeping it means the shop accumulates a pile of
+   * addresses nobody has ever been to and nothing will ever point at.
+   *
+   * All of it runs in one transaction, so only ever one address is active.
    */
   async replaceActiveAddress(user: User, data: AddressData): Promise<Address> {
     const isValid = this.validateRadius(data.latitude, data.longitude)
@@ -56,13 +57,17 @@ export default class AddressService {
     }
 
     return db.transaction(async (trx) => {
-      const currentAddress = await Address.query()
+      const currentAddress = await Address.query({ client: trx })
         .where('user_id', user.id)
         .andWhere('is_active', true)
         .first()
 
       if (currentAddress) {
-        await currentAddress.merge({ isActive: false }).useTransaction(trx).save()
+        if (await this.isReferencedByOrder(currentAddress, trx)) {
+          await currentAddress.merge({ isActive: false }).useTransaction(trx).save()
+        } else {
+          await currentAddress.useTransaction(trx).delete()
+        }
       }
 
       return Address.create(
@@ -77,6 +82,45 @@ export default class AddressService {
   }
 
   /**
+   * Whether any order still points at this address.
+   *
+   * The foreign key from `orders` restricts the delete anyway, so this is what
+   * keeps the tidy-up from turning into a database error on the one address
+   * that genuinely matters.
+   */
+  private async isReferencedByOrder(
+    address: Address,
+    trx?: TransactionClientContract
+  ): Promise<boolean> {
+    const result = await Order.query(trx ? { client: trx } : {})
+      .where('address_id', address.id)
+      .count('* as total')
+
+    return Number(result[0].$extras.total) > 0
+  }
+
+  /**
+   * Removes every retired address nothing points at any more.
+   *
+   * The replace path above keeps its own house in order, so this is for the
+   * ones that accumulated before it did — and for the case where an order that
+   * was holding an address alive is itself deleted later. Active addresses are
+   * never touched: an address a customer is currently using is not orphaned
+   * just because they have not ordered yet.
+   */
+  async deleteOrphanedAddresses(): Promise<number> {
+    const orphans = await Address.query()
+      .where('is_active', false)
+      .whereDoesntHave('orders', (query) => query)
+
+    for (const orphan of orphans) {
+      await orphan.delete()
+    }
+
+    return orphans.length
+  }
+
+  /**
    * Checks whether a location falls within the supported service area.
    *
    * The area is not a plain circle: the allowed distance is blended from
@@ -86,8 +130,8 @@ export default class AddressService {
    * something in between the northern and eastern limits.
    */
   validateRadius(latitude: number, longitude: number): boolean {
-    const latitudeOffset = latitude - SERVICE_CENTER_LATITUDE
-    const longitudeOffset = longitude - SERVICE_CENTER_LONGITUDE
+    const latitudeOffset = latitude - shop.latitude
+    const longitudeOffset = longitude - shop.longitude
     const totalOffset = Math.abs(latitudeOffset) + Math.abs(longitudeOffset)
 
     // The service center itself is always inside the area.
@@ -108,8 +152,8 @@ export default class AddressService {
     )
 
     const distanceKm = this.routeService.calculateDistanceInKm(
-      SERVICE_CENTER_LATITUDE,
-      SERVICE_CENTER_LONGITUDE,
+      shop.latitude,
+      shop.longitude,
       latitude,
       longitude
     )

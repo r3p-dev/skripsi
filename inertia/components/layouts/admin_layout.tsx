@@ -44,7 +44,7 @@ const NAV_ITEMS = [
   },
   {
     route: 'admin.user.index',
-    match: ['admin/user/index', 'admin/user/create', 'admin/user/edit'],
+    match: ['admin/user/index', 'admin/user/create', 'admin/user/edit', 'admin/signup'],
     label: 'Pengguna',
     icon: IconUsers,
   },
@@ -91,7 +91,7 @@ export default function AdminLayout({
         // Following a link on a phone should reveal the page, not leave the menu open.
         onClick={() => setIsNavOpen(false)}
         aria-current={isActive ? 'page' : undefined}
-        className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+        className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
           isActive
             ? 'bg-black font-semibold text-white'
             : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-black'
@@ -104,7 +104,7 @@ export default function AdminLayout({
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh bg-white">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -118,27 +118,35 @@ export default function AdminLayout({
         <nav className="flex flex-1 flex-col gap-1">{links}</nav>
       </aside>
 
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-3 md:hidden">
-        <div>
-          <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase">UmimaClean</p>
-          <p className="text-base font-bold tracking-tight text-black">Admin</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsNavOpen((open) => !open)}
-          aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
-          aria-expanded={isNavOpen}
-          className="rounded-lg border border-gray-300 p-2 text-black transition-colors hover:bg-gray-100 active:scale-95"
-        >
-          {isNavOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
-        </button>
-      </header>
+      {/*
+        Header and drop-down menu stick as one block. They used to stick
+        separately, with the menu offset by a hand-measured `top-14.25` — a
+        number that silently stops matching the moment anything in the header
+        changes height, leaving the menu overlapping it or floating below.
+      */}
+      <div className="sticky top-0 z-40 md:hidden">
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-2">
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase">UmimaClean</p>
+            <p className="text-base font-bold tracking-tight text-black">Admin</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsNavOpen((open) => !open)}
+            aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-expanded={isNavOpen}
+            className="flex size-11 items-center justify-center rounded-lg border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          >
+            {isNavOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
+          </button>
+        </header>
 
-      {isNavOpen && (
-        <nav className="sticky top-14.25 z-30 flex flex-col gap-1 border-b border-gray-200 bg-white px-4 py-3 md:hidden">
-          {links}
-        </nav>
-      )}
+        {isNavOpen && (
+          <nav className="flex max-h-[calc(100dvh-4rem)] flex-col gap-1 overflow-y-auto border-b border-gray-200 bg-white px-4 py-3">
+            {links}
+          </nav>
+        )}
+      </div>
 
       <main className="md:pl-64">
         <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-8">{children}</div>

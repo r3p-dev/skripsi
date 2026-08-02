@@ -113,6 +113,31 @@ test.group('Customer Order Creation', (group) => {
     assert.equal(orders[1].orderNumber, `${prefix}-002`)
   })
 
+  /**
+   * A collection booked for today cannot actually happen: the van is already
+   * out on a route planned this morning, and the customer would be left
+   * watching a stop nobody is coming to. Refusing it at the form is kinder
+   * than accepting it and disappointing them.
+   */
+  test('POST /orders refuses a pickup booked for today', async ({ client, assert }) => {
+    const customer = await UserFactory.merge({ phone: '081266660010' }).create()
+    const address = await AddressFactory.merge({ userId: customer.id }).create()
+
+    const response = await client
+      .post('/orders')
+      .withInertia()
+      .loginAs(customer)
+      .header('referer', '/order')
+      .json({ addressId: address.id, pickupDate: isoDate(DateTime.now()) })
+      .withCsrfToken()
+
+    response.assertInertiaPropsContains({
+      errors: { pickupDate: 'Tanggal penjemputan harus setelah today' },
+    })
+
+    assert.lengthOf(await Order.query().where('user_id', customer.id), 0)
+  })
+
   test('POST /orders rejects a pickup date once the day is fully booked', async ({
     client,
     assert,

@@ -1,6 +1,7 @@
 import AdminLayout from '@/components/layouts/admin_layout'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
+import { LiveOrders } from '@/components/molecules/live_orders'
 import { StatCard } from '@/components/molecules/stat_card'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -13,8 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { orderStatusStyles } from '@/lib/constants'
-import { formatRupiah } from '@/lib/utils'
+import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { OrderTypeLabel } from '@/enums/order_type_enum'
+import { formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
@@ -29,8 +32,7 @@ type PageProps = InertiaProps<{
     activeOrders: number
     completedOrders: number
     awaitingPayment: number
-    revenue: string
-    revenueValue: number
+    revenue: number
     customers: number
     staff: number
   }
@@ -77,7 +79,7 @@ export default function Index({
         />
         <StatCard
           label="Pendapatan"
-          value={summary.revenue}
+          value={formatRupiah(summary.revenue)}
           hint={`${summary.completedOrders} pesanan selesai`}
           icon={IconCash}
         />
@@ -194,6 +196,10 @@ export default function Index({
         </Card>
       </div>
 
+      <div className="mt-6">
+        <LiveOrders />
+      </div>
+
       <Card className="mt-6 rounded-2xl border border-gray-200 bg-white">
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
@@ -230,17 +236,19 @@ export default function Index({
                       </Link>
                     </TableCell>
                     <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.type}</TableCell>
                     <TableCell>
-                      <Badge
-                        className={
-                          orderStatusStyles[order.statusValue] ?? 'bg-gray-200 text-gray-700'
-                        }
-                      >
-                        {order.status}
+                      <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
+                        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{order.totalPrice ?? '-'}</TableCell>
+                    <TableCell>
+                      <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+                        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

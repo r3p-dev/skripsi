@@ -46,13 +46,27 @@ export default class CatalogueService {
   }
 
   async createService(data: ServiceData): Promise<Service> {
-    return Service.create(data)
+    return Service.create(this.toColumns(data))
   }
 
   async updateService(id: number, data: ServiceData): Promise<Service> {
     const service = await this.getService(id)
 
-    return service.merge(data).save()
+    return service.merge(this.toColumns(data)).save()
+  }
+
+  /**
+   * Maps the form's fields onto the table's.
+   *
+   * The form calls it `serviceName` so it can carry its own label — "Nama
+   * layanan" rather than the app-wide "Nama lengkap" — without the whole form
+   * having to override the shared messages. The column is still `name`, and
+   * this one line is the entire cost of that.
+   */
+  private toColumns(data: ServiceData) {
+    const { serviceName, ...rest } = data
+
+    return { ...rest, name: serviceName }
   }
 
   /**

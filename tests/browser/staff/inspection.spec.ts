@@ -45,6 +45,7 @@ test.group('Staff Inspection', (group) => {
     await page.locator('input[type="file"]').setInputFiles(photoPath)
 
     await page.getByRole('button', { name: 'Selesaikan Inspeksi' }).click()
+    await page.getByRole('button', { name: 'Konfirmasi Selesai' }).click()
 
     // Completing an inspection hands staff the correction form for what they typed.
     await page.assertPath(`/staff/orders/${order.orderNumber}/items`)

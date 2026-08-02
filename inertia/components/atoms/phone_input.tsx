@@ -35,8 +35,16 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     return (
       <>
         <input type="hidden" name={props.name} value={rawValue} />
+        {/*
+          `type="tel"` and a numeric input mode are what get a phone to open the
+          keypad instead of the full QWERTY keyboard. The field only ever keeps
+          digits — everything else is stripped in `toDigits` — so making people
+          reach for the "123" key first was asking them to work around the form.
+        */}
         <Input
           {...props}
+          type="tel"
+          inputMode="numeric"
           className={className}
           value={displayValue}
           onChange={handleChange}

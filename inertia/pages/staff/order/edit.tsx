@@ -6,12 +6,19 @@ import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
+import { ActionName } from '@/enums/order_action_enum'
+import { ServiceCategory } from '@/enums/service_enum'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
-  items: Data.OrderItem[]
+  order: Data.Order.Variants['toDetail']
   services: Data.Service[]
 }>
+
+/**
+ * The order's priced lines, which arrive nested inside the order at the depth
+ * the transformer asks for rather than as a second prop assembled alongside it.
+ */
+type OrderLine = NonNullable<Data.Order.Variants['toDetail']['items']>[number]
 
 /**
  * Rebuilds the form rows from the priced lines on the order.
@@ -21,7 +28,7 @@ type PageProps = InertiaProps<{
  * grouped back into one row per item, with the non-additional service as the
  * main one.
  */
-function toItemRows(orderItems: Data.OrderItem[]): ItemRow[] {
+function toItemRows(orderItems: OrderLine[]): ItemRow[] {
   const rowsByItemId = new Map<number, ItemRow>()
 
   for (const orderItem of orderItems) {
@@ -48,7 +55,7 @@ function toItemRows(orderItems: Data.OrderItem[]): ItemRow[] {
       rowsByItemId.set(item.id, row)
     }
 
-    if (service.categoryValue === 'additional') {
+    if (service.category === ServiceCategory.ADDITIONAL) {
       row.defaults!.additionalServiceIds.push(service.id)
     } else {
       row.serviceId = String(service.id)
@@ -58,11 +65,11 @@ function toItemRows(orderItems: Data.OrderItem[]): ItemRow[] {
   return [...rowsByItemId.values()]
 }
 
-export default function Edit({ order, items: orderItems, services }: PageProps) {
-  const { items, addItem, removeItem, setServiceId } = useItemRows(toItemRows(orderItems))
+export default function Edit({ order, services }: PageProps) {
+  const { items, addItem, removeItem, setServiceId } = useItemRows(toItemRows(order.items ?? []))
 
   const inspectionPhoto = order.actions?.find(
-    (action) => action.name === 'Inspeksi Selesai'
+    (action) => action.name === ActionName.INSPECTION
   )?.photoPath
 
   return (
@@ -74,7 +81,7 @@ export default function Edit({ order, items: orderItems, services }: PageProps) 
         <Link
           route="staff.trip.index"
           aria-label="Kembali ke antrean"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -86,7 +93,7 @@ export default function Edit({ order, items: orderItems, services }: PageProps) 
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 px-6 pb-28">
+      <div className="flex-1 space-y-4 px-6 pb-nav">
         <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
           <p className="text-sm leading-relaxed text-gray-700">
             Perbaiki merek, model, atau layanan yang salah sebelum pelanggan melunasi. Setelah

@@ -1,30 +1,23 @@
 import type Service from '#models/service'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { DateTime } from 'luxon'
-import {
-  type ServiceCategory,
-  ServiceCategoryLabel,
-  type ServiceType,
-  ServiceTypeLabel,
-} from '#enums/service_enum'
-import { formatRupiah } from '#utils/currency'
 
 export default class ServiceTransformer extends BaseTransformer<Service> {
+  /**
+   * A catalogue entry's own columns.
+   *
+   * The price is the number, not "Rp 25.000". It used to be sent both ways at
+   * once — a formatted `price` for the table and a `priceValue` for the edit
+   * form — which is two names for one fact and an invitation to read the wrong
+   * one. Money is formatted where it is printed.
+   */
   toObject() {
     return {
       ...this.pick(this.resource, ['id', 'name', 'description']),
 
-      category: ServiceCategoryLabel[this.resource.category as ServiceCategory],
-      categoryValue: this.resource.category as ServiceCategory,
-      type: ServiceTypeLabel[this.resource.type as ServiceType],
-      typeValue: this.resource.type as ServiceType,
-      price: formatRupiah(this.resource.price),
-      /**
-       * The raw number the admin catalogue form edits. `price` is already
-       * formatted for display and cannot be put back into a number input.
-       */
-      priceValue: Number(this.resource.price),
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      category: this.resource.category,
+      type: this.resource.type,
+      price: Number(this.resource.price),
+      createdAt: this.resource.createdAt.toISO(),
     }
   }
 }

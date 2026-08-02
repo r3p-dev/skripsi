@@ -15,10 +15,13 @@ import type {
 import type { ItemData } from '#validators/shared'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
+import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { errors as vineErrors } from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import RouteService, { type RouteItem } from '#services/route_service'
+import BroadcastService from '#services/broadcast_service'
+import { shop } from '#config/shop'
 import drive from '@adonisjs/drive/services/main'
 import { createReadStream } from 'node:fs'
 import { randomUUID } from 'node:crypto'
@@ -77,12 +80,55 @@ const NEXT_STATUS: Record<PhotoTaskType, OrderStatus> = {
 const PHOTO_RETENTION = '90d'
 
 /**
+ * How long a claim survives before it lapses on its own.
+ *
+ * Sized for the city rather than for the task: crossing Bandung can take an
+ * hour in traffic and a run of stops is several of those. Three hours leaves a
+ * staff member who is genuinely still driving well clear of losing the stop
+ * out from under them, while making sure a claim somebody abandoned — flat
+ * battery, end of shift, simply forgot — is back in the queue the same day
+ * rather than needing an admin to go and edit a row.
+ */
+const CLAIM_DURATION_HOURS = 3
+
+/**
+ * Postgres answers an UPDATE with the number of rows it touched, and Lucid
+ * passes that through untouched. Zero means the row no longer matched the
+ * condition — somebody else's claim landed first.
+ */
+function affectedRows(result: unknown): number {
+  return Number(Array.isArray(result) ? result[0] : result) || 0
+}
+
+/**
  * Manages staff pickup, delivery, and inspection tasks: route
  * planning, per-task locking, and task completion.
  */
 @inject()
 export default class TaskService {
-  constructor(private routeService: RouteService) {}
+  constructor(
+    private routeService: RouteService,
+    private broadcastService: BroadcastService
+  ) {}
+
+  /**
+   * Narrows a query to the orders nobody is currently holding.
+   *
+   * The lock is three columns on the order, so "free" is a question the
+   * database can answer. It used to be derived in JavaScript by replaying an
+   * order's whole action log, which meant every queue had to `preload` those
+   * actions and then filter the rows it had just fetched — work no index could
+   * help with, growing with every action ever recorded.
+   */
+  private whereUnlocked<T extends ModelQueryBuilderContract<typeof Order>>(query: T): T {
+    const now = DateTime.now().toSQL()!
+
+    query.where((free) => {
+      free.whereNull('locked_until').orWhere('locked_until', '<=', now)
+    })
+
+    return query
+  }
 
   /**
    * Returns the pickup and delivery stops that are free to be worked on,
@@ -95,29 +141,26 @@ export default class TaskService {
    * Overdue stops are mixed in with today's rather than listed separately:
    * a stop that was missed yesterday is simply another stop on the route.
    */
-  async getTripQueue(originLat: number, originLng: number): Promise<RouteItem[]> {
+  async getTripQueue(): Promise<RouteItem[]> {
     const today = DateTime.now().startOf('day')
 
-    const orders = await Order.query()
-      .where((pickups) => {
-        pickups
-          .where('status', OrderStatus.PICKUP_SCHEDULED)
-          .where('pickup_date', '<=', today.toISODate()!)
-      })
-      .orWhere('status', OrderStatus.IN_DELIVERY)
-      .preload('address')
-      .preload('actions')
+    const orders = await this.whereUnlocked(
+      Order.query()
+        .where((claimable) => {
+          claimable
+            .where((pickups) => {
+              pickups
+                .where('status', OrderStatus.PICKUP_SCHEDULED)
+                .where('pickup_date', '<=', today.toISODate()!)
+            })
+            .orWhere('status', OrderStatus.IN_DELIVERY)
+        })
+        .preload('address')
+    )
 
-    const available = orders.filter((order) => {
-      const type =
-        order.status === OrderStatus.IN_DELIVERY ? ActionName.DELIVERY : ActionName.PICKUP
-
-      return this.resolveTaskLock(order, type) === null
-    })
-
-    return this.routeService.buildRoutePlanForOrders(this.toRouteOrders(available), {
-      originLat,
-      originLng,
+    return this.routeService.buildRoutePlanForOrders(this.toRouteOrders(orders), {
+      originLat: shop.latitude,
+      originLng: shop.longitude,
     })
   }
 
@@ -126,12 +169,11 @@ export default class TaskService {
    * oldest first so shoes are not left sitting on the shelf.
    */
   async getInspectionQueue(): Promise<Order[]> {
-    const orders = await Order.query()
-      .whereIn('status', TASK_STATUSES[ActionName.INSPECTION])
-      .orderBy('created_at', 'asc')
-      .preload('actions')
-
-    return orders.filter((order) => this.resolveTaskLock(order, ActionName.INSPECTION) === null)
+    return this.whereUnlocked(
+      Order.query()
+        .whereIn('status', TASK_STATUSES[ActionName.INSPECTION])
+        .orderBy('created_at', 'asc')
+    )
   }
 
   /**
@@ -147,9 +189,22 @@ export default class TaskService {
     return Order.query()
       .where('status', OrderStatus.IN_CLEANING)
       .orderBy('created_at', 'asc')
-      .preload('items', (itemsQuery) => {
-        itemsQuery.preload('service').preload('item')
-      })
+      .preload('items')
+      .preload('actions')
+  }
+
+  /**
+   * Returns the washed orders sitting on the shelf waiting for their owner to
+   * come and collect them.
+   *
+   * Only orders with nowhere to deliver to ever reach this status, so this is
+   * the counter's own list: done, paid for, and still here.
+   */
+  async getCollectionQueue(): Promise<Order[]> {
+    return Order.query()
+      .where('status', OrderStatus.CLEANING_DONE)
+      .orderBy('updated_at', 'asc')
+      .preload('items')
       .preload('actions')
   }
 
@@ -157,33 +212,19 @@ export default class TaskService {
    * Finds the task a staff member is currently holding, if any.
    *
    * A staff member may only work one task at a time, so the queue redirects
-   * them back to this task until they finish or cancel it.
+   * them back to this task until they finish it, cancel it, or the claim lapses.
    */
   async findActiveTask(staff: User): Promise<{ orderNumber: string; type: TaskType } | null> {
-    const claimable = [ActionName.PICKUP, ActionName.DELIVERY, ActionName.INSPECTION] as const
+    const order = await Order.query()
+      .where('locked_by_id', staff.id)
+      .where('locked_until', '>', DateTime.now().toSQL()!)
+      .first()
 
-    const orders = await Order.query()
-      .whereIn(
-        'status',
-        claimable.flatMap((type) => TASK_STATUSES[type])
-      )
-      .whereHas('actions', (actionsQuery) => {
-        actionsQuery.where('staff_id', staff.id).whereIn(
-          'name',
-          claimable.map((type) => ATTEMPT_ACTION[type])
-        )
-      })
-      .preload('actions')
-
-    for (const order of orders) {
-      for (const type of claimable) {
-        if (this.resolveTaskLock(order, type)?.staffId === staff.id) {
-          return { orderNumber: order.orderNumber, type }
-        }
-      }
+    if (!order?.lockedTask) {
+      return null
     }
 
-    return null
+    return { orderNumber: order.orderNumber, type: order.lockedTask as TaskType }
   }
 
   /**
@@ -205,22 +246,21 @@ export default class TaskService {
   }
 
   /**
-   * Determines which staff, if any, currently holds the lock
-   * for a task by inspecting its most recent attempt/release action.
+   * Which staff member, if any, currently holds this order's task.
+   *
+   * A claim that has run past its expiry is not a lock — it is the trace of
+   * somebody who never came back, and the order is available again.
    */
   resolveTaskLock(order: Order, type: TaskType): { staffId: number } | null {
-    const relevantNames: string[] = [ATTEMPT_ACTION[type], RELEASE_ACTION[type], type]
-
-    const lastAction = order.actions
-      .filter((action) => relevantNames.includes(action.name))
-      .sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis())
-      .at(-1)
-
-    if (lastAction?.name === ATTEMPT_ACTION[type]) {
-      return { staffId: lastAction.staffId }
+    if (order.lockedTask !== type || !order.lockedById || !order.lockedUntil) {
+      return null
     }
 
-    return null
+    if (order.lockedUntil <= DateTime.now()) {
+      return null
+    }
+
+    return { staffId: order.lockedById }
   }
 
   /**
@@ -257,6 +297,10 @@ export default class TaskService {
    * Opening the task is the claim itself: if it is already locked
    * by someone else, the existing lock is returned untouched instead
    * of failing, so the caller can render a "locked" view.
+   *
+   * The claim is taken with a conditional UPDATE rather than a read followed
+   * by a write, so two staff tapping the same card in the same second cannot
+   * both come away believing they hold it.
    */
   async claimTask(
     staff: User,
@@ -264,13 +308,33 @@ export default class TaskService {
     type: TaskType
   ): Promise<{ order: Order; lock: { staffId: number } }> {
     const order = await this.getTaskOrder(orderNumber, type)
-    const lock = this.resolveTaskLock(order, type)
+    const existing = this.resolveTaskLock(order, type)
 
-    if (lock) {
-      return { order, lock }
+    if (existing) {
+      return { order, lock: existing }
     }
 
-    await db.transaction(async (trx) => {
+    const now = DateTime.now()
+
+    const claimed = await db.transaction(async (trx) => {
+      const won = affectedRows(
+        await this.whereUnlocked(Order.query({ client: trx }).where('id', order.id)).update({
+          locked_by_id: staff.id,
+          locked_task: type,
+          locked_until: now.plus({ hours: CLAIM_DURATION_HOURS }).toSQL(),
+          /**
+           * Claiming a pickup is visible to the customer as "Dalam
+           * Penjemputan", so they know someone is on the way. The other task
+           * types have no equivalent in-progress status to show.
+           */
+          ...(type === ActionName.PICKUP ? { status: OrderStatus.IN_PICKUP } : {}),
+        })
+      )
+
+      if (won === 0) {
+        return false
+      }
+
       await OrderAction.create(
         {
           orderId: order.id,
@@ -282,17 +346,22 @@ export default class TaskService {
         { client: trx }
       )
 
-      /**
-       * Claiming a pickup is visible to the customer as "Dalam Penjemputan",
-       * so they know someone is on the way. The other task types have no
-       * equivalent in-progress status to show.
-       */
-      if (type === ActionName.PICKUP) {
-        await order.merge({ status: OrderStatus.IN_PICKUP }).useTransaction(trx).save()
-      }
+      return true
     })
 
-    return { order, lock: { staffId: staff.id } }
+    const fresh = await this.getTaskOrder(orderNumber, type)
+
+    if (!claimed) {
+      // Somebody landed their claim between our read and our update.
+      return { order: fresh, lock: this.resolveTaskLock(fresh, type) ?? { staffId: staff.id } }
+    }
+
+    if (type === ActionName.PICKUP) {
+      this.broadcastService.orderChanged(fresh)
+      this.broadcastService.orderUpdated(fresh)
+    }
+
+    return { order: fresh, lock: { staffId: staff.id } }
   }
 
   /**
@@ -309,7 +378,7 @@ export default class TaskService {
     const order = await this.getTaskOrderHeldBy(staff, orderNumber, type)
     const photoPath = await this.storePhoto(type, data.photo)
 
-    return db.transaction(async (trx) => {
+    const completed = await db.transaction(async (trx) => {
       await OrderAction.create(
         {
           orderId: order.id,
@@ -321,8 +390,16 @@ export default class TaskService {
         { client: trx }
       )
 
-      return order.merge({ status: NEXT_STATUS[type] }).useTransaction(trx).save()
+      return order
+        .merge({ status: NEXT_STATUS[type], ...this.clearedLock() })
+        .useTransaction(trx)
+        .save()
     })
+
+    this.broadcastService.orderChanged(completed)
+    this.broadcastService.orderUpdated(completed)
+
+    return completed
   }
 
   /**
@@ -333,7 +410,7 @@ export default class TaskService {
     const order = await this.getTaskOrderHeldBy(staff, orderNumber, ActionName.INSPECTION)
     const photoPath = await this.storePhoto(ActionName.INSPECTION, data.photo)
 
-    return db.transaction(async (trx) => {
+    const inspected = await db.transaction(async (trx) => {
       const totalPrice = await this.createOrderItems(order, data.items, trx)
 
       await OrderAction.create(
@@ -348,10 +425,15 @@ export default class TaskService {
       )
 
       return order
-        .merge({ totalPrice, status: OrderStatus.AWAITING_PAYMENT })
+        .merge({ totalPrice, status: OrderStatus.AWAITING_PAYMENT, ...this.clearedLock() })
         .useTransaction(trx)
         .save()
     })
+
+    this.broadcastService.orderChanged(inspected)
+    this.broadcastService.orderUpdated(inspected)
+
+    return inspected
   }
 
   /**
@@ -361,7 +443,7 @@ export default class TaskService {
   async releaseTask(staff: User, orderNumber: string, type: TaskType): Promise<Order> {
     const order = await this.getTaskOrderHeldBy(staff, orderNumber, type)
 
-    return db.transaction(async (trx) => {
+    const released = await db.transaction(async (trx) => {
       await OrderAction.create(
         {
           orderId: order.id,
@@ -374,21 +456,32 @@ export default class TaskService {
       )
 
       // Undo the in-progress status the claim put the order into.
-      if (type === ActionName.PICKUP) {
-        return order.merge({ status: OrderStatus.PICKUP_SCHEDULED }).useTransaction(trx).save()
-      }
-
       return order
+        .merge({
+          ...this.clearedLock(),
+          ...(type === ActionName.PICKUP ? { status: OrderStatus.PICKUP_SCHEDULED } : {}),
+        })
+        .useTransaction(trx)
+        .save()
     })
+
+    if (type === ActionName.PICKUP) {
+      this.broadcastService.orderChanged(released)
+      this.broadcastService.orderUpdated(released)
+    }
+
+    return released
   }
 
   /**
    * Marks an order as finished cleaning, recording the "after" photo that
    * pairs with the inspection photo taken before the shoes were washed.
    *
-   * Walk-in orders have no pickup address — the customer collects them at the
-   * counter — so there is nothing to deliver and they are done. Everything
-   * else joins the delivery half of the trip queue.
+   * Where it goes next turns on whether there is anywhere to take it. An order
+   * with an address joins the delivery half of the trip queue. One without —
+   * a walk-in whose owner is coming back for it — moves to `CLEANING_DONE`,
+   * which is the shelf: washed, paid for, waiting to be collected. It is not
+   * finished until somebody actually walks out with it.
    */
   async markCleaningDone(staff: User, orderNumber: string, data: CleaningData): Promise<Order> {
     const order = await Order.query()
@@ -398,7 +491,7 @@ export default class TaskService {
 
     const photoPath = await this.storePhoto('cleaning', data.photo)
 
-    return db.transaction(async (trx) => {
+    const washed = await db.transaction(async (trx) => {
       await OrderAction.create(
         {
           orderId: order.id,
@@ -410,10 +503,49 @@ export default class TaskService {
         { client: trx }
       )
 
-      const nextStatus = order.addressId ? OrderStatus.IN_DELIVERY : OrderStatus.COMPLETED
+      const nextStatus = order.addressId ? OrderStatus.IN_DELIVERY : OrderStatus.CLEANING_DONE
 
       return order.merge({ status: nextStatus }).useTransaction(trx).save()
     })
+
+    this.broadcastService.orderChanged(washed)
+    this.broadcastService.orderUpdated(washed)
+
+    return washed
+  }
+
+  /**
+   * Closes a walk-in order once its owner has taken it home from the counter.
+   *
+   * The one step in the lifecycle with no photo attached: the proof that the
+   * shoes changed hands is the customer standing there, and photographing
+   * every counter hand-over would be theatre.
+   */
+  async markCollected(staff: User, orderNumber: string): Promise<Order> {
+    const order = await Order.query()
+      .where('order_number', orderNumber)
+      .where('status', OrderStatus.CLEANING_DONE)
+      .firstOrFail()
+
+    const collected = await db.transaction(async (trx) => {
+      await OrderAction.create(
+        {
+          orderId: order.id,
+          staffId: staff.id,
+          name: ActionName.COLLECTED,
+          photoPath: null,
+          note: null,
+        },
+        { client: trx }
+      )
+
+      return order.merge({ status: OrderStatus.COMPLETED }).useTransaction(trx).save()
+    })
+
+    this.broadcastService.orderChanged(collected)
+    this.broadcastService.orderUpdated(collected)
+
+    return collected
   }
 
   /**
@@ -447,7 +579,7 @@ export default class TaskService {
   async replaceOrderItems(staff: User, orderNumber: string, data: OrderItemsData): Promise<Order> {
     const order = await this.getEditableItemsOrder(orderNumber)
 
-    return db.transaction(async (trx) => {
+    const repriced = await db.transaction(async (trx) => {
       /**
        * Items belong to exactly one order's lines — they are created during
        * inspection or at the counter — so clearing the lines clears the items.
@@ -475,6 +607,33 @@ export default class TaskService {
 
       return order.merge({ totalPrice }).useTransaction(trx).save()
     })
+
+    this.broadcastService.orderUpdated(repriced)
+
+    return repriced
+  }
+
+  /**
+   * What a payload of items will cost, without writing anything.
+   *
+   * Lets the counter check that the cash offered actually covers the bill
+   * before a photo is stored or a row is inserted, so a rejected payment
+   * leaves nothing behind on disk or in the database. Prices come from the
+   * same catalogue read `createOrderItems` uses a moment later.
+   */
+  async priceItems(items: ItemData[]): Promise<number> {
+    const requestedServiceIds = new Set(
+      items.flatMap((itemData) => [itemData.service, ...(itemData.additionalServices ?? [])])
+    )
+
+    const services = await Service.query().whereIn('id', [...requestedServiceIds])
+    const pricesById = new Map(services.map((service) => [service.id, Number(service.price)]))
+
+    return items.reduce((total, itemData) => {
+      const serviceIds = [itemData.service, ...(itemData.additionalServices ?? [])]
+
+      return total + serviceIds.reduce((sum, id) => sum + (pricesById.get(id) ?? 0), 0)
+    }, 0)
   }
 
   /**
@@ -546,18 +705,27 @@ export default class TaskService {
    * drive disk is configured as private.
    *
    * Photos are grouped by the kind of proof they are — storage/pickup,
-   * storage/delivery, storage/inspection, storage/cleaning — so a whole
-   * category can be browsed, audited, or archived without picking through
-   * unrelated images.
+   * storage/delivery, storage/inspection, storage/cleaning, storage/offline —
+   * so a whole category can be browsed, audited, or archived without picking
+   * through unrelated images.
    */
-  private async storePhoto(
-    folder: TaskType | 'cleaning',
+  async storePhoto(
+    folder: TaskType | 'cleaning' | 'offline',
     photo: CompleteTaskData['photo']
   ): Promise<string> {
     const key = `${folder}/${randomUUID()}.${photo.extname}`
     await drive.use().putStream(key, createReadStream(photo.tmpPath!))
 
     return drive.use().getSignedUrl(key, { expiresIn: PHOTO_RETENTION })
+  }
+
+  /**
+   * The three lock columns, blanked. Finishing or releasing a task always
+   * frees the order, and spelling that out at every call site is how one of
+   * them ends up missing a column and leaving an order locked to nobody.
+   */
+  private clearedLock() {
+    return { lockedById: null, lockedTask: null, lockedUntil: null }
   }
 
   /**

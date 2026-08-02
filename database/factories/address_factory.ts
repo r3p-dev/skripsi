@@ -1,10 +1,11 @@
 import factory from '@adonisjs/lucid/factories'
 import Address from '#models/address'
+import { personName } from '#database/factories/support'
 
 export const AddressFactory = factory
   .define(Address, async ({ faker }) => {
     return {
-      name: faker.person.fullName(),
+      name: personName(faker),
       phone: '081387882973',
       street: faker.location.streetAddress(),
       latitude: faker.location.latitude(),

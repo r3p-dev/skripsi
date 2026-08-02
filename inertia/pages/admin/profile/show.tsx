@@ -85,14 +85,14 @@ export default function Show({ user, teamSize, transactions }: PageProps) {
                           type="button"
                           variant="ghost"
                           onClick={() => setEditingField(null)}
-                          className="h-9 rounded-lg text-gray-600 hover:bg-gray-100"
+                          className="h-11 rounded-lg px-4 text-gray-600 hover:bg-gray-100"
                         >
                           Batal
                         </Button>
                         <Button
                           type="submit"
                           disabled={processing}
-                          className="h-9 rounded-lg bg-black text-white hover:bg-black/90"
+                          className="h-11 rounded-lg px-5 bg-black text-white hover:bg-black/90"
                         >
                           Kirim
                         </Button>
@@ -110,7 +110,7 @@ export default function Show({ user, teamSize, transactions }: PageProps) {
                     type="button"
                     onClick={() => setEditingField('phone')}
                     aria-label="Ubah nomor telepon"
-                    className="shrink-0 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
                   >
                     <IconPencil size={18} />
                   </button>
@@ -210,14 +210,14 @@ export default function Show({ user, teamSize, transactions }: PageProps) {
                         type="button"
                         variant="ghost"
                         onClick={() => setEditingField(null)}
-                        className="h-9 rounded-lg text-gray-600 hover:bg-gray-100"
+                        className="h-11 rounded-lg px-4 text-gray-600 hover:bg-gray-100"
                       >
                         Batal
                       </Button>
                       <Button
                         type="submit"
                         disabled={processing}
-                        className="h-9 rounded-lg bg-black text-white hover:bg-black/90"
+                        className="h-11 rounded-lg px-5 bg-black text-white hover:bg-black/90"
                       >
                         Simpan
                       </Button>
@@ -235,7 +235,7 @@ export default function Show({ user, teamSize, transactions }: PageProps) {
                   type="button"
                   onClick={() => setEditingField('password')}
                   aria-label="Ubah kata sandi"
-                  className="shrink-0 rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
                 >
                   <IconPencil size={18} />
                 </button>

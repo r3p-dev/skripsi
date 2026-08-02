@@ -14,7 +14,7 @@ export default class SignupController {
   async store({ request, response, auth, session }: HttpContext) {
     const payload = await request.validateUsing(signupValidator)
 
-    await this.authService.signup(payload, auth)
+    await this.authService.signup(payload, auth, session)
 
     session.flash('success', 'Akun berhasil dibuat. Selamat datang!')
     return response.redirect().toRoute('customer.order.create')

@@ -1,4 +1,5 @@
 import { AddressFactory } from '#database/factories/address_factory'
+import { OrderFactory } from '#database/factories/order_factory'
 import { UserFactory } from '#database/factories/user_factory'
 import Address from '#models/address'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -89,12 +90,17 @@ test.group('Customer Address', (group) => {
     assert.lengthOf(await Address.query().where('user_id', customer.id), 0)
   })
 
-  test('POST /address keeps the previous address but deactivates it', async ({
+  /**
+   * An address that has routed an order is history — the record of where those
+   * shoes were collected from — so it is retired rather than removed.
+   */
+  test('POST /address keeps a previous address an order still points at', async ({
     client,
     assert,
   }) => {
     const customer = await UserFactory.create()
     const previous = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+    await OrderFactory.merge({ userId: customer.id, addressId: previous.id }).create()
 
     await client
       .post('/address')
@@ -111,6 +117,31 @@ test.group('Customer Address', (group) => {
       addresses.filter((address) => address.isActive),
       1
     )
+  })
+
+  /**
+   * One that never routed anything is a typo the customer corrected a minute
+   * later. Keeping it means the shop accumulates a pile of addresses nobody
+   * has been to and nothing will ever point at.
+   */
+  test('POST /address discards a previous address nothing points at', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.create()
+    const previous = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+
+    await client
+      .post('/address')
+      .loginAs(customer)
+      .json(addressPayload(INSIDE_SERVICE_AREA))
+      .withCsrfToken()
+
+    assert.isNull(await Address.find(previous.id))
+
+    const addresses = await Address.query().where('user_id', customer.id)
+    assert.lengthOf(addresses, 1)
+    assert.isTrue(addresses[0].isActive)
   })
 
   test('a guest cannot reach the address pages', async ({ client }) => {

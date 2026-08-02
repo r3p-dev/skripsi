@@ -14,7 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { orderStatusStyles } from '@/lib/constants'
+import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { OrderTypeLabel } from '@/enums/order_type_enum'
+import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -23,7 +26,7 @@ import { IconSearch } from '@tabler/icons-react'
 type Option = { value: string; label: string }
 
 type PageProps = InertiaProps<{
-  orders: { data: Data.Order[]; metadata: Metadata }
+  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
   filters: { search: string; page: number; status: string; type: string }
   statusOptions: Option[]
   typeOptions: Option[]
@@ -131,18 +134,22 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
                       <p className="text-black">{order.customerName}</p>
                       <p className="text-xs text-gray-500">{order.customerPhone}</p>
                     </TableCell>
-                    <TableCell>{order.type}</TableCell>
                     <TableCell>
-                      <Badge
-                        className={
-                          orderStatusStyles[order.statusValue] ?? 'bg-gray-200 text-gray-700'
-                        }
-                      >
-                        {order.status}
+                      <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
+                        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">{order.createdAt}</TableCell>
-                    <TableCell className="text-right">{order.totalPrice ?? '-'}</TableCell>
+                    <TableCell>
+                      <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+                        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {formatShortDate(order.createdAt)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

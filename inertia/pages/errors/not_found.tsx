@@ -5,7 +5,7 @@ import { IconChevronRight, IconSearchOff } from '@tabler/icons-react'
 
 export default function NotFound() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>Halaman Tidak Ditemukan</title>
         <meta name="description" content="Halaman yang Anda cari tidak dapat ditemukan" />

@@ -7,7 +7,7 @@ import { Head } from '@inertiajs/react'
 import { IconArrowLeft, IconPrinter } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
-  order: Data.Order
+  order: Data.Order.Variants['toDetail']
 }>
 
 /**
@@ -18,7 +18,7 @@ type PageProps = InertiaProps<{
  */
 export default function Tag({ order }: PageProps) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{`Label ${order.orderNumber}`}</title>
         <meta name="description" content="Label barang pesanan UmimaClean" />
@@ -27,7 +27,7 @@ export default function Tag({ order }: PageProps) {
       <div className="flex items-center gap-3 px-6 py-5 print:hidden">
         <Link
           route="staff.trip.index"
-          className="flex size-9 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -37,7 +37,7 @@ export default function Tag({ order }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 px-6 pb-10">
+      <div className="flex-1 px-6 pb-page">
         <Card className="gap-0 overflow-hidden rounded-2xl border-2 border-dashed border-black p-0 print:rounded-none">
           <div className="border-b-2 border-dashed border-black bg-black px-5 py-4 text-center text-white print:bg-white print:text-black">
             <p className="text-xs tracking-[0.3em] uppercase">UmimaClean</p>
