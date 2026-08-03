@@ -39,10 +39,6 @@ const isProduction = env.get('NODE_ENV') === 'production'
  */
 export const core = new midtransClient.CoreApi({
   isProduction,
-
-  /**
-   * Server key used to authenticate requests to Midtrans.
-   */
   serverKey: env.get('MIDTRANS_SERVER_KEY').release(),
 })
 
