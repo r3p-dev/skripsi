@@ -2,12 +2,14 @@ name: Deploy
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
 
 concurrency:
   group: deploy-master
   cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   build-and-deploy:
@@ -20,23 +22,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Login to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | \
-          podman login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Image
-        run: |
-          podman build \
-          --ulimit nofile=65535:65535 \
-          -t ghcr.io/${{ github.repository }}:${{ github.sha }} \
-          -t ghcr.io/${{ github.repository }}:latest \
-          .
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push Image
-        run: |
-          podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
-          podman push ghcr.io/${{ github.repository }}:latest
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run migrations
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            podman pull ${{ env.IMAGE }}:latest
+            podman run --rm \
+              --network apps \
+              --env-file /home/${{ secrets.VPS_USER }}/apps/skripsi/.env \
+              ${{ env.IMAGE }}:latest node ace migration:run --force
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
@@ -46,30 +66,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            set -e
+            set -euo pipefail
+            export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+            export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
 
-            APP_NAME=$(basename ${{ github.repository }})
-            APP_DIR=/home/${{ secrets.VPS_USER }}/apps/$APP_NAME
-            IMAGE=ghcr.io/${{ github.repository }}:${{ github.sha }}
-
-            mkdir -p $APP_DIR/storage
-            podman pull $IMAGE
-
-            # migrations first, as a one-shot container on the same image
-            podman run --rm \
-              --network web \
-              --env-file $APP_DIR/.env \
-              $IMAGE node ace migration:run --force
-
-            podman stop -t 30 $APP_NAME || true
-            podman rm $APP_NAME || true
-
-            podman run -d \
-              --name $APP_NAME \
-              --network web \
-              --restart unless-stopped \
-              --env-file $APP_DIR/.env \
-              -v $APP_DIR/storage:/app/storage:Z \
-              $IMAGE
-
+            systemctl --user restart skripsi
             podman image prune -f
