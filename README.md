@@ -187,6 +187,44 @@ external services — **Midtrans** (merchant ID and server key) for payments and
 | `pnpm lint`      | Check code style                                  |
 | `pnpm format`    | Apply formatting                                  |
 
+### Demo data
+
+`db:seed` loads the price list and the first admin account. In development it
+also loads a worked example of a shop mid-week: every role signed up, an order
+sitting in every status, every recorded action somewhere in an audit trail, and
+payments in all five transaction states across cash, QRIS, and debit. Proof
+photos and QR codes are generated as real files, so the pages that show them
+have something to show.
+
+```bash
+node ace migration:fresh --seed    # rebuild the database with the demo shop in it
+```
+
+Every demo account signs in with the password **`demo12345`**, and the seeder
+prints the full list when it finishes. The ones worth starting from:
+
+| Role     | Phone          | Lands on                                                        |
+| -------- | -------------- | --------------------------------------------------------------- |
+| Admin    | `081200000001` | The dashboard (password `admin12345` — the non-demo admin)      |
+| Admin    | `081200000002` | The dashboard, with a month of orders and revenue behind it     |
+| Staff    | `081300000001` | The trip queue, holding no task of their own                    |
+| Staff    | `081300000002` | Straight back into the pickup they have already claimed         |
+| Staff    | `081300000006` | Nothing — a deactivated account, kept for the actions it signed |
+| Customer | `081400000001` | **An order in every one of the nine statuses** — start here     |
+| Customer | `081400000002` | An ordinary history of four orders                              |
+| Customer | `081400000007` | The booking form, with no address given yet                     |
+| Customer | `081400000008` | Nothing — a deactivated account with a readable order history   |
+
+Orders are spread across all eight customers so each list reads like a real
+history, which means no ordinary account shows the whole lifecycle at once.
+`081400000001` is the exception: it holds one order in every status, from a
+booking that can still be cancelled through to a finished order with a receipt,
+so the statuses can be walked through from a single sign-in.
+
+The demo seeder never runs outside development, and refuses to run a second
+time rather than doubling the data. To start over, run `migration:fresh --seed`
+again.
+
 Housekeeping runs on a schedule rather than on a request. Point cron, a systemd
 timer, or whatever the host already uses at it once a night:
 

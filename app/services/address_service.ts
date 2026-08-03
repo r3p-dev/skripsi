@@ -6,7 +6,7 @@ import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { errors } from '@vinejs/vine'
 import RouteService from '#services/route_service'
-import { shop } from '#config/shop'
+import { shop } from '#config/app'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
 /**

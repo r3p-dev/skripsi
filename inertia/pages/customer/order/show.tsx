@@ -1,6 +1,12 @@
 import CustomerLayout from '@/components/layouts/customer_layout'
 import ImageSlider from '@/components/molecules/image_slide'
 import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
@@ -11,6 +17,7 @@ import {
   IconChevronRight,
   IconCreditCard,
   IconMapPin,
+  IconPhotoOff,
   IconReceipt,
   IconX,
 } from '@tabler/icons-react'
@@ -18,11 +25,14 @@ import { ActionName } from '@/enums/order_action_enum'
 import { OrderStatus, OrderStatusLabel } from '@/enums/order_status_enum'
 import { TransactionStatus } from '@/enums/transaction_enum'
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format'
+import { useEffect, useState } from 'react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   canCancel: boolean
 }>
+
+type OrderLine = NonNullable<Data.Order.Variants['toDetail']['items']>[number]
 
 /**
  * The milestones shown on the customer timeline.
@@ -55,6 +65,147 @@ const ORDER_STEPS = [
   },
 ] as const
 
+/**
+ * Whether every one of these images can still be fetched.
+ *
+ * Proof photos are kept for ninety days and then deleted by `prune:records`,
+ * and the signed URLs handed out with them expire on the same schedule. Most
+ * of the time the column is blanked at the same moment, so a missing photo
+ * simply is not in the data — but an order photographed on the boundary can
+ * arrive with a path that no longer resolves, and a comparison slider with one
+ * broken half is worse than no comparison at all. Asking the browser first
+ * means the section is never rendered around an image that will not load.
+ *
+ * `null` while the answer is still unknown, so nothing flashes on screen and
+ * then vanishes.
+ */
+function useImagesAvailable(sources: string[]): boolean | null {
+  const key = sources.join('|')
+
+  /*
+   * The answer is stored against the sources it was measured for, so a change
+   * of source reads as "unknown again" during render. Resetting it from inside
+   * the effect would be a second render pass for something the render already
+   * knows.
+   */
+  const [checked, setChecked] = useState<{ key: string; available: boolean } | null>(null)
+
+  useEffect(() => {
+    if (!key) {
+      return
+    }
+
+    let cancelled = false
+
+    Promise.all(
+      key.split('|').map(
+        (source) =>
+          new Promise<boolean>((resolve) => {
+            const image = new Image()
+            image.onload = () => resolve(true)
+            image.onerror = () => resolve(false)
+            image.src = source
+          })
+      )
+    ).then((results) => {
+      if (!cancelled) {
+        setChecked({ key, available: results.every(Boolean) })
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [key])
+
+  if (!key) {
+    return false
+  }
+
+  return checked?.key === key ? checked.available : null
+}
+
+/**
+ * Groups an order's priced lines by the thing they were done to.
+ *
+ * An order carries one line per item *and service*, so a single pair of shoes
+ * with a wash and a deodorizer is two rows sharing one item. Listed flat, the
+ * page repeated "Nike Air Force 1" once per service and the customer had to
+ * work out for themselves which charges belonged to which pair.
+ */
+function groupLinesByItem(lines: OrderLine[]) {
+  const groups = new Map<string, { key: string; title: string; lines: OrderLine[] }>()
+
+  for (const line of lines) {
+    const item = line.item
+    const key = item ? `item-${item.id}` : `line-${line.id}`
+
+    let group = groups.get(key)
+
+    if (!group) {
+      group = {
+        key,
+        /*
+         * Falls back to the composed line name for a line whose item did not
+         * come along — the flat label is wrong as a heading, but it is still
+         * the only description of the thing there is.
+         */
+        title: item ? `${item.brand} ${item.model}`.trim() : line.name,
+        lines: [],
+      }
+      groups.set(key, group)
+    }
+
+    group.lines.push(line)
+  }
+
+  return [...groups.values()]
+}
+
+/**
+ * One proof photo, or the space where one used to be.
+ *
+ * The strip shows them small so the page stays short, and tapping one opens it
+ * at full size — a button rather than a link because the accordion this sits
+ * inside underlines every anchor it contains, which under an image tile reads
+ * as a stray line rather than as a caption.
+ */
+function ProofPhoto({ label, path }: { label: string; path: string }) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className="w-56 shrink-0 snap-start">
+        <div className="flex aspect-video w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 bg-white px-3 text-center">
+          <IconPhotoOff className="size-5 text-gray-400" />
+          <span className="block text-xs leading-relaxed text-gray-500">
+            Foto sudah dihapus setelah 90 hari
+          </span>
+        </div>
+        <span className="mt-2 block text-sm font-medium text-black">{label}</span>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.open(path, '_blank', 'noopener,noreferrer')}
+      aria-label={`Perbesar foto ${label.toLowerCase()}`}
+      className="w-56 shrink-0 snap-start rounded-xl text-left transition-opacity active:opacity-80"
+    >
+      <img
+        src={path}
+        alt={label}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="aspect-video w-full rounded-xl border border-gray-200 object-cover"
+      />
+      <span className="mt-2 block text-sm font-medium text-black">{label}</span>
+    </button>
+  )
+}
+
 export default function Show({ order, canCancel }: PageProps) {
   const stepActions = ORDER_STEPS.map((step) => ({
     ...step,
@@ -82,10 +233,26 @@ export default function Show({ order, canCancel }: PageProps) {
   const beforeAfter =
     inspectionPhoto && cleaningPhoto ? { before: inspectionPhoto, after: cleaningPhoto } : null
 
+  const comparisonLoads = useImagesAvailable(
+    beforeAfter ? [beforeAfter.before, beforeAfter.after] : []
+  )
+
   const needsPayment = order.status === OrderStatus.AWAITING_PAYMENT
   const pendingTransaction = order.transactions?.find(
     (transaction) => transaction.status === TransactionStatus.PENDING
   )
+
+  const itemGroups = groupLinesByItem(order.items ?? [])
+
+  /**
+   * The receipt is the record of a finished transaction. Offering it while the
+   * shoes are still on the rack invites a customer to treat a work-in-progress
+   * quote as a final bill — the items can still be corrected right up until the
+   * order is paid for.
+   */
+  const hasReceipt = order.status === OrderStatus.COMPLETED
+
+  const recordedDates = stepActions.filter((step) => step.action)
 
   return (
     <CustomerLayout title={order.orderNumber} description="Detail pesanan UmimaClean Anda">
@@ -160,7 +327,11 @@ export default function Show({ order, canCancel }: PageProps) {
           </Card>
         )}
 
-        {beforeAfter && (
+        {/*
+          Left open rather than folded away: this is the one thing on the page
+          a customer came to see, and it is a single frame either way.
+        */}
+        {beforeAfter && comparisonLoads && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
             <CardHeader>
               <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
@@ -173,24 +344,38 @@ export default function Show({ order, canCancel }: PageProps) {
           </Card>
         )}
 
+        {/*
+          Folded away, and scrolling sideways when opened. Four proof photos
+          stacked full-width used to add some two thousand pixels to this page,
+          which pushed the dates, the items and the total far below the fold —
+          so the sections a customer opens the page to read were the hardest
+          ones to reach.
+        */}
         {proofPhotos.length > 0 && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
-            <CardHeader>
-              <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
-                Progres Pesanan
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {proofPhotos.map((photo) => (
-                <div key={photo.key}>
-                  <p className="mb-2 text-sm font-medium text-black">{photo.label}</p>
-                  <img
-                    src={photo.path}
-                    alt={photo.label}
-                    className="aspect-video w-full rounded-xl border border-gray-200 object-cover"
-                  />
-                </div>
-              ))}
+            <CardContent className="px-0">
+              <Accordion>
+                <AccordionItem value="progress" className="border-b-0">
+                  <AccordionTrigger className="px-5 text-sm font-semibold text-black">
+                    <span className="flex items-baseline gap-2">
+                      Progres Pesanan
+                      <span className="text-xs font-normal text-gray-500">
+                        {proofPhotos.length} foto
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-0">
+                    <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
+                      {proofPhotos.map((photo) => (
+                        <ProofPhoto key={photo.key} label={photo.label} path={photo.path} />
+                      ))}
+                    </div>
+                    <p className="px-5 pt-3 text-xs leading-relaxed text-gray-500">
+                      Geser untuk melihat foto lain, ketuk untuk memperbesar.
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </CardContent>
           </Card>
         )}
@@ -202,7 +387,7 @@ export default function Show({ order, canCancel }: PageProps) {
             </div>
             <div>
               <p className="text-xs tracking-widest text-gray-500 uppercase">Tanggal Penjemputan</p>
-              <p className="text-base font-medium text-black">{order.pickupDate ?? '-'}</p>
+              <p className="text-base font-medium text-black">{formatDate(order.pickupDate)}</p>
             </div>
           </div>
 
@@ -223,30 +408,52 @@ export default function Show({ order, canCancel }: PageProps) {
           )}
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-          <div className="divide-y divide-gray-200">
-            <div className="flex items-center justify-between py-2">
-              <p className="text-sm text-gray-600">Nomor Pesanan</p>
-              <p className="text-sm font-semibold text-black">{order.orderNumber}</p>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <p className="text-sm text-gray-600">Tanggal Pemesanan</p>
-              <p className="text-sm font-semibold text-black">{formatDate(order.createdAt)}</p>
-            </div>
-            {stepActions.map((step) =>
-              step.action ? (
-                <div key={step.key} className="flex items-center justify-between py-2">
-                  <p className="text-sm text-gray-600">{step.dateLabel}</p>
-                  <p className="text-sm font-semibold text-black">
-                    {formatDateTime(step.action.createdAt)}
-                  </p>
-                </div>
-              ) : null
-            )}
-          </div>
+        {/*
+          Reference data — the order number, when each stage happened. Worth
+          having, rarely the reason the page was opened, and it grows a row
+          with every milestone. Folded.
+        */}
+        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+          <CardContent className="px-0">
+            <Accordion>
+              <AccordionItem value="details" className="border-b-0">
+                <AccordionTrigger className="px-5 text-sm font-semibold text-black">
+                  Detail Pesanan
+                </AccordionTrigger>
+                {/*
+                  Rows are spans, not paragraphs: the accordion panel puts a
+                  bottom margin on every `p` it contains except the last, which
+                  on a table of label-and-value pairs pushes each value onto a
+                  line of its own.
+                */}
+                <AccordionContent className="px-5">
+                  <div className="divide-y divide-gray-200">
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      <span className="text-sm text-gray-600">Nomor Pesanan</span>
+                      <span className="text-sm font-semibold text-black">{order.orderNumber}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      <span className="text-sm text-gray-600">Tanggal Pemesanan</span>
+                      <span className="text-sm font-semibold text-black">
+                        {formatDate(order.createdAt)}
+                      </span>
+                    </div>
+                    {recordedDates.map((step) => (
+                      <div key={step.key} className="flex items-center justify-between gap-3 py-2">
+                        <span className="text-sm text-gray-600">{step.dateLabel}</span>
+                        <span className="text-sm font-semibold text-black">
+                          {formatDateTime(step.action!.createdAt)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
         </Card>
 
-        {!!order.items?.length && (
+        {itemGroups.length > 0 && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
             <CardHeader>
               <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
@@ -255,15 +462,19 @@ export default function Show({ order, canCancel }: PageProps) {
             </CardHeader>
             <CardContent>
               <div className="divide-y divide-gray-200">
-                {order.items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-black">{item.name}</p>
-                      <p className="text-xs text-gray-500">{formatRupiah(item.price)}</p>
+                {itemGroups.map((group) => (
+                  <div key={group.key} className="py-3 first:pt-0 last:pb-0">
+                    <p className="text-sm font-semibold text-black">{group.title}</p>
+                    <div className="mt-1.5 space-y-1">
+                      {group.lines.map((line) => (
+                        <div key={line.id} className="flex items-baseline justify-between gap-3">
+                          <p className="text-sm text-gray-600">{line.service?.name ?? line.name}</p>
+                          <p className="text-sm font-medium whitespace-nowrap text-black">
+                            {formatRupiah(line.subtotal)}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-sm font-semibold text-black">
-                      {formatRupiah(item.subtotal)}
-                    </p>
                   </div>
                 ))}
               </div>
@@ -277,19 +488,21 @@ export default function Show({ order, canCancel }: PageProps) {
           </Card>
         )}
 
-        <Link
-          route="customer.order.receipt"
-          routeParams={{ number: order.orderNumber }}
-          className={buttonVariants({
-            variant: 'outline',
-            className:
-              'h-12 w-full rounded-xl text-base font-semibold tracking-wide text-black active:scale-95',
-          })}
-        >
-          <IconReceipt className="size-5" />
-          Lihat Struk
-          <IconChevronRight className="size-4" />
-        </Link>
+        {hasReceipt && (
+          <Link
+            route="customer.order.receipt"
+            routeParams={{ number: order.orderNumber }}
+            className={buttonVariants({
+              variant: 'outline',
+              className:
+                'h-12 w-full rounded-xl text-base font-semibold tracking-wide text-black active:scale-95',
+            })}
+          >
+            <IconReceipt className="size-5" />
+            Lihat Struk
+            <IconChevronRight className="size-4" />
+          </Link>
+        )}
 
         {/*
           Always rendered, disabled once the pickup day arrives, so the rule

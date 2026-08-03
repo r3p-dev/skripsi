@@ -22,11 +22,8 @@ export function orderChannel(orderNumber: string): string {
 export const ADMIN_ORDERS_CHANNEL = 'admin/orders'
 
 export const AdminOrderEvent = {
-  /** A new order was booked or recorded at the counter. */
   CREATED: 'order:created',
-  /** An existing order moved to a different status. */
   UPDATED: 'order:updated',
-  /** An order's payment settled. */
   PAID: 'order:paid',
 } as const
 

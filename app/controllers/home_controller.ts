@@ -7,11 +7,6 @@ import ServiceTransformer from '#transformers/service_transformer'
 export default class HomeController {
   constructor(protected orderService: OrderService) {}
 
-  /**
-   * The public landing page. Its service carousel reads the same catalogue the
-   * shop actually charges from, so marketing prices can never drift from the
-   * ones staff apply at inspection.
-   */
   async index({ inertia }: HttpContext) {
     const services = await this.orderService.getAvailableServices()
 

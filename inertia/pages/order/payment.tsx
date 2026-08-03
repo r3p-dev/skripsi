@@ -5,7 +5,13 @@ import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
-import { IconArrowLeft, IconCircleCheck, IconClock, IconRefresh } from '@tabler/icons-react'
+import {
+  IconArrowLeft,
+  IconCircleCheck,
+  IconClock,
+  IconDownload,
+  IconRefresh,
+} from '@tabler/icons-react'
 import { type PropsWithChildren, useEffect, useState } from 'react'
 import type { ComponentProps } from 'react'
 import { TransactionStatus, TransactionStatusLabel } from '@/enums/transaction_enum'
@@ -64,6 +70,43 @@ function RetryForm({
       {children}
     </Form>
   )
+}
+
+/**
+ * Saves the QR to the device.
+ *
+ * Paying by QRIS on the same phone that is showing the QR means leaving this
+ * page for a banking app, and most of them will only scan a picture from the
+ * gallery — so the code has to be saved before it can be used. Long-pressing
+ * the image is the alternative, and it is not obvious enough to rely on.
+ *
+ * The image is fetched and handed over as a blob rather than linked with a
+ * `download` attribute, which browsers ignore for a cross-origin URL — and the
+ * QR is served by Midtrans, not by us. If the fetch is refused, opening the
+ * image on its own is the honest fallback: the customer can still save it by
+ * hand, which is exactly where they were before.
+ */
+async function downloadQrCode(source: string, orderNumber: string) {
+  try {
+    const response = await fetch(source)
+
+    if (!response.ok) {
+      throw new Error(`Unexpected ${response.status}`)
+    }
+
+    const objectUrl = URL.createObjectURL(await response.blob())
+    const anchor = document.createElement('a')
+
+    anchor.href = objectUrl
+    anchor.download = `qris-${orderNumber}.png`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+
+    URL.revokeObjectURL(objectUrl)
+  } catch {
+    window.open(source, '_blank', 'noopener,noreferrer')
+  }
 }
 
 /**
@@ -195,6 +238,18 @@ export default function Payment({
                     QR tidak tersedia
                   </div>
                 )}
+                {transaction.qrCode && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => downloadQrCode(transaction.qrCode!, order.orderNumber)}
+                    className="h-11 w-full rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95"
+                  >
+                    <IconDownload className="size-4" />
+                    Unduh Kode QR
+                  </Button>
+                )}
+
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <IconClock className="size-4" />
                   Menunggu pembayaran...

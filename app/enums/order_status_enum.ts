@@ -7,13 +7,6 @@ export const OrderStatus = {
   IN_INSPECTION: 'in_inspection',
   AWAITING_PAYMENT: 'awaiting_payment',
   IN_CLEANING: 'in_cleaning',
-  /**
-   * Washed and waiting on the shelf for the customer to walk in and collect it.
-   *
-   * Only orders with nowhere to deliver to reach this status. An order that is
-   * going back out on the van moves straight from cleaning into delivery, so
-   * this is the one status that says "the shop is holding your shoes".
-   */
   CLEANING_DONE: 'cleaning_done',
   IN_DELIVERY: 'in_delivery',
   COMPLETED: 'completed',

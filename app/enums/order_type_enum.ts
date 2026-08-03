@@ -2,18 +2,8 @@
  * Enum representing how an order reached the shop.
  */
 export const OrderType = {
-  /** Booked through the app by a registered customer, collected by staff. */
   ONLINE: 'online',
-  /** Walked in at the counter and collected there again once it is washed. */
   OFFLINE: 'offline',
-  /**
-   * Walked in at the counter, but going home on the van.
-   *
-   * The customer brought the shoes in themselves — so there is no pickup to
-   * drive and payment is taken at the counter — and then asked for them to be
-   * delivered back. That needs an address, which means it needs an account,
-   * so staff bind these to a customer who has used the app before.
-   */
   WALK_IN_DELIVERY: 'walk_in_delivery',
 } as const
 

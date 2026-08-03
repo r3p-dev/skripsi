@@ -20,6 +20,7 @@ export default class extends BaseSchema {
       table.string('midtrans_transaction_id').nullable().index()
       table.text('qr_code').nullable()
       table.string('status').notNullable().index()
+      table.decimal('cash_received', 10, 2).nullable()
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

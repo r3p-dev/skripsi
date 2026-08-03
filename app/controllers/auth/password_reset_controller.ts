@@ -17,10 +17,6 @@ export default class PasswordResetController {
     try {
       await this.authService.requestPasswordReset(payload)
 
-      /**
-       * Worded so it reveals nothing about whether the number is registered,
-       * matching the service's silent handling of unknown numbers.
-       */
       session.flash(
         'success',
         'Jika akun dengan nomor telepon tersebut ada, tautan atur ulang kata sandi telah dikirim melalui WhatsApp.'

@@ -10,5 +10,4 @@
 /// <reference path="../../config/limiter.ts" />
 /// <reference path="../../config/logger.ts" />
 /// <reference path="../../config/midtrans.ts" />
-/// <reference path="../../config/shop.ts" />
 /// <reference path="../../config/transmit.ts" />
