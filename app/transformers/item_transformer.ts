@@ -1,5 +1,6 @@
 import type Item from '#models/item'
 import { BaseTransformer } from '@adonisjs/core/transformers'
+import { DateTime } from 'luxon'
 
 export default class ItemTransformer extends BaseTransformer<Item> {
   toObject() {
@@ -15,7 +16,7 @@ export default class ItemTransformer extends BaseTransformer<Item> {
       ]),
 
       type: this.resource.type,
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }

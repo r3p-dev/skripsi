@@ -1,6 +1,7 @@
 import type OrderAction from '#models/order_action'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import UserTransformer from '#transformers/user_transformer'
+import { DateTime } from 'luxon'
 
 export default class OrderActionTransformer extends BaseTransformer<OrderAction> {
   /**
@@ -15,7 +16,7 @@ export default class OrderActionTransformer extends BaseTransformer<OrderAction>
       ...this.pick(this.resource, ['id', 'photoPath', 'note']),
 
       name: this.resource.name,
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 

@@ -5,6 +5,7 @@ import UserTransformer from '#transformers/user_transformer'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import OrderActionTransformer from '#transformers/order_action_transformer'
 import TransactionTransformer from '#transformers/transaction_transformer'
+import { DateTime } from 'luxon'
 
 export default class OrderTransformer extends BaseTransformer<Order> {
   /**
@@ -23,7 +24,7 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       status: this.resource.status,
       type: this.resource.type,
       pickupDate: this.resource.pickupDate?.toISODate() ?? null,
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 

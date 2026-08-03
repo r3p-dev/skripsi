@@ -1,6 +1,7 @@
 import type Address from '#models/address'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import UserTransformer from '#transformers/user_transformer'
+import { DateTime } from 'luxon'
 
 export default class AddressTransformer extends BaseTransformer<Address> {
   /**
@@ -14,7 +15,7 @@ export default class AddressTransformer extends BaseTransformer<Address> {
       latitude: Number(this.resource.latitude),
       longitude: Number(this.resource.longitude),
       isActive: Boolean(this.resource.isActive),
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 

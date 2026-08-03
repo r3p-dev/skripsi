@@ -1,5 +1,6 @@
 import type User from '#models/user'
 import { BaseTransformer } from '@adonisjs/core/transformers'
+import { DateTime } from 'luxon'
 
 export default class UserTransformer extends BaseTransformer<User> {
   /**
@@ -16,7 +17,7 @@ export default class UserTransformer extends BaseTransformer<User> {
 
       role: this.resource.role,
       isActive: Boolean(this.resource.isActive),
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }

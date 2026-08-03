@@ -1,5 +1,6 @@
 import type Transaction from '#models/transaction'
 import { BaseTransformer } from '@adonisjs/core/transformers'
+import { DateTime } from 'luxon'
 
 export default class TransactionTransformer extends BaseTransformer<Transaction> {
   toObject() {
@@ -14,7 +15,7 @@ export default class TransactionTransformer extends BaseTransformer<Transaction>
        * amount and leaves this null.
        */
       cashReceived: this.resource.cashReceived === null ? null : Number(this.resource.cashReceived),
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }

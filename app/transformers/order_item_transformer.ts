@@ -2,6 +2,7 @@ import type OrderItem from '#models/order_item'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import ServiceTransformer from '#transformers/service_transformer'
 import ItemTransformer from '#transformers/item_transformer'
+import { DateTime } from 'luxon'
 
 export default class OrderItemTransformer extends BaseTransformer<OrderItem> {
   /**
@@ -13,7 +14,7 @@ export default class OrderItemTransformer extends BaseTransformer<OrderItem> {
 
       price: Number(this.resource.price),
       subtotal: Number(this.resource.subtotal),
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 

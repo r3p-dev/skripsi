@@ -1,5 +1,6 @@
 import type Service from '#models/service'
 import { BaseTransformer } from '@adonisjs/core/transformers'
+import { DateTime } from 'luxon'
 
 export default class ServiceTransformer extends BaseTransformer<Service> {
   /**
@@ -17,7 +18,7 @@ export default class ServiceTransformer extends BaseTransformer<Service> {
       category: this.resource.category,
       type: this.resource.type,
       price: Number(this.resource.price),
-      createdAt: this.resource.createdAt.toISO(),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }
