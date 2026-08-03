@@ -19,7 +19,6 @@ build
 node_modules
 storage
 tmp
-tests
 docs
 
 *.md
