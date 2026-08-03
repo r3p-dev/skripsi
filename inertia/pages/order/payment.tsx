@@ -231,10 +231,10 @@ export default function Payment({
                   <img
                     src={transaction.qrCode}
                     alt="Kode QRIS"
-                    className="aspect-square w-full max-w-[260px] rounded-xl border border-gray-200 object-contain"
+                    className="aspect-square w-full max-w-65 rounded-xl border border-gray-200 object-contain"
                   />
                 ) : (
-                  <div className="flex aspect-square w-full max-w-[260px] items-center justify-center rounded-xl border border-dashed border-gray-300 text-center text-sm text-gray-500">
+                  <div className="flex aspect-square w-full max-w-65 items-center justify-center rounded-xl border border-dashed border-gray-300 text-center text-sm text-gray-500">
                     QR tidak tersedia
                   </div>
                 )}

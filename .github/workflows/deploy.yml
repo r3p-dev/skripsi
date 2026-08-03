@@ -1,0 +1,75 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: deploy-master
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+          podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Image
+        run: |
+          podman build \
+          --ulimit nofile=65535:65535 \
+          -t ghcr.io/${{ github.repository }}:${{ github.sha }} \
+          -t ghcr.io/${{ github.repository }}:latest \
+          .
+
+      - name: Push Image
+        run: |
+          podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
+          podman push ghcr.io/${{ github.repository }}:latest
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            APP_NAME=$(basename ${{ github.repository }})
+            APP_DIR=/home/${{ secrets.VPS_USER }}/apps/$APP_NAME
+            IMAGE=ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+            mkdir -p $APP_DIR/storage
+            podman pull $IMAGE
+
+            # migrations first, as a one-shot container on the same image
+            podman run --rm \
+              --network web \
+              --env-file $APP_DIR/.env \
+              $IMAGE node ace migration:run --force
+
+            podman stop -t 30 $APP_NAME || true
+            podman rm $APP_NAME || true
+
+            podman run -d \
+              --name $APP_NAME \
+              --network web \
+              --restart unless-stopped \
+              --env-file $APP_DIR/.env \
+              -v $APP_DIR/storage:/app/storage:Z \
+              $IMAGE
+
+            podman image prune -f

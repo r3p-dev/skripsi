@@ -12,8 +12,6 @@
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
-    "docs:assets": "vite build && rm -rf public/assets && cp -r build/public/assets public/assets",
-    "docs:screenshots": "pnpm docs:assets && DB_DATABASE=umimaclean_docs node ace migration:fresh --force && DB_DATABASE=umimaclean_docs node ace docs:screenshots",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit && tsc --noEmit --project inertia/tsconfig.json"
