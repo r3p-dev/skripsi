@@ -142,11 +142,6 @@ router
      */
     router.put('collections/:number', [controllers.staff.Collection, 'update'])
 
-    /**
-     * The registered-customer lookup the counter form uses, so a walk-in who
-     * has used the app before is bound to their account rather than typed in
-     * again as a second version of the same person.
-     */
     router.get('customers', [controllers.staff.Customer, 'index'])
 
     router.get('orders/create', [controllers.staff.Order, 'create'])
