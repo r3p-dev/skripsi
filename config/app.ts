@@ -1,6 +1,7 @@
 import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/core/http'
+import proxyAddr from 'proxy-addr'
 
 /**
  * The app URL can be used in various places where you want to create absolute
@@ -13,6 +14,8 @@ export const appUrl = env.get('APP_URL')
  * The configuration settings used by the HTTP server
  */
 export const http = defineConfig({
+  trustProxy: proxyAddr.compile(['loopback', 'uniquelocal']),
+
   /**
    * Generate a unique request id for each incoming request.
    * Useful to correlate logs and debug a request flow.
