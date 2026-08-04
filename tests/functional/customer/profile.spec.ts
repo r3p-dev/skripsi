@@ -1,171 +1,305 @@
+import { AddressFactory } from '#database/factories/address_factory'
+import { OrderFactory } from '#database/factories/order_factory'
 import { UserFactory } from '#database/factories/user_factory'
+import { appUrl } from '#config/app'
+import hash from '@adonisjs/core/services/hash'
+import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
-test.group('GET Pages', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
-  })
+test.group('Customer Profile', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
 
-  test('GET /profile returns customer/profile/show', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client.visit('customer.profile.show').loginAs(user).withInertia()
-
-    response.assertInertiaComponent('customer/profile')
-  })
-})
-
-test.group('Validation Errors', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
-  })
-
-  test('PUT /profile returns validation errors for invalid short password', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .put('/profile')
-      .withInertia()
-      .header('referer', '/profile')
-      .json({
-        currentPassword: user.password,
-        password: 'short',
-        passwordConfirm: 'short',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        password: 'Kata sandi minimal 8 karakter',
-      },
-      flash: {},
-    })
-  })
-
-  test('PUT /profile returns validation errors for invalid regex password', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .put('/profile')
-      .withInertia()
-      .header('referer', '/profile')
-      .json({
-        currentPassword: user.password,
-        password: 'longbutnonumber',
-        passwordConfirm: 'longbutnonumber',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        password: 'Kata sandi harus berisi huruf serta angka',
-      },
-      flash: {},
-    })
-  })
-
-  test('PUT /profile returns validation errors for invalid long password', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .put('/profile')
-      .withInertia()
-      .header('referer', '/profile')
-      .json({
-        currentPassword: user.password,
-        password: 'verylongpassword1234',
-        passwordConfirm: 'verylongpassword1234',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        password: 'Kata sandi maksimal 16 karakter',
-      },
-      flash: {},
-    })
-  })
-
-  test('PUT /profile returns validation errors for invalid different password', async ({
+  test('GET /profile shows the account with completed order count and address', async ({
     client,
+    assert,
   }) => {
-    const user = await UserFactory.create()
+    const customer = await UserFactory.merge({ phone: '081211116001' }).create()
+    const address = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
 
-    const response = await client
-      .put('/profile')
-      .withInertia()
-      .header('referer', '/profile')
-      .json({
-        currentPassword: user.password,
-        password: 'password123',
-        passwordConfirm: 'password456',
-      })
-      .loginAs(user)
-      .withCsrfToken()
+    await OrderFactory.apply('completed').merge({ userId: customer.id }).createMany(2)
+    await OrderFactory.merge({ userId: customer.id }).create()
 
-    response.assertInertiaPropsContains({
-      errors: {
-        passwordConfirm: 'Konfirmasi kata sandi tidak cocok',
-      },
-      flash: {},
-    })
+    const response = await client.get('/profile').withInertia().loginAs(customer)
+
+    response.assertInertiaComponent('customer/profile/show')
+    assert.equal(response.inertiaProps.totalOrders, 2)
+    assert.equal(response.inertiaProps.address.id, address.id)
   })
 
-  test('PUT /profile returns validation errors for invalid current password', async ({
-    client,
-  }) => {
-    const user = await UserFactory.create()
+  test('PUT /profile changes the display name', async ({ client, assert }) => {
+    const customer = await UserFactory.merge({ phone: '081211116002' }).create()
+
+    const response = await client
+      .put('/profile')
+      .loginAs(customer)
+      .json({ name: 'Budi Santoso' })
+      .withCsrfToken()
+
+    response.assertRedirectsTo('/profile')
+
+    await customer.refresh()
+    assert.equal(customer.name, 'Budi Santoso')
+  })
+
+  test('PUT /profile rejects a name that is not alphabetic', async ({ client }) => {
+    const customer = await UserFactory.merge({ phone: '081211116003' }).create()
 
     const response = await client
       .put('/profile')
       .withInertia()
+      .loginAs(customer)
       .header('referer', '/profile')
-      .json({
-        currentPassword: 'password345',
-        password: 'password123',
-        passwordConfirm: 'password123',
-      })
-      .loginAs(user)
+      .json({ name: 'Budi 123' })
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
-      errors: {
-        currentPassword: 'Kata sandi saat ini salah',
-      },
-      flash: {},
+      errors: { name: 'Nama lengkap hanya boleh berisi huruf' },
     })
   })
 })
 
-test.group('PUT succeeds', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
-  })
+/**
+ * These use `fields()` rather than `json()` on purpose: `passwordConfirmation` is
+ * a validation-only field, so it never reaches the validator's inferred output and
+ * the generated route registry rejects it on a typed JSON body.
+ */
+test.group('Customer Password', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
 
-  test('PUT /profile succeeds with valid data', async ({ client }) => {
-    const user = await UserFactory.merge({ password: 'password123' }).create()
+  test('PUT /password changes the password when the current one is correct', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.merge({ phone: '081211117001' }).create()
 
     const response = await client
-      .put('/profile')
-      .withInertia()
-      .header('referer', '/profile')
-      .json({
+      .put('/password')
+      .loginAs(customer)
+      .fields({
         currentPassword: 'password123',
-        password: 'password345',
-        passwordConfirm: 'password345',
+        password: 'newpassword1',
+        passwordConfirmation: 'newpassword1',
       })
-      .loginAs(user)
+      .withCsrfToken()
+
+    response.assertRedirectsTo('/profile')
+
+    await customer.refresh()
+    assert.isTrue(await hash.verify(customer.password, 'newpassword1'))
+  })
+
+  test('PUT /password refuses a wrong current password', async ({ client, assert }) => {
+    const customer = await UserFactory.merge({ phone: '081211117002' }).create()
+
+    const response = await client
+      .put('/password')
+      .withInertia()
+      .loginAs(customer)
+      .header('referer', '/profile')
+      .fields({
+        currentPassword: 'wrongpassword1',
+        password: 'newpassword1',
+        passwordConfirmation: 'newpassword1',
+      })
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
-      errors: {},
-      flash: {
-        success: 'Kata sandi berhasil diperbarui',
+      errors: { currentPassword: 'Kata sandi saat ini salah' },
+    })
+
+    await customer.refresh()
+    assert.isTrue(await hash.verify(customer.password, 'password123'))
+  })
+
+  test('PUT /password requires the confirmation to match', async ({ client }) => {
+    const customer = await UserFactory.merge({ phone: '081211117003' }).create()
+
+    const response = await client
+      .put('/password')
+      .withInertia()
+      .loginAs(customer)
+      .header('referer', '/profile')
+      .fields({
+        currentPassword: 'password123',
+        password: 'newpassword1',
+        passwordConfirmation: 'differentpass1',
+      })
+      .withCsrfToken()
+
+    response.assertInertiaPropsContains({
+      errors: { passwordConfirmation: 'Konfirmasi kata sandi tidak cocok' },
+    })
+  })
+})
+
+test.group('Customer Phone Change', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
+
+  test('POST /phone refuses the number the customer already has', async ({ client }) => {
+    const customer = await UserFactory.merge({ phone: '081211118001' }).create()
+
+    const response = await client
+      .post('/phone')
+      .withInertia()
+      .loginAs(customer)
+      .header('referer', '/profile')
+      .json({ phone: '081211118001' })
+      .withCsrfToken()
+
+    response.assertInertiaPropsContains({
+      errors: { phone: 'Nomor telepon baru tidak boleh sama dengan yang lama' },
+    })
+  })
+
+  test('POST /phone refuses a number already used by someone else', async ({ client }) => {
+    const customer = await UserFactory.merge({ phone: '081211118002' }).create()
+    await UserFactory.merge({ phone: '081211118003' }).create()
+
+    const response = await client
+      .post('/phone')
+      .withInertia()
+      .loginAs(customer)
+      .header('referer', '/profile')
+      .json({ phone: '081211118003' })
+      .withCsrfToken()
+
+    response.assertInertiaPropsContains({
+      errors: { phone: 'Nomor telepon sudah digunakan' },
+    })
+  })
+
+  /**
+   * The link normally arrives over WhatsApp, so the test signs it directly —
+   * the same trick `browser/auth.spec.ts` uses for password reset.
+   */
+  test('GET /phone/verify applies the change when the link is properly signed', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.merge({ phone: '081211118006' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118007', userId: customer.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client.get(verificationUrl).withInertia().loginAs(customer)
+
+    response.assertRedirectsTo('/profile')
+    response.assertInertiaPropsContains({
+      flash: { success: 'Nomor telepon berhasil diverifikasi' },
+    })
+
+    await customer.refresh()
+    assert.equal(customer.phone, '081211118007')
+  })
+
+  /**
+   * The signature proves the link is ours and unedited; it says nothing about
+   * who is holding it. Without the account id signed in alongside the number,
+   * a link sent to one person and opened on a shared machine would move
+   * whichever account happened to be signed in.
+   */
+  test('a link signed for someone else changes nothing', async ({ client, assert }) => {
+    const owner = await UserFactory.merge({ phone: '081211118020' }).create()
+    const bystander = await UserFactory.merge({ phone: '081211118021' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118022', userId: owner.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client.get(verificationUrl).withInertia().loginAs(bystander)
+
+    response.assertInertiaComponent('errors/invalid_signature')
+
+    await bystander.refresh()
+    assert.equal(bystander.phone, '081211118021')
+  })
+
+  /**
+   * Fifteen minutes pass between asking for the link and opening it, and
+   * somebody else can register that number in the meantime. Without this the
+   * unique index answers with a 500 and a customer who did everything right
+   * is looking at a crash page.
+   */
+  test('a number claimed while the link was in flight is refused politely', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.merge({ phone: '081211118030' }).create()
+    await UserFactory.merge({ phone: '081211118031' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118031', userId: customer.id },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client
+      .get(verificationUrl)
+      .withInertia()
+      .header('referer', '/profile')
+      .loginAs(customer)
+
+    response.assertInertiaPropsContains({
+      errors: {
+        phone: 'Nomor telepon tersebut sudah digunakan akun lain. Silakan ajukan ulang.',
       },
     })
+
+    await customer.refresh()
+    assert.equal(customer.phone, '081211118030')
+  })
+
+  test('a phone verification link stops working once it expires', async ({ client, assert }) => {
+    const customer = await UserFactory.merge({ phone: '081211118008' }).create()
+
+    const verificationUrl = signedUrlFor(
+      'customer.phone.update',
+      {},
+      {
+        qs: { phone: '081211118009', userId: customer.id },
+        expiresIn: '-1m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    const response = await client.get(verificationUrl).withInertia().loginAs(customer)
+
+    response.assertInertiaComponent('errors/invalid_signature')
+
+    await customer.refresh()
+    assert.equal(customer.phone, '081211118008')
+  })
+
+  test('GET /phone/verify rejects a link without a valid signature', async ({ client, assert }) => {
+    const customer = await UserFactory.merge({ phone: '081211118004' }).create()
+
+    const response = await client
+      .get('/phone/verify')
+      .qs({ phone: '081211118005' })
+      .withInertia()
+      .loginAs(customer)
+
+    response.assertInertiaComponent('errors/invalid_signature')
+
+    await customer.refresh()
+    assert.equal(customer.phone, '081211118004')
   })
 })

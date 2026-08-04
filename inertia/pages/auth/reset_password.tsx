@@ -1,55 +1,64 @@
 import { PasswordInput } from '@/components/atoms/password_input'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
-import { Spinner } from '@/components/ui/spinner'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Form } from '@adonisjs/inertia/react'
+import { IconChevronRight } from '@tabler/icons-react'
 
 export default function ResetPassword() {
   return (
     <AuthLayout
-      title="Reset kata sandi"
-      description="Atur ulang kata sandi akun Anda untuk meningkatkan keamanan dan kembali mengakses layanan dengan kredensial baru."
-      cardTitle="Reset kata sandi"
-      cardDescription="Masukkan detail Anda di bawah untuk reset kata sandi"
+      title="Atur Ulang Kata Sandi"
+      description="Masukkan kata sandi baru Anda di bawah ini"
+      metaTitle="Atur Ulang Kata Sandi"
+      metaDescription="Atur ulang kata sandi akun UmimaClean Anda"
     >
-      <Form route="password_reset.update" disableWhileProcessing resetOnSuccess>
+      <Form action={window.location.href} method="post" className="space-y-5">
         {({ errors, processing }) => (
-          <FieldSet>
-            <FieldGroup>
-              <Field data-invalid={errors.password ? 'true' : undefined}>
-                <FieldLabel className="text-sm">Kata Sandi</FieldLabel>
-                <PasswordInput
-                  className="h-10 px-3 py-1"
-                  name="password"
-                  placeholder="Masukkan kata sandi"
-                />
-                <FieldError errors={errors.password ? [{ message: errors.password }] : undefined} />
-              </Field>
+          <>
+            <Field data-invalid={errors.password ? 'true' : undefined}>
+              <FieldLabel
+                htmlFor="password"
+                className="text-xs tracking-widest text-gray-700 uppercase"
+              >
+                Kata Sandi
+              </FieldLabel>
+              <PasswordInput
+                id="password"
+                name="password"
+                autoComplete="new-password"
+                aria-invalid={!!errors.password}
+                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+              />
+              <FieldError>{errors.password}</FieldError>
+            </Field>
 
-              <Field data-invalid={errors.password_confirmation ? 'true' : undefined}>
-                <FieldLabel className="text-sm">Konfirmasi Kata Sandi</FieldLabel>
-                <PasswordInput
-                  className="h-10 px-3 py-1"
-                  name="password_confirmation"
-                  placeholder="Masukkan konfirmasi kata sandi"
-                />
-                <FieldError
-                  errors={
-                    errors.password_confirmation
-                      ? [{ message: errors.password_confirmation }]
-                      : undefined
-                  }
-                />
-              </Field>
+            <Field data-invalid={errors.passwordConfirmation ? 'true' : undefined}>
+              <FieldLabel
+                htmlFor="passwordConfirmation"
+                className="text-xs tracking-widest text-gray-700 uppercase"
+              >
+                Konfirmasi Kata Sandi
+              </FieldLabel>
+              <PasswordInput
+                id="passwordConfirmation"
+                name="passwordConfirmation"
+                autoComplete="new-password"
+                aria-invalid={!!errors.passwordConfirmation}
+                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+              />
+              <FieldError>{errors.passwordConfirmation}</FieldError>
+            </Field>
 
-              <Field>
-                <Button type="submit" className="w-full h-10 text-lg cursor-pointer">
-                  {processing ? <Spinner /> : 'Reset Kata Sandi'}
-                </Button>
-              </Field>
-            </FieldGroup>
-          </FieldSet>
+            <Button
+              type="submit"
+              disabled={processing}
+              className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
+            >
+              Atur Ulang Kata Sandi
+              <IconChevronRight className="size-5" />
+            </Button>
+          </>
         )}
       </Form>
     </AuthLayout>

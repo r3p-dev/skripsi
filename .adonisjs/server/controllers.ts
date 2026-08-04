@@ -6,7 +6,14 @@
 export const controllers = {
   admin: {
     Dashboard: () => import('#controllers/admin/dashboard_controller'),
+    Order: () => import('#controllers/admin/order_controller'),
+    Phone: () => import('#controllers/admin/phone_controller'),
     Profile: () => import('#controllers/admin/profile_controller'),
+    Reconciliation: () => import('#controllers/admin/reconciliation_controller'),
+    Report: () => import('#controllers/admin/report_controller'),
+    Service: () => import('#controllers/admin/service_controller'),
+    Signup: () => import('#controllers/admin/signup_controller'),
+    User: () => import('#controllers/admin/user_controller'),
   },
   auth: {
     PasswordReset: () => import('#controllers/auth/password_reset_controller'),
@@ -16,12 +23,26 @@ export const controllers = {
   customer: {
     Address: () => import('#controllers/customer/address_controller'),
     Order: () => import('#controllers/customer/order_controller'),
+    Password: () => import('#controllers/customer/password_controller'),
+    Phone: () => import('#controllers/customer/phone_controller'),
     Profile: () => import('#controllers/customer/profile_controller'),
+    Transaction: () => import('#controllers/customer/transaction_controller'),
   },
   Home: () => import('#controllers/home_controller'),
   staff: {
-    OfflineOrder: () => import('#controllers/staff/offline_order_controller'),
+    Cleaning: () => import('#controllers/staff/cleaning_controller'),
+    Collection: () => import('#controllers/staff/collection_controller'),
+    Customer: () => import('#controllers/staff/customer_controller'),
+    Inspection: () => import('#controllers/staff/inspection_controller'),
+    Notification: () => import('#controllers/staff/notification_controller'),
+    Order: () => import('#controllers/staff/order_controller'),
+    Phone: () => import('#controllers/staff/phone_controller'),
     Profile: () => import('#controllers/staff/profile_controller'),
-    Task: () => import('#controllers/staff/task_controller'),
+    Tag: () => import('#controllers/staff/tag_controller'),
+    Transaction: () => import('#controllers/staff/transaction_controller'),
+    Trip: () => import('#controllers/staff/trip_controller'),
+  },
+  webhooks: {
+    Transaction: () => import('#controllers/webhooks/transaction_controller'),
   },
 }

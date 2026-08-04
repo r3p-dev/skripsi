@@ -1,8 +1,6 @@
 import vine from '@vinejs/vine'
+import type { Infer } from '@vinejs/vine/types'
 
-/**
- * Shared rules
- */
 export const name = () =>
   vine
     .string()
@@ -11,9 +9,6 @@ export const name = () =>
     .maxLength(50)
     .alpha({ allowSpaces: true, allowDashes: true, allowUnderscores: false })
 
-/**
- * Validate and normalize Indonesian phone numbers before they reach services.
- */
 export const phone = () =>
   vine
     .string()
@@ -26,7 +21,7 @@ export const password = () =>
     .trim()
     .minLength(8)
     .maxLength(16)
-    .regex(/^(?=.*\d)[A-Za-z\d]{8,16}$/)
+    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/)
 
 export const amount = () => vine.number().positive()
 
@@ -40,22 +35,31 @@ export const note = () => vine.string().trim().optional()
 
 export const service = () => vine.number().positive()
 
-export const shoe = vine.object({
+export const item = vine.object({
   brand: vine.string().trim(),
+  model: vine.string().trim(),
   type: vine.string().trim(),
-  size: vine.number().positive(),
+  size: vine.string().trim(),
   material: vine.string().trim(),
-  category: vine.string().trim(),
   condition: vine.string().trim(),
   note: note(),
   service: service(),
   additionalServices: vine.array(service()).optional(),
 })
 
-/**
- * Type definition for generic filters used in list requests.
- */
 export type Filters = {
   search: string
   page: number
 }
+
+/**
+ * The admin order monitor's filters. Both narrowing fields are raw enum
+ * values rather than the Indonesian labels pages usually receive, because a
+ * filter has to survive a round trip through the query string.
+ */
+export type OrderFilters = Filters & {
+  status: string
+  type: string
+}
+
+export type ItemData = Infer<typeof item>

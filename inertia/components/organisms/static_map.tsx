@@ -1,13 +1,12 @@
 import L from 'leaflet'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 
-export default function StaticMap({
-  latitude,
-  longitude,
-}: {
+type StaticMapProps = {
   latitude: number
   longitude: number
-}) {
+}
+
+export default function StaticMap({ latitude, longitude }: StaticMapProps) {
   return (
     <div
       style={{ height: '350px', width: '100%' }}

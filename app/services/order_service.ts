@@ -1,126 +1,140 @@
+import Address from '#models/address'
+import { ActionName } from '#enums/order_action_enum'
 import { OrderStatus } from '#enums/order_status_enum'
+import { OrderType } from '#enums/order_type_enum'
+import { PaymentMethod } from '#enums/transaction_enum'
 import Order from '#models/order'
-import type User from '#models/user'
-import type { OrderData } from '#validators/order_validator'
-import { Filters } from '#validators/shared'
+import OrderAction from '#models/order_action'
+import Service from '#models/service'
+import User from '#models/user'
+import { Role } from '#enums/role_enum'
+import type { OfflineOrderData, OrderData } from '#validators/order_validator'
+import { Filters, OrderFilters } from '#validators/shared'
 import { inject } from '@adonisjs/core'
+import { EXPORT_ROW_LIMIT } from '#services/excel_service'
 import db from '@adonisjs/lucid/services/db'
 import type { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { errors as vineErrors } from '@vinejs/vine'
 import { DateTime } from 'luxon'
-import RouteService from '#services/route_service'
+import TaskService from '#services/task_service'
+import TransactionService from '#services/transaction_service'
+import BroadcastService from '#services/broadcast_service'
 
 /**
- * Manages customer and administrative order workflows.
+ * Maximum number of pickups that may be scheduled for a single day,
+ * so the team is never booked beyond what it can actually collect.
+ */
+export const DAILY_PICKUP_LIMIT = 10
+
+/**
+ * How many times to regenerate an order number before giving up.
  *
- * Responsibilities:
- * - Retrieve customer and administrative order listings.
- * - Retrieve detailed order information.
- * - Create new customer orders.
- * - Enforce order cancellation policies.
- * - Generate unique order numbers.
+ * Numbers are derived from the highest one issued today, so two orders created
+ * in the same instant can read the same value. The unique index turns that into
+ * a failed insert rather than a duplicate, and a retry simply reads the number
+ * the winner just took. Three attempts is far beyond what this volume needs.
+ */
+const ORDER_NUMBER_ATTEMPTS = 3
+
+/**
+ * Postgres unique-violation error code.
+ */
+function isDuplicateOrderNumber(error: unknown): boolean {
+  return (error as { code?: string })?.code === '23505'
+}
+
+/**
+ * Manages customer order workflows: browsing, creating,
+ * and cancelling orders.
  */
 @inject()
 export default class OrderService {
-  private readonly routeService = new RouteService()
+  constructor(
+    private taskService: TaskService,
+    private transactionService: TransactionService,
+    private broadcastService: BroadcastService
+  ) {}
+
   /**
-   * Retrieve a paginated list of orders belonging to the authenticated customer.
-   *
-   * Results can be filtered using the provided search criteria and are sorted
-   * by creation date in descending order. Related address information is
-   * loaded to support order history and tracking views.
-   *
-   * @param user - Authenticated customer.
-   * @param filters - Pagination and search filters.
-   * @returns A paginated collection of the customer's orders.
+   * Retrieves customer orders with
+   * optional search and pagination.
    */
-  async getAllCustomerOrders(user: User, filters: Filters): Promise<ModelPaginatorContract<Order>> {
+  async getAllOrders(filters: Filters, user?: User): Promise<ModelPaginatorContract<Order>> {
     const searchTerm = `${filters.search}%`
 
     return Order.query()
-      .where('user_id', user.id)
+      .if(user, (query) => {
+        query.where('user_id', user!.id)
+      })
       .andWhereILike('order_number', searchTerm)
-      .preload('address', (addressQuery) => {
-        addressQuery
-          .whereILike('recipient_name', searchTerm)
-          .orWhereILike('recipient_phone', searchTerm)
-          .orWhereILike('address_detail', searchTerm)
+      .preload('address', (query) => {
+        query
+          .whereILike('name', searchTerm)
+          .orWhereILike('phone', searchTerm)
+          .orWhereILike('street', searchTerm)
       })
       .orderBy('created_at', 'desc')
       .paginate(filters.page, 10)
   }
 
   /**
-   * Retrieve a paginated list of all orders.
+   * Retrieves every order for the admin monitor, scoped to nobody and
+   * narrowable by status and type.
    *
-   * This method is intended for administrative and operational workflows
-   * where visibility across all customer orders is required.
-   *
-   * Results can be filtered using the provided search criteria and are sorted
-   * by creation date in descending order.
-   *
-   * @param filters - Pagination and search filters.
-   * @returns A paginated collection of orders.
+   * Kept apart from `getAllOrders` because the two answer different
+   * questions: that one is a customer looking through their own history and
+   * is always scoped to them, this one is an operator looking at the shop.
    */
-  async getAllOrders(filters: Filters): Promise<ModelPaginatorContract<Order>> {
-    const searchTerm = `${filters.search}%`
-
-    return Order.query()
-      .andWhereILike('order_number', searchTerm)
-      .preload('address', (addressQuery) => {
-        addressQuery
-          .whereILike('recipient_name', searchTerm)
-          .orWhereILike('recipient_phone', searchTerm)
-          .orWhereILike('address_detail', searchTerm)
-      })
-      .orderBy('created_at', 'desc')
-      .paginate(filters.page, 10)
+  async getMonitoredOrders(filters: OrderFilters): Promise<ModelPaginatorContract<Order>> {
+    return this.monitoredOrdersQuery(filters).preload('address').paginate(filters.page, 10)
   }
 
   /**
-   * Retrieve a specific order owned by the authenticated customer.
+   * The same list the monitor shows, unpaginated, for the spreadsheet export.
    *
-   * The order is loaded together with its related address, items, services,
-   * staff actions, and transaction history.
-   *
-   * Ownership validation is enforced to ensure customers can only access
-   * their own orders.
-   *
-   * @param user - Authenticated customer.
-   * @param orderNumber - Unique order identifier.
-   * @returns The matching customer order with its related data.
-   * @throws When the order cannot be found or does not belong to the customer.
+   * Built on the same query as the screen so the file always contains exactly
+   * what the filters above it describe — an export that quietly widened or
+   * narrowed the list would be worse than no export. The transactions come
+   * along because the file has room for a payment column the table does not.
    */
-  async getCustomerOrderByNumber(user: User, orderNumber: string): Promise<Order> {
-    return Order.query()
-      .where('order_number', orderNumber)
-      .andWhere('user_id', user.id)
+  async getMonitoredOrdersForExport(filters: OrderFilters): Promise<Order[]> {
+    return this.monitoredOrdersQuery(filters)
       .preload('address')
-      .preload('items', (itemsQuery) => {
-        itemsQuery.preload('service').preload('item')
+      .preload('transactions', (transactionsQuery) => {
+        transactionsQuery.orderBy('created_at', 'desc')
       })
-      .preload('actions', (actionsQuery) => {
-        actionsQuery.preload('staff')
+      .limit(EXPORT_ROW_LIMIT)
+  }
+
+  private monitoredOrdersQuery(filters: OrderFilters) {
+    const searchTerm = `%${filters.search}%`
+
+    return Order.query()
+      .if(filters.search, (query) => {
+        query.where((matches) => {
+          matches
+            .whereILike('order_number', searchTerm)
+            .orWhereILike('customer_name', searchTerm)
+            .orWhereILike('customer_phone', searchTerm)
+        })
       })
-      .preload('transactions')
-      .firstOrFail()
+      .if(filters.status, (query) => {
+        query.where('status', filters.status)
+      })
+      .if(filters.type, (query) => {
+        query.where('type', filters.type)
+      })
+      .orderBy('created_at', 'desc')
   }
 
   /**
-   * Retrieve a specific order by its order number.
-   *
-   * The order is loaded together with its related address, items, services,
-   * staff actions, and transaction history.
-   *
-   * This method is intended for administrative and operational use cases
-   * where ownership restrictions are not applied.
-   *
-   * @param orderNumber - Unique order identifier.
-   * @returns The matching order with its related data.
-   * @throws When the order cannot be found.
+   * Retrieves an order together with all related data.
    */
-  async getOrderByNumber(orderNumber: string): Promise<Order> {
+  async getOrderByNumber(orderNumber: string, user?: User): Promise<Order> {
     return Order.query()
+      .if(user, (query) => {
+        query.where('user_id', user!.id)
+      })
       .where('order_number', orderNumber)
       .preload('address')
       .preload('items', (itemsQuery) => {
@@ -134,142 +148,281 @@ export default class OrderService {
   }
 
   /**
-   * Create a new customer order and schedule an item pickup.
+   * Creates a new online order for the customer's chosen pickup date.
    *
-   * A unique order number is generated automatically and the order is created
-   * with an initial status indicating that pickup has been scheduled.
+   * Pickup capacity is limited per day to avoid exceeding
+   * operational resources.
    *
-   * The operation is executed within a database transaction to ensure
-   * consistency during order creation.
-   *
-   * @param user - Authenticated customer.
-   * @param data - Validated order creation payload.
-   * @returns The newly created order.
+   * The recipient's name and phone come from the pickup address, not from the
+   * account: a customer may well be booking on behalf of someone else, and it
+   * is whoever is at that door that staff need to ask for and call.
    */
   async createOnlineOrder(user: User, data: OrderData): Promise<Order> {
-    const pickupDate = data.date instanceof DateTime ? data.date : DateTime.fromJSDate(data.date)
-    const pickupDateValue = pickupDate.toFormat('yyyy-MM-dd')
-    const limit = 10
+    /**
+     * The address id arrives straight from the form, so it has to be checked
+     * against this customer's own addresses. Without it, anyone could book a
+     * pickup at a stranger's address by editing the hidden field.
+     */
+    const address = await Address.query()
+      .where('id', data.addressId)
+      .where('user_id', user.id)
+      .first()
 
-    const existingPickupOrders = await Order.query()
-      .where('pickup_date', pickupDateValue)
-      .where('status', OrderStatus.PICKUP_SCHEDULED)
-
-    if (
-      this.hasReachedDailyOrderLimit(
-        existingPickupOrders,
-        pickupDate,
-        limit,
-        OrderStatus.PICKUP_SCHEDULED
-      )
-    ) {
+    if (!address) {
       throw new vineErrors.E_VALIDATION_ERROR([
         {
-          field: 'date',
+          field: 'addressId',
+          message: 'Alamat penjemputan tidak ditemukan.',
+        },
+      ])
+    }
+
+    const scheduledPickups = await Order.query()
+      .where('pickup_date', data.pickupDate.toFormat('yyyy-MM-dd'))
+      .where('status', OrderStatus.PICKUP_SCHEDULED)
+
+    if (scheduledPickups.length >= DAILY_PICKUP_LIMIT) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'pickupDate',
           message: 'Batas penjemputan per hari sudah penuh untuk tanggal ini.',
         },
       ])
     }
 
-    const order = await db.transaction(async (trx) => {
-      const number = await this.generateOrderNumber()
+    const order = await this.createWithUniqueOrderNumber((orderNumber) =>
+      Order.create({
+        userId: user.id,
+        customerName: address.name,
+        customerPhone: address.phone,
+        addressId: address.id,
+        orderNumber,
+        pickupDate: data.pickupDate,
+        totalPrice: null,
+        type: OrderType.ONLINE,
+        status: OrderStatus.PICKUP_SCHEDULED,
+      })
+    )
 
-      return Order.create(
-        {
-          userId: user.id,
-          addressId: data.addressId,
-          orderNumber: number,
-          pickupDate,
-          totalPrice: null,
-          status: OrderStatus.PICKUP_SCHEDULED,
-        },
-        { client: trx }
-      )
-    })
+    this.broadcastService.orderCreated(order)
 
     return order
   }
 
   /**
-   * Build the combined pickup and delivery route plan for the selected day.
+   * Creates an order recorded at the counter.
    *
-   * @param selectedDate - The date for which the route should be generated.
-   * @param originLat - Starting latitude for the route.
-   * @param originLng - Starting longitude for the route.
-   * @returns A sorted route plan for staff.
+   * Unlike a booked order, the shoes are already in the shop and the services
+   * are already chosen, so there is no pickup to drive and no inspection to
+   * schedule — the order starts in cleaning. Payment is taken on the spot:
+   * cash and debit are marked paid immediately, while QRIS opens a Midtrans
+   * charge for the customer to scan before they leave.
+   *
+   * Two things vary. The customer may already have an account, in which case
+   * the order is bound to it and shows up in their own history rather than
+   * being a stranger's row with the same phone number on it. And they may want
+   * the shoes delivered back rather than collecting them, which needs an
+   * address, which is why it needs the account.
    */
-  async getUnifiedRoutePlanForDate(selectedDate: DateTime, originLat: number, originLng: number) {
-    const selectedDateValue = selectedDate.toFormat('yyyy-MM-dd')
+  async createOfflineOrder(staff: User, data: OfflineOrderData): Promise<Order> {
+    const { customer, address } = await this.resolveWalkInCustomer(data)
 
-    const orders = await Order.query()
-      .where('pickup_date', selectedDateValue)
-      .whereIn('status', [OrderStatus.PICKUP_SCHEDULED, OrderStatus.IN_DELIVERY])
-      .preload('address')
+    /**
+     * Checked before anything is written. The total is only knowable once the
+     * lines are priced, so this prices them without persisting — a payload
+     * that does not cover the bill then leaves no photo on disk and no half-
+     * built order behind it.
+     */
+    if (data.paymentMethod === PaymentMethod.CASH) {
+      this.assertCashCoversTotal(data.cashReceived, await this.taskService.priceItems(data.items))
+    }
 
-    return this.routeService.buildRoutePlanForOrders(
-      orders.map((order) => ({
-        id: order.id,
-        orderNumber: order.orderNumber,
-        pickupDate: order.pickupDate,
-        status: order.status,
-        address: order.address
-          ? {
-              latitude: order.address.latitude,
-              longitude: order.address.longitude,
-            }
-          : null,
-      })),
-      {
-        originLat,
-        originLng,
-        selectedDate,
-      }
+    /**
+     * A counter order never goes through inspection, so this is the only
+     * record of what condition the shoes arrived in — which is the record any
+     * later disagreement turns on.
+     */
+    const photoPath = await this.taskService.storePhoto('offline', data.photo)
+
+    const createdOrder = await this.createWithUniqueOrderNumber((orderNumber) =>
+      db.transaction(async (trx) => {
+        const order = await Order.create(
+          {
+            userId: customer?.id ?? null,
+            addressId: address?.id ?? null,
+            customerName: data.name,
+            customerPhone: data.phone,
+            orderNumber,
+            type: address ? OrderType.WALK_IN_DELIVERY : OrderType.OFFLINE,
+            status: OrderStatus.IN_CLEANING,
+            totalPrice: null,
+          },
+          { client: trx }
+        )
+
+        const totalPrice = await this.taskService.createOrderItems(order, data.items, trx)
+
+        await order.merge({ totalPrice }).useTransaction(trx).save()
+
+        await OrderAction.create(
+          {
+            orderId: order.id,
+            staffId: staff.id,
+            name: ActionName.OFFLINE_ORDER,
+            photoPath,
+            note: data.note ?? null,
+          },
+          { client: trx }
+        )
+
+        return order
+      })
     )
+
+    if (data.paymentMethod === PaymentMethod.QRIS) {
+      await this.transactionService.createQrisTransaction(createdOrder)
+    } else {
+      await this.transactionService.createManualTransaction(
+        createdOrder,
+        data.paymentMethod,
+        data.paymentMethod === PaymentMethod.CASH ? (data.cashReceived ?? null) : null
+      )
+    }
+
+    this.broadcastService.orderCreated(createdOrder)
+
+    return this.getOrderByNumber(createdOrder.orderNumber)
   }
 
   /**
-   * Check whether the daily limit for a given order status has been reached.
+   * Works out which account, if any, a counter order belongs to, and where it
+   * should be delivered if the customer asked for that.
    *
-   * @param orders - Orders to evaluate for the selected day.
-   * @param selectedDate - The target date for the evaluation.
-   * @param limit - Maximum allowed orders for the day.
-   * @param status - Order status to evaluate.
-   * @returns `true` when the limit has been reached; otherwise `false`.
+   * Delivery is only offered to customers who already have an account with a
+   * live address, because those are the only two things that make a delivery
+   * possible. Staff typing a street into the order form would produce an
+   * address nobody has pinned on a map and no route can be planned from.
    */
-  hasReachedDailyOrderLimit(
-    orders: Order[],
-    selectedDate: DateTime,
-    limit = 10,
-    status: string = OrderStatus.PICKUP_SCHEDULED
-  ): boolean {
-    const scheduledCount = orders.filter((order) => {
-      if (order.status !== status) {
-        return false
+  private async resolveWalkInCustomer(
+    data: OfflineOrderData
+  ): Promise<{ customer: User | null; address: Address | null }> {
+    if (!data.customerId) {
+      if (data.delivery) {
+        throw new vineErrors.E_VALIDATION_ERROR([
+          {
+            field: 'delivery',
+            message: 'Pengantaran hanya tersedia untuk pelanggan yang sudah terdaftar.',
+          },
+        ])
       }
 
-      const pickupDate = order.pickupDate?.startOf('day')
-      return pickupDate?.hasSame(selectedDate.startOf('day'), 'day')
-    }).length
+      return { customer: null, address: null }
+    }
 
-    return scheduledCount >= limit
+    const customer = await User.query()
+      .where('id', data.customerId)
+      .where('role', Role.CUSTOMER)
+      .first()
+
+    if (!customer) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'customerId',
+          message: 'Akun pelanggan tidak ditemukan.',
+        },
+      ])
+    }
+
+    if (!data.delivery) {
+      return { customer, address: null }
+    }
+
+    const address = await Address.query()
+      .where('user_id', customer.id)
+      .where('is_active', true)
+      .first()
+
+    if (!address) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'delivery',
+          message: 'Pelanggan ini belum memiliki alamat aktif untuk pengantaran.',
+        },
+      ])
+    }
+
+    return { customer, address }
   }
 
   /**
-   * Cancel a customer order that has not yet reached its pickup date.
+   * Refuses a cash payment that does not cover the bill.
    *
-   * Orders may only be cancelled while they remain in the pickup scheduled
-   * state and the scheduled pickup date is later than the current day.
+   * The counter form works out the change as staff type, so this should never
+   * fire from the interface — it is here because a payload that says the
+   * customer handed over less than the total would otherwise be recorded as a
+   * settled order with a negative amount of change owed.
+   */
+  private assertCashCoversTotal(cashReceived: number | undefined, totalPrice: number): void {
+    if (cashReceived === undefined || cashReceived < totalPrice) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'cashReceived',
+          message: 'Uang yang diterima kurang dari total pesanan.',
+        },
+      ])
+    }
+  }
+
+  /**
+   * Finds registered customers by name or phone number, so staff serving a
+   * walk-in can pick the account instead of typing the person in again.
    *
-   * Cancellation requests that violate these business rules are rejected.
+   * Capped hard and never returned for an empty search: this reads the whole
+   * customer list, and a lookup box is not a place to browse it from.
+   */
+  async searchCustomers(term: string): Promise<User[]> {
+    const search = term.trim()
+
+    if (search.length < 3) {
+      return []
+    }
+
+    return User.query()
+      .where('role', Role.CUSTOMER)
+      .where('is_active', true)
+      .where((matches) => {
+        matches.whereILike('name', `%${search}%`).orWhereILike('phone', `%${search}%`)
+      })
+      .orderBy('name', 'asc')
+      .limit(10)
+  }
+
+  /**
+   * Returns all available cleaning services.
+   */
+  async getAvailableServices(): Promise<Service[]> {
+    return Service.query().orderBy('created_at', 'asc')
+  }
+
+  /**
+   * Whether a customer may still cancel this order.
    *
-   * @param user - Authenticated customer.
-   * @param orderNumber - Unique order identifier.
-   * @returns The updated order after cancellation.
-   * @throws {vineErrors.E_VALIDATION_ERROR}
-   * Thrown when the order is no longer eligible for cancellation.
+   * Cancellation closes once the pickup day arrives, because staff may already
+   * be on their way. Public so the order page can render the button in a
+   * disabled state rather than hiding it, which leaves the rule visible.
+   */
+  canCancel(order: Order): boolean {
+    const pickupDate = order.pickupDate?.startOf('day')
+    const today = DateTime.now().startOf('day')
+
+    return order.status === OrderStatus.PICKUP_SCHEDULED && !!pickupDate && pickupDate > today
+  }
+
+  /**
+   * Cancels an order if it is still eligible for cancellation.
    */
   async cancelOrder(user: User, orderNumber: string): Promise<Order> {
-    const order = await this.getCustomerOrderByNumber(user, orderNumber)
+    const order = await this.getOrderByNumber(orderNumber, user)
 
     if (!this.canCancel(order)) {
       throw new vineErrors.E_VALIDATION_ERROR([
@@ -280,101 +433,57 @@ export default class OrderService {
       ])
     }
 
-    const cancelledOrder = await db.transaction((trx) =>
-      order.merge({ status: OrderStatus.CANCELLED }).useTransaction(trx).save()
-    )
+    await order.merge({ status: OrderStatus.CANCELLED }).save()
 
-    return this.getCustomerOrderByNumber(user, cancelledOrder.orderNumber)
+    this.broadcastService.orderUpdated(order)
+
+    return this.getOrderByNumber(order.orderNumber, user)
   }
 
   /**
-   * Determine whether an order is eligible for customer cancellation.
+   * Generates the next order number for today, in the format ORDYYMMDD-001.
    *
-   * Orders can only be cancelled when:
-   * - The current status is pickup scheduled.
-   * - The pickup date occurs after the current day.
-   *
-   * @param order - Order being evaluated.
-   * @returns `true` when the order can still be cancelled; otherwise `false`.
-   * @private
-   * */
-  private canCancel(order: Order): boolean {
-    const pickupDate = order.pickupDate?.startOf('day')
-    const today = DateTime.now().startOf('day')
-
-    return order.status === OrderStatus.PICKUP_SCHEDULED && pickupDate! > today
-  }
-
-  /**
-   * Generate the next order number for the current day.
-   *
-   * Order numbers follow the format:
-   *
-   * ORDYYMMDD-001
-   *
-   * where the numeric suffix is incremented sequentially for orders created
-   * on the same day.
-   *
-   * @returns A unique order number for the current date.
+   * The numeric suffix restarts every day and is incremented from the
+   * highest number already issued for the same day.
    */
   async generateOrderNumber(): Promise<string> {
     const prefix = `ORD${DateTime.now().toFormat('yyLLdd')}`
-    const lastOrder = await this.getLastOrderForDay(prefix)
-    const nextIncrement = this.calculateNextIncrement(lastOrder)
 
-    return `${prefix}-${this.formatIdentifier(nextIncrement)}`
-  }
-
-  /**
-   * Retrieve the most recently generated order for a specific daily prefix.
-   *
-   * This method is used to determine the next sequence number when generating
-   * new order identifiers.
-   *
-   * @param prefix - Daily order number prefix.
-   * @returns The most recently created matching order, or `null` when no
-   * orders exist for the specified prefix.
-   * @private
-   */
-  private async getLastOrderForDay(prefix: string): Promise<Order | null> {
-    return Order.query()
+    const lastOrder = await Order.query()
       .where('order_number', 'like', `${prefix}-%`)
       .orderBy('order_number', 'desc')
       .first()
+
+    const lastSequence = lastOrder ? Number.parseInt(lastOrder.orderNumber.split('-')[1], 10) : 0
+    const nextSequence = String(lastSequence + 1).padStart(3, '0')
+
+    return `${prefix}-${nextSequence}`
   }
 
   /**
-   * Calculate the next sequence number for a daily order identifier.
+   * Creates an order, regenerating its number and trying again if another
+   * order claimed the same one first.
    *
-   * When no previous order exists for the day, numbering starts from 1.
-   *
-   * @param lastOrder - Most recent order associated with the daily prefix.
-   * @returns The next available sequence number.
-   * @private
+   * Both creation paths go through here so a collision is never something the
+   * customer or staff member sees — they get an order, not an error.
    */
-  private calculateNextIncrement(lastOrder: Order | null): number {
-    if (!lastOrder) return 1
+  private async createWithUniqueOrderNumber(
+    create: (orderNumber: string) => Promise<Order>
+  ): Promise<Order> {
+    let lastError: unknown
 
-    const lastNumber = lastOrder.orderNumber.split('-')[1]
-    return Number.parseInt(lastNumber, 10) + 1
-  }
+    for (let attempt = 0; attempt < ORDER_NUMBER_ATTEMPTS; attempt++) {
+      try {
+        return await create(await this.generateOrderNumber())
+      } catch (error) {
+        if (!isDuplicateOrderNumber(error)) {
+          throw error
+        }
 
-  /**
-   * Convert a numeric sequence value into a fixed-width identifier.
-   *
-   * Sequence values are left-padded with zeros to maintain a consistent
-   * three-digit order number suffix.
-   *
-   * Example:
-   * - 1 → 001
-   * - 12 → 012
-   * - 123 → 123
-   *
-   * @param increment - Numeric sequence value.
-   * @returns A zero-padded sequence identifier.
-   * @private
-   */
-  private formatIdentifier(increment: number): string {
-    return increment.toString().padStart(3, '0')
+        lastError = error
+      }
+    }
+
+    throw lastError
   }
 }

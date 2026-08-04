@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "UmimaClean — Layanan Cuci Sepatu",
+  "short_name": "UmimaClean",
+  "description": "Layanan cuci sepatu profesional di Bandung Raya dengan antar-jemput gratis. Pesan, pantau, dan bayar pesanan langsung dari ponsel.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["business", "lifestyle", "shopping"],
+  "icons": [
+    {
+      "src": "/icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pesan cuci sepatu",
+      "short_name": "Pesan",
+      "url": "/order"
+    },
+    {
+      "name": "Pesanan saya",
+      "short_name": "Pesanan",
+      "url": "/orders"
+    }
+  ]
+}

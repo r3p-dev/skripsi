@@ -2,26 +2,6 @@ import app from '@adonisjs/core/services/app'
 import { type HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
 
-type ErrorWithCode = {
-  code: string
-  status: number
-  messages: unknown
-}
-
-const ERROR_MESSAGES: Record<string, string> = {
-  E_TOO_MANY_REQUESTS: 'Terlalu banyak permintaan. Silakan coba lagi nanti.',
-  E_BAD_CSRF_TOKEN: 'Token CSRF tidak valid.',
-  E_UNAUTHORIZED_ACCESS: 'Anda harus login terlebih dahulu.',
-  E_AUTHORIZATION_FAILURE: 'Anda tidak memiliki izin untuk mengakses sumber daya ini.',
-  E_INVALID_CREDENTIALS: 'Nomor telepon atau kata sandi salah.',
-  E_ROUTE_NOT_FOUND: 'Halaman tidak ditemukan.',
-  E_ROW_NOT_FOUND: 'Data tidak ditemukan.',
-  E_INVALID_SESSION: 'Sesi tidak valid atau telah berakhir.',
-  E_REQUEST_ABORTED: 'Permintaan dibatalkan.',
-  E_HTTP_REQUEST_ABORTED: 'Permintaan dibatalkan.',
-  E_HTTP_EXCEPTION: 'Terjadi kesalahan pada permintaan.',
-}
-
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
    * In debug mode, the exception handler will display verbose errors
@@ -50,13 +30,6 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
-    const normalizedError = error as ErrorWithCode
-    const message = normalizedError.code ? ERROR_MESSAGES[normalizedError.code] : undefined
-
-    if (message && !normalizedError.messages) {
-      return ctx.response.status(normalizedError.status ?? 500).send({ message })
-    }
-
     return super.handle(error, ctx)
   }
 

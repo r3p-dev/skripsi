@@ -1,60 +1,49 @@
 import Address from '#models/address'
+import Order from '#models/order'
 import type User from '#models/user'
-import type { AddressData } from '#validators/profile_validator'
+import type { AddressData } from '#validators/address_validator'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { errors } from '@vinejs/vine'
 import RouteService from '#services/route_service'
+import { shop } from '#config/app'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
 /**
- * Directional service radius limits measured from the service center.
+ * Maximum distance in kilometres the team travels in each direction.
+ * The limits are deliberately asymmetric: coverage reaches much further
+ * north and east than south and west.
  */
-type DirectionalLimits = {
-  north: number
-  south: number
-  east: number
-  west: number
+const DIRECTIONAL_LIMITS_KM = {
+  north: 30,
+  south: 10,
+  east: 30,
+  west: 20,
 }
 
 /**
- * Provides address management and service-area validation for customers.
- *
- * Responsibilities:
- * - Retrieve the customer's active address.
- * - Replace the active address while preserving address history.
- * - Validate whether a location falls within the supported delivery area.
+ * Manages customer addresses and validates whether a location
+ * is within the supported service area.
  */
 @inject()
 export default class AddressService {
   constructor(private routeService: RouteService) {}
 
-  /**
-   * Retrieve the customer's currently active address.
-   *
-   * @param user - Authenticated customer.
-   * @returns The active address associated with the customer, or `null`
-   * if no active address exists.
-   */
   async getActiveAddress(user: User): Promise<Address | null> {
     return Address.query().where('user_id', user.id).andWhere('is_active', true).first()
   }
 
   /**
-   * Replace the customer's active address with a newly created address.
+   * Replaces the customer's active address, keeping the one it replaced only
+   * for as long as something still refers to it.
    *
-   * The operation is executed within a database transaction to ensure
-   * consistency. Any previously active address is marked as inactive before
-   * the new address is created.
+   * An address that has priced or routed an order is history — the record of
+   * where those shoes were collected from — and is retired rather than
+   * removed. One that never did is simply a typo the customer corrected a
+   * minute later, and keeping it means the shop accumulates a pile of
+   * addresses nobody has ever been to and nothing will ever point at.
    *
-   * Existing addresses are retained for historical purposes, such as
-   * preserving delivery information associated with past orders.
-   *
-   * @param user - Authenticated customer.
-   * @param data - Validated address payload.
-   * @returns The newly created active address.
-   * @throws {errors.E_VALIDATION_ERROR}
-   * Thrown when the provided coordinates fall outside the supported
-   * service area.
+   * All of it runs in one transaction, so only ever one address is active.
    */
   async replaceActiveAddress(user: User, data: AddressData): Promise<Address> {
     const isValid = this.validateRadius(data.latitude, data.longitude)
@@ -68,17 +57,17 @@ export default class AddressService {
     }
 
     return db.transaction(async (trx) => {
-      const address = await Address.query()
+      const currentAddress = await Address.query({ client: trx })
         .where('user_id', user.id)
         .andWhere('is_active', true)
         .first()
-      if (address) {
-        await address
-          .merge({
-            isActive: false,
-          })
-          .useTransaction(trx)
-          .save()
+
+      if (currentAddress) {
+        if (await this.isReferencedByOrder(currentAddress, trx)) {
+          await currentAddress.merge({ isActive: false }).useTransaction(trx).save()
+        } else {
+          await currentAddress.useTransaction(trx).delete()
+        }
       }
 
       return Address.create(
@@ -93,106 +82,82 @@ export default class AddressService {
   }
 
   /**
-   * Determine whether a location is within the supported service area.
+   * Whether any order still points at this address.
    *
-   * The validation uses directional distance limits measured from a fixed
-   * service center. Different maximum distances can be applied for the
-   * north, south, east, and west directions.
+   * The foreign key from `orders` restricts the delete anyway, so this is what
+   * keeps the tidy-up from turning into a database error on the one address
+   * that genuinely matters.
+   */
+  private async isReferencedByOrder(
+    address: Address,
+    trx?: TransactionClientContract
+  ): Promise<boolean> {
+    const result = await Order.query(trx ? { client: trx } : {})
+      .where('address_id', address.id)
+      .count('* as total')
+
+    return Number(result[0].$extras.total) > 0
+  }
+
+  /**
+   * Removes every retired address nothing points at any more.
    *
-   * @param latitude - Target latitude.
-   * @param longitude - Target longitude.
-   * @returns `true` when the coordinates are within the supported area;
-   * otherwise `false`.
-   * @throws {Error}
-   * Thrown when an unexpected error occurs during validation.
+   * The replace path above keeps its own house in order, so this is for the
+   * ones that accumulated before it did — and for the case where an order that
+   * was holding an address alive is itself deleted later. Active addresses are
+   * never touched: an address a customer is currently using is not orphaned
+   * just because they have not ordered yet.
+   */
+  async deleteOrphanedAddresses(): Promise<number> {
+    const orphans = await Address.query()
+      .where('is_active', false)
+      .whereDoesntHave('orders', (query) => query)
+
+    for (const orphan of orphans) {
+      await orphan.delete()
+    }
+
+    return orphans.length
+  }
+
+  /**
+   * Checks whether a location falls within the supported service area.
+   *
+   * The area is not a plain circle: the allowed distance is blended from
+   * the two directional limits the location sits between, weighted by how
+   * much of its offset is vertical versus horizontal. An address due north
+   * therefore gets the full northern limit, while a north-east address gets
+   * something in between the northern and eastern limits.
    */
   validateRadius(latitude: number, longitude: number): boolean {
-    try {
-      const LATITUDE = -6.9555305
-      const LONGITUDE = 107.6540353
+    const latitudeOffset = latitude - shop.latitude
+    const longitudeOffset = longitude - shop.longitude
+    const totalOffset = Math.abs(latitudeOffset) + Math.abs(longitudeOffset)
 
-      const limits = {
-        north: 30,
-        south: 10,
-        east: 30,
-        west: 20,
-      }
-
-      return this.checkDirectionalLimits(LATITUDE, LONGITUDE, latitude, longitude, limits)
-    } catch (error) {
-      throw new Error('Gagal memvalidasi radius order')
+    // The service center itself is always inside the area.
+    if (totalOffset === 0) {
+      return true
     }
-  }
 
-  /**
-   * Compare a target location against directional distance limits.
-   *
-   * This method calculates:
-   * 1. The actual distance between the service center and target location.
-   * 2. The maximum allowed distance based on the target direction.
-   *
-   * @param centerLat - Service center latitude.
-   * @param centerLng - Service center longitude.
-   * @param targetLat - Target latitude.
-   * @param targetLng - Target longitude.
-   * @param limits - Directional service radius limits in kilometers.
-   * @returns `true` if the target location is within the allowed distance;
-   * otherwise `false`.
-   * @private
-   */
-  private checkDirectionalLimits(
-    centerLat: number,
-    centerLng: number,
-    targetLat: number,
-    targetLng: number,
-    limits: DirectionalLimits
-  ): boolean {
-    const latDiff = targetLat - centerLat
-    const lngDiff = targetLng - centerLng
+    const verticalWeight = Math.abs(latitudeOffset) / totalOffset
+    const horizontalWeight = Math.abs(longitudeOffset) / totalOffset
 
-    const totalDistance = this.routeService.calculateDistanceInKm(
-      centerLat,
-      centerLng,
-      targetLat,
-      targetLng
+    const verticalLimit =
+      latitudeOffset >= 0 ? DIRECTIONAL_LIMITS_KM.north : DIRECTIONAL_LIMITS_KM.south
+    const horizontalLimit =
+      longitudeOffset >= 0 ? DIRECTIONAL_LIMITS_KM.east : DIRECTIONAL_LIMITS_KM.west
+
+    const maxAllowedDistanceKm = Math.sqrt(
+      (verticalLimit * verticalWeight) ** 2 + (horizontalLimit * horizontalWeight) ** 2
     )
-    const maxAllowedDistance = this.calculateMaxAllowedDistance(latDiff, lngDiff, limits)
 
-    return totalDistance <= maxAllowedDistance
-  }
-
-  /**
-   * Calculate the maximum allowed distance based on the target direction.
-   *
-   * The directional limits are blended proportionally according to the
-   * latitude and longitude offsets. This allows the service area to form
-   * an asymmetric radius rather than a perfect circle.
-   *
-   * @param latDiff - Latitude difference from center to target.
-   * @param lngDiff - Longitude difference from center to target.
-   * @param limits - Directional service radius limits in kilometers.
-   * @returns Maximum permitted distance in kilometers.
-   * @private
-   */
-  private calculateMaxAllowedDistance(
-    latDiff: number,
-    lngDiff: number,
-    limits: DirectionalLimits
-  ): number {
-    const totalLatDiff = Math.abs(latDiff)
-    const totalLngDiff = Math.abs(lngDiff)
-    const totalDiff = totalLatDiff + totalLngDiff
-
-    if (totalDiff === 0) return Math.max(...Object.values(limits))
-
-    const latRatio = totalLatDiff / totalDiff
-    const lngRatio = totalLngDiff / totalDiff
-
-    const verticalLimit = latDiff >= 0 ? limits.north : limits.south
-    const horizontalLimit = lngDiff >= 0 ? limits.east : limits.west
-
-    return Math.sqrt(
-      Math.pow(verticalLimit * latRatio, 2) + Math.pow(horizontalLimit * lngRatio, 2)
+    const distanceKm = this.routeService.calculateDistanceInKm(
+      shop.latitude,
+      shop.longitude,
+      latitude,
+      longitude
     )
+
+    return distanceKm <= maxAllowedDistanceKm
   }
 }

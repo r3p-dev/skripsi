@@ -1,41 +1,35 @@
-import AuthService from '#services/auth_service'
+import ProfileService from '#services/profile_service'
+import AddressService from '#services/address_service'
+import AddressTransformer from '#transformers/address_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import { changePasswordValidator } from '#validators/auth_validator'
-import { type PageObject } from '@adonisjs/inertia/types'
-import { OrderStatus } from '#enums/order_status_enum'
+import { changeNameValidator } from '#validators/profile_validator'
 
-/**
- * Expose profile endpoints for the authenticated user.
- */
 @inject()
 export default class ProfileController {
-  constructor(protected authService: AuthService) {}
+  constructor(
+    protected profileService: ProfileService,
+    protected addressService: AddressService
+  ) {}
 
-  /**
-   * Return the current authenticated user from the session.
-   */
-  async show({ auth, inertia }: HttpContext): Promise<string | PageObject<{}>> {
+  async show({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    await user.loadCount('orders', (query) => {
-      query.where('status', OrderStatus.COMPLETED)
-    })
+    const totalOrders = await this.profileService.getTotalOrders(user)
+    const address = await this.addressService.getActiveAddress(user)
 
-    return inertia.render('customer/profile', {
-      totalOrders: user.$extras.orders_count,
+    return inertia.render('customer/profile/show', {
+      totalOrders,
+      address: AddressTransformer.transform(address),
     })
   }
 
-  /**
-   * Change password for the current authenticated user.
-   */
-  async update({ auth, request, response, session }: HttpContext): Promise<void> {
+  async update({ auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
-    const payload = await request.validateUsing(changePasswordValidator)
+    const payload = await request.validateUsing(changeNameValidator)
 
-    await this.authService.changePassword(payload, user)
-    session.flash('success', 'Kata sandi berhasil diperbarui')
+    await this.profileService.changeName(payload, user)
+    session.flash('success', 'Nama berhasil diperbarui')
 
     return response.redirect().toRoute('customer.profile.show')
   }

@@ -1,113 +1,206 @@
 import CustomerLayout from '@/components/layouts/customer_layout'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Spinner } from '@/components/ui/spinner'
-import type { InertiaProps } from '@/types'
-import { Form, Link } from '@adonisjs/inertia/react'
+import { Calendar } from '@/components/ui/calendar'
+import { Card, CardAction, CardContent, CardHeader } from '@/components/ui/card'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
-import { IconAlertCircle } from '@tabler/icons-react'
+import type { InertiaProps } from '@/types'
+import { ServiceCategoryLabel, ServiceType } from '@/enums/service_enum'
+import { formatRupiah } from '@/lib/format'
+import { Form, Link } from '@adonisjs/inertia/react'
+import { IconChevronRight, IconMapPin, IconPencil, IconTag } from '@tabler/icons-react'
+import { id } from 'date-fns/locale'
+import { useMemo, useState } from 'react'
 
 type PageProps = InertiaProps<{
   address: Data.Address | null
+  services: Data.Service[]
 }>
 
-export default function CreateOrder(props: PageProps) {
+/**
+ * Formats a date as YYYY-MM-DD in the browser's local time. `toISOString()`
+ * is deliberately avoided: it converts to UTC, which shifts the date back a
+ * day for evening pickups in Indonesia's timezone.
+ */
+function toLocalDateString(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export default function Create({ address, services }: PageProps) {
+  const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
+
+  /**
+   * The earliest day that can actually be collected.
+   *
+   * Not today: the van is already out on a route planned this morning, so a
+   * pickup booked for today is one nobody is coming to. The server refuses it
+   * either way — this is so the customer never gets as far as choosing it.
+   */
+  const earliestPickup = useMemo(() => {
+    const tomorrow = new Date()
+    tomorrow.setHours(0, 0, 0, 0)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    return tomorrow
+  }, [])
+
+  const priceListByCategory = Object.groupBy(services, (service) => service.category)
+
   return (
-    <CustomerLayout title="Buat Pesanan Baru" description="Pilih tanggal pickup sepatu Anda">
-      <div className="flex-1 w-full max-w-md space-y-6 mx-auto p-4 pb-24">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-black mb-1">Buat Pesanan Baru</h2>
-          <p className="text-gray-600">Pilih tanggal pickup sepatu Anda</p>
-        </div>
+    <CustomerLayout title="Buat Pesanan" description="Jadwalkan penjemputan sepatu Anda">
+      <div className="px-6 py-5">
+        <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Pesanan</p>
+        <h1 className="text-3xl font-bold tracking-tight text-black">Buat Pesanan</h1>
+      </div>
 
-        <Card className="bg-black text-white gap-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Cara Pemesanan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <li className="flex gap-3">
-              <span className="shrink-0">1.</span>
-              <span>Pesan layanan</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="shrink-0">2.</span>
-              <span>Kami akan jadwalkan otomatis waktu penjemputan sepatu Anda</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="shrink-0">3.</span>
-              <span>Setelah sepatu dijemput, tim kami akan cek kondisi sepatu Anda di toko</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="shrink-0">4.</span>
-              <span>Tim kami akan memilih layanan terbaik untuk sepatu Anda</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="shrink-0">5.</span>
-              <span>Anda membayar sesuai dengan layanan yang telah dipilih</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="shrink-0">6.</span>
-              <span>Tunggu proses cuci dan sepatu Anda akan kami antarkan kembali</span>
-            </li>
-          </CardContent>
-        </Card>
-
-        {!props.address && (
-          <div className="border-2 border-gray-300 rounded-2xl p-5 space-y-4 bg-white">
-            <div className="flex gap-3">
-              <span className="text-2xl shrink-0">
-                <IconAlertCircle />
-              </span>
-              <div>
-                <h3 className="font-bold text-black">Alamat Belum Dibuat</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Anda perlu menambahkan alamat terlebih dahulu untuk membuat pesanan
-                </p>
-              </div>
+      <div className="flex-1 px-6 pb-nav">
+        {!address ? (
+          <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
+              <IconMapPin className="size-7 text-black" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-black">Alamat belum tersedia</p>
+              <p className="text-sm text-gray-600">
+                Tambahkan alamat penjemputan terlebih dahulu sebelum membuat pesanan
+              </p>
             </div>
             <Link
-              route="customer.address.show"
+              route="customer.address.create"
               className={buttonVariants({
-                className: 'w-full h-11 ',
+                className:
+                  'h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
               })}
             >
-              Buat Alamat
+              Tambah Alamat
             </Link>
-          </div>
-        )}
+          </Card>
+        ) : (
+          <>
+            <p className="mb-6 text-sm leading-relaxed text-gray-700">
+              Pilih tanggal penjemputan dan tim kami akan menjemput sepatu Anda langsung dari alamat
+              terdaftar
+            </p>
 
-        <div>
-          <Link
-            route="session.create"
-            className={buttonVariants({
-              variant: 'outline',
-              className:
-                'w-full h-11 border-2 border-gray-300! font-semibold active:scale-95 transition-all',
-            })}
-          >
-            Lihat Daftar Harga
-          </Link>
-        </div>
-        <div>
-          <Form
-            route="customer.order.store"
-            disableWhileProcessing
-            resetOnSuccess
-            transform={() => ({
-              addressId: props.address?.id,
-            })}
-          >
-            {({ processing }) => (
-              <Button
-                type="submit"
-                disabled={!props.address || processing}
-                className="w-full font-semibold h-11 text-base disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {processing ? <Spinner /> : 'Buat Pesanan'}
-              </Button>
-            )}
-          </Form>
-        </div>
+            <Card className="mb-6 rounded-2xl border border-gray-200 bg-gray-50">
+              <CardHeader>
+                <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+                  Alamat Penjemputan
+                </p>
+                <CardAction>
+                  <Link
+                    route="customer.address.create"
+                    aria-label="Ubah alamat"
+                    className="flex items-center gap-1 text-xs font-medium text-gray-600 underline underline-offset-4"
+                  >
+                    <IconPencil className="size-3.5" />
+                    Ubah
+                  </Link>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <p className="text-base font-medium text-black">{address.name}</p>
+                <p className="text-sm text-gray-600">{address.phone}</p>
+                <p className="mt-1 text-sm leading-relaxed text-gray-700">{address.street}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-6 rounded-2xl border border-gray-200 bg-gray-50">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <IconTag className="size-4 text-black" />
+                  <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+                    Daftar Harga
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Accordion>
+                  {Object.entries(priceListByCategory).map(([category, items]) => (
+                    <AccordionItem key={category} value={category} className="border-gray-200">
+                      <AccordionTrigger className="text-sm font-semibold text-black">
+                        {ServiceCategoryLabel[category as keyof typeof ServiceCategoryLabel] ??
+                          category}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3">
+                          {items?.map((item) => (
+                            <div key={item.name} className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-medium text-black">{item.name}</p>
+                                <p className="text-xs leading-relaxed text-gray-600">
+                                  {item.description}
+                                </p>
+                              </div>
+                              <p className="shrink-0 text-sm font-semibold whitespace-nowrap text-black">
+                                {item.type === ServiceType.START_FROM && (
+                                  <span className="mr-1 text-xs font-normal text-gray-500">
+                                    mulai
+                                  </span>
+                                )}
+                                {formatRupiah(item.price)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+
+            <Form route="customer.order.store" className="space-y-5">
+              {({ errors, processing }) => (
+                <>
+                  <input type="hidden" name="addressId" value={address.id} />
+                  <input
+                    type="hidden"
+                    name="pickupDate"
+                    value={pickupDate ? toLocalDateString(pickupDate) : ''}
+                    readOnly
+                  />
+
+                  <Field data-invalid={errors.pickupDate ? 'true' : undefined}>
+                    <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
+                      Tanggal Penjemputan
+                    </FieldLabel>
+                    <div className="flex justify-center rounded-2xl border border-gray-300 bg-gray-50 py-2">
+                      <Calendar
+                        mode="single"
+                        locale={id}
+                        selected={pickupDate}
+                        onSelect={setPickupDate}
+                        disabled={{ before: earliestPickup }}
+                        className="[--cell-size:--spacing(10)]"
+                      />
+                    </div>
+                    <FieldError>{errors.pickupDate}</FieldError>
+                  </Field>
+
+                  <Button
+                    type="submit"
+                    disabled={processing || !pickupDate}
+                    className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
+                  >
+                    Jadwalkan Penjemputan
+                    <IconChevronRight className="size-5" />
+                  </Button>
+                </>
+              )}
+            </Form>
+          </>
+        )}
       </div>
     </CustomerLayout>
   )

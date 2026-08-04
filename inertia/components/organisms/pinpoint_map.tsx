@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 
-interface PinpointMapProps {
+type PinpointMapProps = {
   value: LatLng
   onChange: (position: LatLng) => void
   disableAutoLocation?: boolean
@@ -37,14 +37,18 @@ function LocateButton({ onLocate }: { onLocate: () => void }) {
     <button
       type="button"
       onClick={onLocate}
+      aria-label="Gunakan lokasi saya"
       className="
         absolute
         bottom-4
         right-4
         z-1000
+        flex
+        size-11
+        items-center
+        justify-center
         rounded-md
         bg-white
-        p-2
         shadow-lg
         hover:bg-gray-100
       "
@@ -72,7 +76,7 @@ export default function PinpointMap({
         onChange(latLng(coords.latitude, coords.longitude))
       },
       () => {
-        toast.error('Unable to get current location')
+        toast.error('Tidak dapat mengambil lokasi Anda. Pastikan izin lokasi diaktifkan.')
       },
       {
         enableHighAccuracy: true,
@@ -92,69 +96,74 @@ export default function PinpointMap({
   }, [disableAutoLocation, locateUser])
 
   return (
-    <div
-      className="relative"
-      style={{
-        height: 400,
-        width: '100%',
-      }}
-    >
-      <MapContainer
-        center={value}
-        zoom={18}
-        scrollWheelZoom
+    <>
+      <input type="hidden" name="latitude" value={value.lat} />
+      <input type="hidden" name="longitude" value={value.lng} />
+
+      <div
+        className="relative"
         style={{
-          height: '100%',
+          height: 400,
           width: '100%',
         }}
       >
-        <LayersControl position="topright">
-          <LayersControl.BaseLayer name="Default">
-            <TileLayer
-              attribution="Google Maps"
-              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-            />
-          </LayersControl.BaseLayer>
+        <MapContainer
+          center={value}
+          zoom={18}
+          scrollWheelZoom
+          style={{
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer name="Default">
+              <TileLayer
+                attribution="Google Maps"
+                url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              />
+            </LayersControl.BaseLayer>
 
-          <LayersControl.BaseLayer checked name="Satellite">
-            <TileLayer
-              attribution="Google Maps Satellite"
-              url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+            <LayersControl.BaseLayer checked name="Satellite">
+              <TileLayer
+                attribution="Google Maps Satellite"
+                url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
 
-        <ChangeView center={value} />
+          <ChangeView center={value} />
 
-        <CenterWatcher onChange={onChange} />
-      </MapContainer>
+          <CenterWatcher onChange={onChange} />
+        </MapContainer>
 
-      {/* Fixed center marker */}
-      <div
-        className="
+        {/* Fixed center marker */}
+        <div
+          className="
           pointer-events-none
           absolute
           left-1/2
           top-1/2
           z-999
         "
-        style={{
-          transform: 'translate(-50%, -100%)',
-        }}
-      >
-        <img
-          src={markerIcon}
-          srcSet={`${markerIcon2x} 2x`}
-          alt="location pin"
           style={{
-            width: 25,
-            height: 41,
+            transform: 'translate(-50%, -100%)',
           }}
-        />
-      </div>
+        >
+          <img
+            src={markerIcon}
+            srcSet={`${markerIcon2x} 2x`}
+            alt="location pin"
+            style={{
+              width: 25,
+              height: 41,
+            }}
+          />
+        </div>
 
-      {/* GPS button */}
-      <LocateButton onLocate={locateUser} />
-    </div>
+        {/* GPS button */}
+        <LocateButton onLocate={locateUser} />
+      </div>
+    </>
   )
 }

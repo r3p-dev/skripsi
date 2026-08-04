@@ -27,8 +27,80 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['show']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+    }
+  }
+  'robots': {
+    methods: ["GET","HEAD"]
+    pattern: '/robots.txt'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'sitemap': {
+    methods: ["GET","HEAD"]
+    pattern: '/sitemap.xml'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'event_stream': {
+    methods: ["GET","HEAD"]
+    pattern: '/__transmit/events'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/subscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'unsubscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/unsubscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'transaction.update': {
+    methods: ["POST"]
+    pattern: '/transaction/callback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/webhooks/transaction_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/webhooks/transaction_controller').default['update']>>>
     }
   }
   'signup.create': {
@@ -155,12 +227,48 @@ export interface Registry {
     methods: ["PUT"]
     pattern: '/profile'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/auth_validator').changePasswordValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/auth_validator').changePasswordValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['update']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.phone.store': {
+    methods: ["POST"]
+    pattern: '/phone'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.phone.update': {
+    methods: ["GET","HEAD"]
+    pattern: '/phone/verify'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/phone_controller').default['update']>>>
+    }
+  }
+  'customer.password.update': {
+    methods: ["PUT"]
+    pattern: '/password'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/password_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/password_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'customer.address.show': {
@@ -191,17 +299,17 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/address'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').addressValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/address_validator').addressValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').addressValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/address_validator').addressValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/address_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/address_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'customer.order.create': {
     methods: ["GET","HEAD"]
-    pattern: '/orders/create'
+    pattern: '/order'
     types: {
       body: {}
       paramsTuple: []
@@ -247,6 +355,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['show']>>>
     }
   }
+  'customer.order.update': {
+    methods: ["PUT"]
+    pattern: '/orders/:number'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
+    }
+  }
+  'customer.order.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/orders/:number/receipt'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['receipt']>>>
+    }
+  }
+  'customer.transaction.store': {
+    methods: ["POST"]
+    pattern: '/orders/:number/transactions'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['store']>>>
+    }
+  }
+  'customer.transaction.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/orders/:number/transactions/latest'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['show']>>>
+    }
+  }
   'staff.profile.show': {
     methods: ["GET","HEAD"]
     pattern: '/staff/profile'
@@ -259,40 +415,268 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/profile_controller').default['show']>>>
     }
   }
-  'staff.task.index': {
+  'staff.profile.update': {
+    methods: ["PUT"]
+    pattern: '/staff/profile'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.phone.store': {
+    methods: ["POST"]
+    pattern: '/staff/phone'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/phone_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/phone_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.phone.update': {
     methods: ["GET","HEAD"]
-    pattern: '/staff/tasks'
+    pattern: '/staff/phone/verify'
     types: {
       body: {}
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/task_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/task_controller').default['index']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/phone_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/phone_controller').default['update']>>>
     }
   }
-  'staff.task.create': {
+  'staff.trip.index': {
     methods: ["GET","HEAD"]
-    pattern: '/staff/tasks/:numbber'
+    pattern: '/staff/trips'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['index']>>>
+    }
+  }
+  'staff.trip.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/trips/:number/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['show']>>>
+    }
+  }
+  'staff.trip.update': {
+    methods: ["PUT"]
+    pattern: '/staff/trips/:number/:type'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').completeTaskValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').completeTaskValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.trip.destroy': {
+    methods: ["DELETE"]
+    pattern: '/staff/trips/:number/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['destroy']>>>
+    }
+  }
+  'staff.inspection.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/inspections/:number'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { numbber: ParamValue }
+      params: { number: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/task_controller').default['create']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/task_controller').default['create']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
     }
   }
-  'staff.offline_order.create': {
+  'staff.inspection.update': {
+    methods: ["PUT"]
+    pattern: '/staff/inspections/:number'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').inspectionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').inspectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.inspection.destroy': {
+    methods: ["DELETE"]
+    pattern: '/staff/inspections/:number'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['destroy']>>>
+    }
+  }
+  'staff.cleaning.update': {
+    methods: ["PUT"]
+    pattern: '/staff/cleanings/:number'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').cleaningValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').cleaningValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/cleaning_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/cleaning_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.collection.update': {
+    methods: ["PUT"]
+    pattern: '/staff/collections/:number'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+    }
+  }
+  'staff.customer.index': {
     methods: ["GET","HEAD"]
-    pattern: '/staff/offline-order'
+    pattern: '/staff/customers'
     types: {
       body: {}
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/offline_order_controller').default['create']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/offline_order_controller').default['create']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/customer_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/customer_controller').default['index']>>>
+    }
+  }
+  'staff.order.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['create']>>>
+    }
+  }
+  'staff.order.store': {
+    methods: ["POST"]
+    pattern: '/staff/orders'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').offlineOrderValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').offlineOrderValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.order.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/:number/items'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['edit']>>>
+    }
+  }
+  'staff.order.update': {
+    methods: ["PUT"]
+    pattern: '/staff/orders/:number/items'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').orderItemsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').orderItemsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.tag.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/:number/tag'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
+    }
+  }
+  'staff.order.receipt': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/:number/receipt'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['receipt']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/order_controller').default['receipt']>>>
+    }
+  }
+  'staff.notification.store': {
+    methods: ["POST"]
+    pattern: '/staff/orders/:number/notifications'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/notification_validator').orderNotificationValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/notification_validator').orderNotificationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.transaction.store': {
+    methods: ["POST"]
+    pattern: '/staff/orders/:number/transactions'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/transaction_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/transaction_controller').default['store']>>>
+    }
+  }
+  'staff.transaction.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/orders/:number/transactions/latest'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/transaction_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/transaction_controller').default['show']>>>
     }
   }
   'admin.profile.show': {
@@ -307,6 +691,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['show']>>>
     }
   }
+  'admin.profile.update': {
+    methods: ["PUT"]
+    pattern: '/admin/profile'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.phone.store': {
+    methods: ["POST"]
+    pattern: '/admin/phone'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePhoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/phone_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/phone_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.phone.update': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/phone/verify'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/phone_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/phone_controller').default['update']>>>
+    }
+  }
   'admin.dashboard.index': {
     methods: ["GET","HEAD"]
     pattern: '/admin/dashboard'
@@ -317,6 +737,306 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['index']>>>
+    }
+  }
+  'admin.dashboard.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/dashboard/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['export']>>>
+    }
+  }
+  'admin.signup.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/signup'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
+    }
+  }
+  'admin.signup.store': {
+    methods: ["POST"]
+    pattern: '/admin/signup'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.order.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/orders'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['index']>>>
+    }
+  }
+  'admin.order.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/orders/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['export']>>>
+    }
+  }
+  'admin.order.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/orders/:number'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/order_controller').default['show']>>>
+    }
+  }
+  'admin.service.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/services'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['index']>>>
+    }
+  }
+  'admin.service.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/services/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['export']>>>
+    }
+  }
+  'admin.service.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/services/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['create']>>>
+    }
+  }
+  'admin.service.store': {
+    methods: ["POST"]
+    pattern: '/admin/services'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').serviceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').serviceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.service.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/services/:id/edit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['edit']>>>
+    }
+  }
+  'admin.service.update': {
+    methods: ["PUT"]
+    pattern: '/admin/services/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/service_validator').serviceValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/service_validator').serviceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.service.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/services/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/service_controller').default['destroy']>>>
+    }
+  }
+  'admin.user.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['index']>>>
+    }
+  }
+  'admin.user.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['export']>>>
+    }
+  }
+  'admin.user.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['create']>>>
+    }
+  }
+  'admin.user.store': {
+    methods: ["POST"]
+    pattern: '/admin/users'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/user_validator').createUserValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/user_validator').createUserValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.user.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/users/:id/edit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['edit']>>>
+    }
+  }
+  'admin.user.update': {
+    methods: ["PUT"]
+    pattern: '/admin/users/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/user_validator').updateUserValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/user_validator').updateUserValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.user.destroy': {
+    methods: ["DELETE"]
+    pattern: '/admin/users/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/user_controller').default['destroy']>>>
+    }
+  }
+  'admin.report.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reports'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/report_validator').reportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.report.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reports/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/report_validator').reportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/report_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'admin.reconciliation.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reconciliations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['index']>>>
+    }
+  }
+  'admin.reconciliation.export': {
+    methods: ["GET","HEAD"]
+    pattern: '/admin/reconciliations/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['export']>>>
+    }
+  }
+  'admin.reconciliation.update': {
+    methods: ["PUT"]
+    pattern: '/admin/reconciliations/:number'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/reconciliation_validator').reconciliationValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/reconciliation_validator').reconciliationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/reconciliation_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
 }

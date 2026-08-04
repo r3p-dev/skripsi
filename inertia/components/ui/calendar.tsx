@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from 'react-day-picker'
 
@@ -72,6 +70,7 @@ function Calendar({
             : 'flex items-center gap-1 rounded-(--cell-radius) text-sm [&>svg]:size-3.5 [&>svg]:text-muted-foreground',
           defaultClassNames.caption_label
         ),
+        month_grid: cn('w-full border-collapse', defaultClassNames.month_grid),
         weekdays: cn('flex', defaultClassNames.weekdays),
         weekday: cn(
           'flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none',
@@ -128,9 +127,7 @@ function Calendar({
 
           return <IconChevronDown className={cn('size-4', chevronClassName)} {...chevronProps} />
         },
-        DayButton: ({ ...dayButtonProps }) => (
-          <CalendarDayButton locale={locale} {...dayButtonProps} />
-        ),
+        DayButton: ({ ...dayProps }) => <CalendarDayButton locale={locale} {...dayProps} />,
         WeekNumber: ({ children, ...weekNumberProps }) => {
           return (
             <td {...weekNumberProps}>

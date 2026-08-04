@@ -1,8 +1,8 @@
 @import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/roboto';
-@import 'leaflet/dist/leaflet.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,12 +118,125 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/**
+ * Shadows on whichever edge of a horizontally scrolling box still has content
+ * beyond it, and on neither once you reach an end.
+ *
+ * The admin tables are built for a desktop and scroll sideways on a phone.
+ * Without this the columns simply stop at the card's edge and there is nothing
+ * to say the row continues — an admin reads "Rp" as the last column and never
+ * learns there is a total. The four layers are two opaque covers that scroll
+ * with the content and two shadows pinned to the box, so a cover sits over its
+ * shadow exactly when that edge is reached. Pure CSS, no scroll listener.
+ */
+@utility scroll-shadow-x {
+  background:
+    linear-gradient(to right, var(--color-card) 30%, transparent) left center / 2rem 100% no-repeat
+      local,
+    linear-gradient(to left, var(--color-card) 30%, transparent) right center / 2rem 100% no-repeat
+      local,
+    radial-gradient(farthest-side at 0 50%, --alpha(var(--color-foreground) / 12%), transparent)
+      left center / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, --alpha(var(--color-foreground) / 12%), transparent)
+      right center / 0.75rem 100% no-repeat scroll;
+}
+
+/**
+ * The minimum comfortable tap area — 44px, the floor both Apple's HIG and WCAG
+ * 2.5.5 land on. Applied to controls whose visible box is deliberately smaller
+ * than a thumb (a 10px carousel dot, a 18px pencil icon), so the target grows
+ * without the design growing with it.
+ */
+@utility touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/**
+ * Bottom padding for a page that sits inside one of the tab shells: enough to
+ * clear the fixed nav, plus whatever the phone reserves for its home indicator.
+ *
+ * This used to be a flat `pb-28`. On a notched phone the nav itself has to be
+ * pushed up by the inset, which ate most of that 112px and left the last card
+ * tucked under the tab bar — reachable only by over-scrolling.
+ */
+@utility pb-nav {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+
+/** The same idea for pages with no tab bar: clear the home indicator only. */
+@utility pb-page {
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+}
+
+/** Lifts a fixed bottom element out of the home indicator's gesture area. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/**
+ * The torn top and bottom edge of a slip of till roll.
+ *
+ * Two conic gradients used as a mask, each a row of 90° wedges: one biting
+ * down into the top edge, one biting up into the bottom. Away from the edges
+ * the wedges widen past the tile and the paper is simply opaque, so only the
+ * outer few pixels are actually toothed.
+ *
+ * A mask rather than a drawn border because the teeth have to cut *through*
+ * whatever sits behind them — the header block on these receipts is solid
+ * black, and a white zigzag painted over it would read as a stripe.
+ */
+@utility receipt-paper {
+  --tooth: 12px;
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 90deg, #0000 91deg) top / var(--tooth) 50%
+      repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 90deg, #0000 91deg) bottom / var(--tooth)
+      50% repeat-x;
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 90deg, #0000 91deg) top / var(--tooth) 50%
+      repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 90deg, #0000 91deg) bottom / var(--tooth)
+      50% repeat-x;
+}
+
+/**
+ * The run of dots between an item and its price, as a printer fills the gap.
+ * Sits in a flex row as its own element so it takes whatever width is left
+ * after the two labels have been laid out.
+ */
+@utility receipt-leader {
+  flex: 1 1 auto;
+  align-self: end;
+  margin-bottom: 0.3em;
+  border-bottom: 1px dotted var(--color-gray-300);
+}
+
+/*
+ * Print is the one place a receipt is not a metaphor. The mask survives to
+ * paper unevenly across browsers and a half-drawn zigzag looks like a printer
+ * fault, so the edges go straight and everything decorative gets out of the
+ * way of the ink.
+ */
+@media print {
+  .receipt-paper {
+    -webkit-mask: none;
+    mask: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    /*
+     * The app already answers every tap with `active:scale-95`. The browser's
+     * own grey flash arrives on top of that a beat later, which on Android
+     * reads as a second, laggy response to one tap.
+     */
+    -webkit-tap-highlight-color: transparent;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
@@ -131,5 +244,11 @@
   }
   html {
     @apply font-sans;
+    /*
+     * Stops iOS Safari inflating body text when the phone is turned sideways,
+     * which otherwise breaks every fixed-height row and badge on the page.
+     */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 }

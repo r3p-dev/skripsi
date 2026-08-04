@@ -11,16 +11,18 @@ export const ActionName = {
   RELEASE_PICKUP: 'release_pickup',
   RELEASE_DELIVERY: 'release_delivery',
   RELEASE_INSPECTION: 'release_inspection',
+  CLEANING_DONE: 'cleaning_done',
+  COLLECTED: 'collected',
   OFFLINE_ORDER: 'offline_order',
+  ITEMS_EDITED: 'items_edited',
+  PAYMENT_OVERRIDE: 'payment_override',
+  PAYMENT_REMINDER_SENT: 'payment_reminder_sent',
+  READY_NOTICE_SENT: 'ready_notice_sent',
 } as const
 
 /**
- * Type representing the names of order actions.
- */
-export type ActionName = (typeof ActionName)[keyof typeof ActionName]
-
-/**
  * Customer-facing labels for order action names.
+ * These labels are used in the UI to provide a more user-friendly representation of the enum values.
  */
 export const ActionNameLabel = {
   [ActionName.PICKUP]: 'Penjemputan Selesai',
@@ -32,5 +34,16 @@ export const ActionNameLabel = {
   [ActionName.RELEASE_PICKUP]: 'Tugas Penjemputan Dibatalkan',
   [ActionName.RELEASE_DELIVERY]: 'Tugas Pengantaran Dibatalkan',
   [ActionName.RELEASE_INSPECTION]: 'Tugas Inspeksi Dibatalkan',
+  [ActionName.CLEANING_DONE]: 'Pencucian Selesai',
+  [ActionName.COLLECTED]: 'Diambil Pelanggan',
   [ActionName.OFFLINE_ORDER]: 'Pesanan Offline',
+  [ActionName.ITEMS_EDITED]: 'Barang Diperbarui',
+  [ActionName.PAYMENT_OVERRIDE]: 'Pembayaran Dikonfirmasi Manual',
+  [ActionName.PAYMENT_REMINDER_SENT]: 'Pengingat Pembayaran Dikirim',
+  [ActionName.READY_NOTICE_SENT]: 'Pemberitahuan Siap Diambil Dikirim',
 } as const
+
+/**
+ * Type representing the names of order actions.
+ */
+export type ActionName = (typeof ActionName)[keyof typeof ActionName]

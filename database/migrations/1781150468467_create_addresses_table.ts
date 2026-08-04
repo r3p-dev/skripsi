@@ -14,9 +14,9 @@ export default class extends BaseSchema {
         .inTable('users')
         .onDelete('RESTRICT')
 
-      table.string('recipient_name').notNullable()
-      table.string('recipient_phone').notNullable()
-      table.string('address_detail').notNullable()
+      table.string('name').notNullable()
+      table.string('phone').notNullable()
+      table.string('street').notNullable()
       table.decimal('latitude', 10, 7).notNullable()
       table.decimal('longitude', 10, 7).notNullable()
       table.boolean('is_active').notNullable().defaultTo(true)

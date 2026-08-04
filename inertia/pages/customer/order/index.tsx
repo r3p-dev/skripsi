@@ -1,171 +1,139 @@
-import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import type { Filters, InertiaProps, Metadata } from '@/types'
-import { Link } from '@adonisjs/inertia/react'
-import type { Data } from '@/generated/data'
-import { IconClipboardList, IconSearch } from '@tabler/icons-react'
-import { router } from '@inertiajs/react'
-import { useState } from 'react'
 import CustomerLayout from '@/components/layouts/customer_layout'
-import { urlFor } from '@/client'
+import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import type { Data } from '@/generated/data'
+import type { Filters, InertiaProps, Metadata } from '@/types'
+import { Form, Link } from '@adonisjs/inertia/react'
+import { IconChevronLeft, IconChevronRight, IconPlus, IconSearch } from '@tabler/icons-react'
+import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { neutralBadgeStyle, orderStatusStyles } from '@/lib/constants'
+import { formatDate, formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
-  orders: {
-    data: Data.Order[]
-    metadata: Metadata
-  }
+  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
   filters: Filters
 }>
 
-export default function OrderList({ orders: ordersResponse, filters }: PageProps) {
-  const orders = ordersResponse.data
-  const metadata = ordersResponse.metadata
-
-  const [search, setSearch] = useState<string>(filters.search ?? '')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-
-  function handleSearch(value: string) {
-    setIsLoading(true)
-
-    const url = urlFor(
-      'customer.order.index',
-      {},
-      {
-        qs: { page: 1, search: value },
-      }
-    )
-
-    router.get(url, {}, { preserveScroll: true, onFinish: () => setIsLoading(false) })
-  }
-
+export default function Index({ orders, filters }: PageProps) {
   return (
-    <CustomerLayout title="Daftar Pesanan" description="Kelola semua pesanan Anda">
-      <div className="flex-1 w-full max-w-md space-y-6 mx-auto p-4 pb-24">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-black mb-1">Daftar Pesanan</h2>
-          <p className="text-gray-600">Kelola semua pesanan Anda</p>
+    <CustomerLayout title="Pesanan" description="Riwayat pesanan UmimaClean Anda">
+      <div className="flex items-center justify-between gap-3 px-6 py-5">
+        <div>
+          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Pesanan</p>
+          <h1 className="text-3xl font-bold tracking-tight text-black">Riwayat Pesanan</h1>
         </div>
 
-        <div className="flex gap-3 flex-row">
-          <div className="relative flex-1">
-            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Cari berdasarkan nomor pesanan, nama, telepon, atau alamat..."
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch(search)
-                }
-              }}
-            />
-          </div>
-          <Button onClick={() => handleSearch(search)} disabled={isLoading}>
-            Cari
-          </Button>
-        </div>
+        <Link
+          route="customer.order.create"
+          aria-label="Buat pesanan baru"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all hover:bg-black/90 active:scale-95"
+        >
+          <IconPlus className="size-5" />
+        </Link>
+      </div>
 
-        {orders.length === 0 ? (
-          <div className="text-center py-8">
-            <IconClipboardList className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">Tidak ada pesanan ditemukan</h3>
-            <p className="text-sm text-muted-foreground">
-              {filters.search
-                ? 'Coba ubah kriteria pencarian Anda'
-                : 'Pesanan yang Anda buat akan muncul di sini'}
-            </p>
-          </div>
+      <div className="flex-1 px-6 pb-nav">
+        <Form route="customer.order.index" className="mb-6">
+          {() => (
+            <div className="relative">
+              <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                name="search"
+                defaultValue={filters.search}
+                placeholder="Cari nomor pesanan..."
+                className="h-11 rounded-xl border-gray-300 bg-gray-50 pl-10 focus-visible:border-black focus-visible:ring-black/10"
+              />
+            </div>
+          )}
+        </Form>
+
+        {orders.data.length === 0 ? (
+          <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
+              <IconPlus className="size-7 text-black" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-black">Belum ada pesanan</p>
+              <p className="text-sm text-gray-600">Buat pesanan pertama Anda sekarang</p>
+            </div>
+            <Link
+              route="customer.order.create"
+              className={buttonVariants({
+                className:
+                  'h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
+              })}
+            >
+              Buat Pesanan
+            </Link>
+          </Card>
         ) : (
-          orders.map((order) => {
-            return (
-              <Card key={order.id}>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 space-y-2">
-                      <Badge>{order.status}</Badge>
-                      <h3 className="text-base font-semibold">#{order.orderNumber}</h3>
-                      <p className="text-sm text-muted-foreground">{order.createdAt}</p>
-                    </div>
-                    <Link
-                      route="customer.order.show"
-                      routeParams={{ number: order.orderNumber }}
-                      className={buttonVariants({
-                        variant: 'outline',
-                      })}
-                    >
-                      Lihat
-                    </Link>
+          <div className="space-y-4">
+            {orders.data.map((order) => (
+              <Link
+                key={order.id}
+                route="customer.order.show"
+                routeParams={{ number: order.orderNumber }}
+                className="block"
+              >
+                <Card className="rounded-2xl border border-gray-300 bg-gray-50 p-5 transition-colors hover:bg-gray-100 active:scale-95">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold tracking-wide text-black">
+                      {order.orderNumber}
+                    </p>
+                    <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+                      {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      Jadwal Jemput: {formatDate(order.pickupDate)}
+                    </span>
+                    <span className="font-semibold text-black">
+                      {order.totalPrice === null
+                        ? 'Belum ada tagihan'
+                        : formatRupiah(order.totalPrice)}
+                    </span>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
         )}
 
-        {metadata.lastPage > 1 && (
-          <div className="flex justify-between gap-2 pt-2">
-            {metadata.currentPage > 1 ? (
-              <Link
-                href={urlFor(
-                  'customer.order.index',
-                  {},
-                  {
-                    qs: {
-                      page: metadata.currentPage - 1,
-                      search: filters.search,
-                    },
-                  }
-                )}
-                className={buttonVariants({
-                  variant: 'outline',
-                })}
-              >
-                Sebelumnya
-              </Link>
-            ) : (
-              <span
-                className={`${buttonVariants({
-                  variant: 'outline',
-                })} pointer-events-none opacity-50`}
-              >
-                Sebelumnya
-              </span>
-            )}
+        {orders.metadata.lastPage > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <Link
+              route="customer.order.index"
+              data={{ page: orders.metadata.currentPage - 1, search: filters.search }}
+              preserveScroll
+              className={buttonVariants({
+                variant: 'outline',
+                className: `h-11 rounded-lg px-4 ${orders.metadata.currentPage <= orders.metadata.firstPage ? 'pointer-events-none opacity-40' : ''}`,
+              })}
+            >
+              <IconChevronLeft className="size-4" />
+              Sebelumnya
+            </Link>
 
-            <span className="text-sm text-muted-foreground self-center">
-              {metadata.currentPage} / {metadata.lastPage}
-            </span>
+            <p className="text-xs tracking-widest text-gray-500 uppercase">
+              {orders.metadata.currentPage} / {orders.metadata.lastPage}
+            </p>
 
-            {metadata.currentPage < metadata.lastPage ? (
-              <Link
-                href={urlFor(
-                  'customer.order.index',
-                  {},
-                  {
-                    qs: {
-                      page: metadata.currentPage + 1,
-                      search: filters.search,
-                    },
-                  }
-                )}
-                className={buttonVariants({
-                  variant: 'outline',
-                })}
-              >
-                Selanjutnya
-              </Link>
-            ) : (
-              <span
-                className={`${buttonVariants({
-                  variant: 'outline',
-                })} pointer-events-none opacity-50`}
-              >
-                Selanjutnya
-              </span>
-            )}
+            <Link
+              route="customer.order.index"
+              data={{ page: orders.metadata.currentPage + 1, search: filters.search }}
+              preserveScroll
+              className={buttonVariants({
+                variant: 'outline',
+                className: `h-11 rounded-lg px-4 ${orders.metadata.currentPage >= orders.metadata.lastPage ? 'pointer-events-none opacity-40' : ''}`,
+              })}
+            >
+              Selanjutnya
+              <IconChevronRight className="size-4" />
+            </Link>
           </div>
         )}
       </div>

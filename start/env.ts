@@ -32,7 +32,7 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | Variables for configuring the session package
+  | Variables for configuring the session
   |----------------------------------------------------------
   */
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
@@ -52,10 +52,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   LIMITER_STORE: Env.schema.enum(['database', 'memory'] as const),
 
   /*
-    |----------------------------------------------------------
-    | Variables for configuring the database connection
-    |----------------------------------------------------------
-    */
+  |----------------------------------------------------------
+  | Variables for configuring the database connection
+  |----------------------------------------------------------
+  */
   DB_HOST: Env.schema.string({ format: 'host' }),
   DB_PORT: Env.schema.number(),
   DB_USER: Env.schema.string(),
@@ -63,17 +63,32 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_DATABASE: Env.schema.string(),
 
   /*
-    |----------------------------------------------------------
-    | Variables for configuring the Midtrans package
-    |----------------------------------------------------------
-    */
+  |----------------------------------------------------------
+  | Variables for configuring the Midtrans package
+  |----------------------------------------------------------
+  */
   MIDTRANS_MERCHANT_ID: Env.schema.secret(),
   MIDTRANS_SERVER_KEY: Env.schema.secret(),
 
   /*
-    |----------------------------------------------------------
-    | Variables for configuring the Fonnte connection
-    |----------------------------------------------------------
-    */
+  |----------------------------------------------------------
+  | Variables for configuring the Fonnte connection
+  |----------------------------------------------------------
+  */
   FONNTE_API_KEY: Env.schema.secret(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the OSRM road router
+  |----------------------------------------------------------
+  |
+  | All optional: with none of them set the app plans routes from
+  | straight-line distances, which is what it did before OSRM existed.
+  |
+  */
+  OSRM_ENABLED: Env.schema.boolean.optional(),
+  OSRM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  OSRM_PROFILE: Env.schema.string.optional(),
+  OSRM_TIMEOUT_MS: Env.schema.number.optional(),
+  OSRM_MAX_TABLE_SIZE: Env.schema.number.optional(),
 })

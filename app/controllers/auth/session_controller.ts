@@ -3,39 +3,47 @@ import { loginValidator } from '#validators/auth_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { type Role, RoleRedirect } from '#enums/role_enum'
-import { type PageObject } from '@adonisjs/inertia/types'
+import { errors as authErrors } from '@adonisjs/auth'
+import { errors as vineErrors } from '@vinejs/vine'
 
-/**
- * Handle user session authentication endpoints.
- */
 @inject()
 export default class SessionController {
   constructor(protected authService: AuthService) {}
 
-  /**
-   * Display the login form.
-   */
-  async create({ inertia }: HttpContext): Promise<string | PageObject<{}>> {
+  async create({ inertia }: HttpContext) {
     return inertia.render('auth/login', {})
   }
 
-  /**
-   * Authenticate user using phone and password.
-   */
-  async store({ request, response, auth }: HttpContext): Promise<void> {
-    const payload = await request.validateUsing(loginValidator)
+  async store({ request, response, auth, session }: HttpContext) {
+    try {
+      const payload = await request.validateUsing(loginValidator)
 
-    const user = await this.authService.login(payload, auth)
+      const user = await this.authService.login(payload, auth, session)
 
-    return response.redirect().toRoute(RoleRedirect[user.role as Role])
+      session.flash('success', 'Berhasil masuk.')
+      return response.redirect().toRoute(RoleRedirect[user.role as Role])
+    } catch (error) {
+      if (error instanceof authErrors.E_INVALID_CREDENTIALS) {
+        throw new vineErrors.E_VALIDATION_ERROR([
+          {
+            field: 'phone',
+            message: 'Nomor telepon atau kata sandi salah.',
+          },
+          {
+            field: 'password',
+            message: 'Nomor telepon atau kata sandi salah.',
+          },
+        ])
+      }
+
+      throw error
+    }
   }
 
-  /**
-   * Logout the current authenticated session.
-   */
-  async destroy({ auth, response }: HttpContext): Promise<void> {
+  async destroy({ auth, response, session }: HttpContext) {
     await this.authService.logout(auth)
 
+    session.flash('success', 'Berhasil keluar.')
     return response.redirect().toRoute('home')
   }
 }

@@ -1,30 +1,21 @@
-import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Transaction from '#models/transaction'
-import { type TransactionStatus, TransactionStatusLabel } from '#enums/transaction_status_enum'
-import OrderTransformer from '#transformers/order_transformer'
+import { BaseTransformer } from '@adonisjs/core/transformers'
 import { DateTime } from 'luxon'
 
-/**
- * Serialize transaction models and their loaded order relation for API responses.
- */
 export default class TransactionTransformer extends BaseTransformer<Transaction> {
-  /**
-   * Convert a transaction model into the public response payload.
-   */
   toObject() {
     return {
-      ...this.pick(this.resource, [
-        'id',
-        'midtransOrderId',
-        'midtransTransactionId',
-        'snapToken',
-        'snapRedirectUrl',
-      ]),
+      ...this.pick(this.resource, ['id', 'midtransOrderId', 'midtransTransactionId', 'qrCode']),
 
-      status: TransactionStatusLabel[this.resource.status as TransactionStatus],
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
-
-      order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),
+      paymentMethod: this.resource.paymentMethod,
+      status: this.resource.status,
+      /**
+       * What the customer handed over at the counter, for the cash payments
+       * that have change to give back. Everything else settles for the exact
+       * amount and leaves this null.
+       */
+      cashReceived: this.resource.cashReceived === null ? null : Number(this.resource.cashReceived),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }

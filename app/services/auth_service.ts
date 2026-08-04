@@ -1,171 +1,171 @@
 import User from '#models/user'
 import type {
-  ChangePasswordData,
   ForgotPasswordData,
   LoginData,
   SignupData,
   ResetPasswordData,
 } from '#validators/auth_validator'
 import { inject } from '@adonisjs/core'
-import db from '@adonisjs/lucid/services/db'
 import FonnteService from '#services/fonnte_service'
 import type { Authenticator } from '@adonisjs/auth'
+import { errors as authErrors } from '@adonisjs/auth'
 import type { Authenticators } from '@adonisjs/auth/types'
+import type { Session } from '@adonisjs/session'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { appUrl } from '#config/app'
 import { Role } from '#enums/role_enum'
-import { errors } from '@vinejs/vine'
+import { DateTime } from 'luxon'
 
 /**
- * Manages customer authentication and account security workflows.
+ * The session key recording when this session was authenticated.
  *
- * Responsibilities:
- * - Register new customer accounts.
- * - Authenticate users and manage web sessions.
- * - Handle password changes for authenticated users.
- * - Coordinate password reset requests and password recovery flows.
+ * Sessions live in a signed cookie, so there is no server-side table of live
+ * sessions to delete rows from when a password changes. This stands in for
+ * one: a session stamped before the account's current password was set
+ * belongs to whoever knew the old password, and is refused on its next
+ * request. See `AuthMiddleware`.
+ */
+export const AUTHENTICATED_AT = 'authenticated_at'
+
+/**
+ * Handles signup, login/logout, and the WhatsApp password reset flow.
  */
 @inject()
 export default class AuthService {
   constructor(private fonnteService: FonnteService) {}
 
   /**
-   * Create a new customer account and immediately establish an authenticated
-   * web session.
+   * Create a new account and log the user in.
    *
-   * This method is intended for self-service customer registration and
-   * automatically logs the user in after a successful signup.
-   *
-   * @param data - Validated registration payload.
-   * @param auth - Authenticator instance for the current request.
-   * @returns A promise that resolves when the account has been created and
-   * the session has been established.
+   * Defaults to a customer, and only ever produces anything else when a caller
+   * that has already checked who is asking passes a role in — which is the
+   * admin account-creation path and nothing else.
    */
-  async signup(data: SignupData, auth: Authenticator<Authenticators>): Promise<void> {
-    const user = await User.create({ ...data, role: Role.CUSTOMER })
+  async signup(
+    data: SignupData,
+    auth: Authenticator<Authenticators>,
+    session: Session,
+    role?: Role
+  ): Promise<User> {
+    const user = await User.create({
+      ...data,
+      role: role || Role.CUSTOMER,
+      isActive: true,
+      passwordChangedAt: DateTime.now(),
+    })
 
-    return auth.use('web').login(user)
-  }
-
-  /**
-   * Verify customer credentials and establish a web session.
-   *
-   * Supports optional persistent authentication through the "remember me"
-   * functionality when requested by the customer.
-   *
-   * @param data - Validated login credentials.
-   * @param auth - Authenticator instance for the current request.
-   * @returns The authenticated user.
-   * @throws When the provided credentials are invalid.
-   */
-  async login(data: LoginData, auth: Authenticator<Authenticators>): Promise<User> {
-    const { phone, password, rememberMe } = data
-
-    const user = await User.verifyCredentials(phone, password)
-    await auth.use('web').login(user, Boolean(rememberMe))
+    await auth.use('web').login(user)
+    this.stampSession(session)
 
     return user
   }
 
   /**
-   * Terminate the current authenticated web session.
+   * Verify credentials and create an authenticated session.
    *
-   * This method invalidates the active session and removes the user's
-   * authenticated state from subsequent requests.
+   * A deactivated account is refused with exactly the same error as a wrong
+   * password, and deliberately so: a distinct message would tell whoever is
+   * typing that the number belongs to a real account that has been switched
+   * off, which is more than a rejected login should give away.
    *
-   * @param auth - Authenticator instance for the current request.
-   * @returns A promise that resolves when the session has been destroyed.
+   * @throws When credentials are invalid or the account has been deactivated.
+   */
+  async login(
+    data: LoginData,
+    auth: Authenticator<Authenticators>,
+    session: Session
+  ): Promise<User> {
+    const { phone, password, rememberMe } = data
+
+    const user = await User.verifyCredentials(phone, password)
+
+    if (!user.isActive) {
+      throw new authErrors.E_INVALID_CREDENTIALS('Invalid user credentials')
+    }
+
+    await auth.use('web').login(user, Boolean(rememberMe))
+    this.stampSession(session)
+
+    return user
+  }
+
+  /**
+   * Destroy the current authenticated session.
    */
   async logout(auth: Authenticator<Authenticators>): Promise<void> {
     await auth.use('web').logout()
   }
 
   /**
-   * Update the authenticated user's password.
+   * Generate and send a password reset link over WhatsApp.
    *
-   * The current password must be verified before the new password is
-   * persisted. The update is executed within a database transaction to
-   * guarantee consistency.
+   * Unknown phone numbers are silently ignored so the response cannot be used
+   * to discover which numbers have an account. A deactivated account is
+   * treated the same way — sending it a working reset link would hand back the
+   * door that deactivating it closed.
    *
-   * @param data - Validated password change payload.
-   * @param user - Authenticated user requesting the password change.
-   * @returns The updated user model.
-   * @throws When the current password verification fails.
-   */
-  async changePassword(data: ChangePasswordData, user: User): Promise<User> {
-    const { currentPassword, password } = data
-
-    const isValid = await user.verifyPassword(currentPassword)
-    if (!isValid) {
-      throw new errors.E_VALIDATION_ERROR([
-        {
-          field: 'currentPassword',
-          message: 'Kata sandi saat ini salah',
-        },
-      ])
-    }
-
-    return db.transaction((trx) =>
-      user
-        .merge({
-          password,
-        })
-        .useTransaction(trx)
-        .save()
-    )
-  }
-
-  /**
-   * Generate and send a password reset link for a registered customer.
-   *
-   * A signed reset URL with a limited validity period is generated and
-   * delivered through the configured messaging provider. No action is taken
-   * when the provided phone number is not associated with an account.
-   *
-   * @param data - Validated password reset request payload.
-   * @returns The matching user when found; otherwise `null`.
+   * @throws When the message provider fails.
    */
   async requestPasswordReset(data: ForgotPasswordData): Promise<void> {
     const user = await User.findBy('phone', data.phone)
-    if (user) {
-      const resetUrl = signedUrlFor(
-        'password_reset.edit',
-        {},
-        {
-          qs: {
-            phone: user.phone,
-          },
-          expiresIn: '15m',
-          prefixUrl: appUrl,
-        }
-      )
 
-      await this.fonnteService.sendPasswordResetLink(user.phone, resetUrl)
+    if (!user || !user.isActive) {
+      return
+    }
+
+    const resetUrl = signedUrlFor(
+      'password_reset.edit',
+      {},
+      {
+        qs: {
+          phone: user.phone,
+        },
+        expiresIn: '15m',
+        prefixUrl: appUrl,
+      }
+    )
+
+    await this.fonnteService.sendPasswordResetLink(user.phone, resetUrl)
+  }
+
+  /**
+   * Update password using a validated reset request, and end every session
+   * that was opened with the old one.
+   *
+   * A reset is what someone does when they think their account is not theirs
+   * alone any more. Leaving the sessions that prompted it signed in would make
+   * the whole exercise a formality: the remember-me tokens are deleted
+   * outright, and moving `passwordChangedAt` forward invalidates every cookie
+   * session stamped before this moment on its next request.
+   *
+   * @throws When the user cannot be found.
+   */
+  async resetPassword(data: ResetPasswordData, phone: string): Promise<User> {
+    const user = await User.findByOrFail('phone', phone)
+
+    await user.merge({ password: data.password, passwordChangedAt: DateTime.now() }).save()
+    await this.revokeRememberMeTokens(user)
+
+    return user
+  }
+
+  /**
+   * Deletes the persistent credentials that would otherwise let a session we
+   * just invalidated quietly sign itself back in.
+   */
+  async revokeRememberMeTokens(user: User): Promise<void> {
+    const tokens = await User.rememberMeTokens.all(user)
+
+    for (const token of tokens) {
+      await User.rememberMeTokens.delete(user, token.identifier)
     }
   }
 
   /**
-   * Persist a new password using a verified password reset request.
-   *
-   * This method is intended to be executed only after the password reset
-   * token or signed URL has been successfully validated by the application.
-   * The password update is performed within a database transaction.
-   *
-   * @param data - Validated password reset payload.
-   * @param phone - Phone number associated with the account being recovered.
-   * @returns A promise that resolves when the password has been updated.
-   * @throws When no user exists for the provided phone number.
+   * Records when this session was authenticated, so it can later be compared
+   * against the account's `passwordChangedAt`.
    */
-  async resetPassword(data: ResetPasswordData, phone: string): Promise<void> {
-    const user = await User.findByOrFail('phone', phone)
-
-    return db.transaction(async (trx) => {
-      await user
-        .merge({
-          password: data.password,
-        })
-        .useTransaction(trx)
-        .save()
-    })
+  private stampSession(session: Session): void {
+    session.put(AUTHENTICATED_AT, DateTime.now().toISO())
   }
 }

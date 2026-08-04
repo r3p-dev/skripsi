@@ -1,78 +1,78 @@
-import { client } from '@/client'
-import type { routes } from '@/generated/registry'
-import { cn } from '@/lib/utils'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
-import { IconHome, IconPackage, IconUser } from '@tabler/icons-react'
+import { IconCalendarPlus, IconReceipt2, IconUser } from '@tabler/icons-react'
 import { type PropsWithChildren } from 'react'
+import { usePage } from '@inertiajs/react'
+
+/**
+ * Bottom navigation tabs. `match` lists the Inertia page components that
+ * should light the tab up, so detail pages stay under their parent tab.
+ */
+const NAV_ITEMS = [
+  {
+    route: 'customer.order.create',
+    match: ['customer/order/create'],
+    label: 'Pesan',
+    icon: IconCalendarPlus,
+  },
+  {
+    route: 'customer.order.index',
+    match: ['customer/order/index', 'customer/order/show', 'customer/order/receipt'],
+    label: 'Pesanan',
+    icon: IconReceipt2,
+  },
+  {
+    route: 'customer.profile.show',
+    match: ['customer/profile/show', 'customer/address/show', 'customer/address/create'],
+    label: 'Profil',
+    icon: IconUser,
+  },
+] as const
 
 export default function CustomerLayout({
   children,
   title,
   description,
-}: PropsWithChildren<{ title: string; description: string }>) {
-  const navItems = [
-    { path: 'customer.order.create' as const, icon: IconHome, label: 'Buat' },
-    { path: 'customer.order.index' as const, icon: IconPackage, label: 'Pesanan' },
-    { path: 'customer.profile.show' as const, icon: IconUser, label: 'Profil' },
-  ]
-
-  function isActive(path: keyof typeof routes) {
-    switch (path) {
-      case 'customer.profile.show':
-        return client.current('customer.profile.*') || client.current('customer.address.*')
-
-      default:
-        return client.current(path)
-    }
-  }
+}: PropsWithChildren<{
+  title: string
+  description: string
+}>) {
+  const { component } = usePage()
 
   return (
-    <>
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
       </Head>
 
-      <div className="max-w-md mx-auto bg-muted min-h-dvh">
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
-          <div className="flex items-center p-3 justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1">
-              <img src="/images/logo.jpg" alt="Premium Care" className="size-6" />
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-bold text-black leading-tight">UmimaClean</h1>
-                <p className="text-xs text-gray-500 tracking-wide">LAYANAN CUCI SEPATU</p>
-              </div>
-            </div>
-          </div>
-        </header>
+      {children}
 
-        <main>{children}</main>
+      <nav className="fixed inset-x-0 bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 z-50 border-t border-gray-200 bg-white pb-safe">
+        <div className="mx-auto flex max-w-md items-stretch justify-around px-4 py-1.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = (item.match as readonly string[]).includes(component)
 
-        <nav className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 transform bg-white border-t border-gray-200">
-          <div className="flex h-16 items-center justify-around gap-4 px-4">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const active = isActive(item.path)
-              return (
-                <Link
-                  key={item.path}
-                  route={item.path}
-                  className={cn(
-                    'flex flex-1 flex-col items-center justify-center rounded-lg p-2 transition-all',
-                    active
-                      ? 'bg-black text-white'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                  )}
+            return (
+              <Link
+                key={item.route}
+                route={item.route}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 transition-colors active:scale-95 touch-target ${
+                  isActive ? 'text-black' : 'text-gray-400'
+                }`}
+              >
+                <item.icon className="size-6" strokeWidth={isActive ? 2.25 : 1.75} />
+                <span
+                  className={`text-xs tracking-wide ${isActive ? 'font-semibold' : 'font-medium'}`}
                 >
-                  <Icon className="size-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Link>
-              )
-            })}
-          </div>
-        </nav>
-      </div>
-    </>
+                  {item.label}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+    </div>
   )
 }

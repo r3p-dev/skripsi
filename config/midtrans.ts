@@ -1,4 +1,5 @@
 import env from '#start/env'
+import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const midtransClient = require('midtrans-client')
@@ -27,24 +28,32 @@ export interface MidtransNotification {
 }
 
 /**
- * Response returned by Midtrans after creating a Snap transaction.
+ * Whether Midtrans requests should hit the production API instead of the
+ * sandbox.
  */
-export interface MidtransSnapResponse {
-  token: string
-  redirect_url: string
-}
+// const isProduction = env.get('NODE_ENV') === 'production'
 
 /**
- * Snap client used to create Midtrans payment transactions.
+ * Core API client used to charge Midtrans payment transactions
+ * server-to-server (no Snap redirect/popup involved).
  */
-export const snap = new midtransClient.Snap({
-  /**
-   * Use the Midtrans sandbox environment.
-   */
-  isProduction: false,
-
-  /**
-   * Server key used to authenticate requests to Midtrans.
-   */
-  serverKey: env.get('MIDTRANS_SERVER_KEY'),
+export const core = new midtransClient.CoreApi({
+  isProduction: false, // Set to true in production
+  serverKey: env.get('MIDTRANS_SERVER_KEY').release(),
 })
+
+/**
+ * Verifies the `signature_key` sent with a Midtrans notification webhook,
+ * proving the payload actually originated from Midtrans.
+ *
+ * @see https://docs.midtrans.com/docs/https-notification-webhooks
+ */
+export function verifyNotificationSignature(payload: MidtransNotification): boolean {
+  const serverKey = env.get('MIDTRANS_SERVER_KEY').release()
+
+  const expectedSignature = createHash('sha512')
+    .update(`${payload.order_id}${payload.status_code}${payload.gross_amount}${serverKey}`)
+    .digest('hex')
+
+  return expectedSignature === payload.signature_key
+}

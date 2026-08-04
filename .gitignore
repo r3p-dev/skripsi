@@ -12,6 +12,9 @@ tmp
 # Frontend assets compiled code
 public/assets
 
+# Uploaded files (local disk driver)
+storage
+
 # Build tools specific
 npm-debug.log
 yarn-error.log
@@ -20,6 +23,8 @@ yarn-error.log
 .fleet
 .idea
 .vscode
+.claude
 
 # Platform specific
 .DS_Store
+

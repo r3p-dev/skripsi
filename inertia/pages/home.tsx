@@ -2,8 +2,8 @@ import ImageSlider from '@/components/molecules/image_slide'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
-import type { Data } from '@/generated/data'
 import { areas, reviews, steps } from '@/lib/constants'
+import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import {
@@ -46,7 +46,13 @@ export default function Home({ services }: PageProps) {
     <div className="mx-auto max-w-md">
       <section className="bg-white px-6 py-5">
         <div className="mb-10 flex items-center gap-3">
-          <img src="/images/logo.jpg" alt="Premium Care" className="size-14" />
+          <img
+            src="/images/logo.jpg"
+            alt="Logo UmimaClean"
+            width={56}
+            height={56}
+            className="size-14"
+          />
           <div>
             <h1 className="mb-0.5 text-2xl font-bold tracking-tight text-black">UmimaClean</h1>
             <p className="text-xs tracking-widest text-gray-600 uppercase">Layanan Cuci Sepatu</p>
@@ -151,7 +157,7 @@ export default function Home({ services }: PageProps) {
           >
             <CarouselContent>
               {services.map((service, index) => (
-                <CarouselItem key={service.id}>
+                <CarouselItem key={service.name}>
                   <Card className="h-full flex gap-2 flex-col justify-between rounded-2xl border border-gray-300 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md">
                     <CardHeader className="tracking-[0.2em] text-gray-500 font-medium pt-6">
                       {String(index + 1).padStart(2, '0')}
@@ -183,14 +189,24 @@ export default function Home({ services }: PageProps) {
           </Carousel>
         </div>
 
-        <div className="flex justify-between space-x-3 pr-2">
+        {/*
+          The dot stays 10px — it is an indicator, not a button you are meant to
+          aim at. What grew is the invisible box around it, so the dot can be
+          hit with a thumb rather than only with a mouse.
+        */}
+        <div className="-my-3 flex justify-between">
           {Array.from({ length: count }).map((_, i) => (
             <button
               key={i}
               onClick={() => api?.scrollTo(i)}
-              className={`size-2.5 rounded-full cursor-pointer transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
+              className="flex flex-1 cursor-pointer items-center justify-center py-3"
+              aria-label={`Ke slide ${i + 1}`}
+              aria-current={i === current ? 'true' : undefined}
+            >
+              <span
+                className={`size-2.5 rounded-full transition-colors ${i === current ? 'bg-black' : 'bg-gray-400'}`}
+              />
+            </button>
           ))}
         </div>
       </section>
@@ -242,7 +258,7 @@ export default function Home({ services }: PageProps) {
           {areas.map((area, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white p-5 transition-all hover:shadow-sm active:scale-95 touch-target flex-col text-center"
+              className="flex touch-target flex-col items-center gap-3 rounded-xl border border-gray-300 bg-white p-5 text-center transition-all hover:shadow-sm active:scale-95"
             >
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
                 <IconMapPin className="size-5 text-black" />
@@ -281,9 +297,7 @@ export default function Home({ services }: PageProps) {
                   ))}
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-700">
-                `&quot;`{review.comment}`&quot;`
-              </p>
+              <p className="text-sm leading-relaxed text-gray-700">&quot;{review.comment}&quot;</p>
             </div>
           ))}
         </div>

@@ -1,11 +1,14 @@
-import { type PageObject } from '@adonisjs/inertia/types'
 import type { HttpContext } from '@adonisjs/core/http'
-import Service from '#models/service'
+import { inject } from '@adonisjs/core'
+import OrderService from '#services/order_service'
 import ServiceTransformer from '#transformers/service_transformer'
 
+@inject()
 export default class HomeController {
-  async show({ inertia }: HttpContext): Promise<string | PageObject<{}>> {
-    const services = await Service.query().orderBy('created_at', 'asc')
+  constructor(protected orderService: OrderService) {}
+
+  async index({ inertia }: HttpContext) {
+    const services = await this.orderService.getAvailableServices()
 
     return inertia.render('home', {
       services: ServiceTransformer.transform(services),

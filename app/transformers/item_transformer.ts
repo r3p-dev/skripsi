@@ -1,15 +1,8 @@
-import type Shoe from '#models/item'
+import type Item from '#models/item'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import { DateTime } from 'luxon'
-import { type ItemType, ItemTypeLabel } from '#enums/item_type_enum'
 
-/**
- * Serialize shoe models for API responses.
- */
-export default class ShoeTransformer extends BaseTransformer<Shoe> {
-  /**
-   * Convert a shoe model into the public response payload.
-   */
+export default class ItemTransformer extends BaseTransformer<Item> {
   toObject() {
     return {
       ...this.pick(this.resource, [
@@ -22,8 +15,8 @@ export default class ShoeTransformer extends BaseTransformer<Shoe> {
         'size',
       ]),
 
-      type: ItemTypeLabel[this.resource.type as ItemType],
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      type: this.resource.type,
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
     }
   }
 }

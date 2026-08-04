@@ -1,21 +1,14 @@
 import AddressService from '#services/address_service'
 import AddressTransformer from '#transformers/address_transformer'
-import { addressValidator } from '#validators/profile_validator'
+import { addressValidator } from '#validators/address_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import { type PageObject } from '@adonisjs/inertia/types'
 
-/**
- * Manage the authenticated customer's active address.
- */
 @inject()
 export default class AddressController {
   constructor(protected addressService: AddressService) {}
 
-  /**
-   * Display the authenticated customer's active address.
-   */
-  async show({ auth, inertia }: HttpContext): Promise<string | PageObject<{}>> {
+  async show({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
     const address = await this.addressService.getActiveAddress(user)
 
@@ -24,27 +17,22 @@ export default class AddressController {
     })
   }
 
-  /**
-   * Display the new address form.
-   */
-  async create({ auth, inertia }: HttpContext): Promise<string | PageObject<{}>> {
+  async create({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
     const address = await this.addressService.getActiveAddress(user)
 
-    return inertia.render('customer/address/form', {
+    return inertia.render('customer/address/create', {
       address: AddressTransformer.transform(address),
     })
   }
 
-  /**
-   * Create the customer's current active address.
-   */
-  async store({ auth, request, response }: HttpContext) {
+  async store({ auth, request, response, session }: HttpContext) {
     const payload = await request.validateUsing(addressValidator)
     const user = auth.getUserOrFail()
 
     await this.addressService.replaceActiveAddress(user, payload)
 
+    session.flash('success', 'Berhasil menambahkan alamat.')
     return response.redirect().toRoute('customer.address.show')
   }
 }

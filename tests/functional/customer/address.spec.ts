@@ -1,298 +1,152 @@
+import { AddressFactory } from '#database/factories/address_factory'
+import { OrderFactory } from '#database/factories/order_factory'
 import { UserFactory } from '#database/factories/user_factory'
+import Address from '#models/address'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
-test.group('GET Pages', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
-  })
+/**
+ * Inside the service area: the shop's own coordinates.
+ */
+const INSIDE_SERVICE_AREA = { latitude: -6.9555305, longitude: 107.6540353 }
 
-  test('GET /address returns customer/address/show', async ({ client }) => {
-    const user = await UserFactory.create()
+/**
+ * Outside the service area: Jakarta, roughly 120 km north-west of the shop.
+ */
+const OUTSIDE_SERVICE_AREA = { latitude: -6.2088, longitude: 106.8456 }
 
-    const response = await client.visit('customer.address.show').loginAs(user).withInertia()
+function addressPayload(coordinates: { latitude: number; longitude: number }) {
+  return {
+    name: 'Budi Santoso',
+    phone: '081211110001',
+    street: 'Jalan Merdeka No 1',
+    note: 'Pagar hitam',
+    ...coordinates,
+  }
+}
+
+test.group('Customer Address', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
+
+  test('GET /address shows the customer their active address', async ({ client, assert }) => {
+    const customer = await UserFactory.create()
+    const address = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+
+    const response = await client.get('/address').withInertia().loginAs(customer)
 
     response.assertInertiaComponent('customer/address/show')
+    assert.equal(response.inertiaProps.address.id, address.id)
   })
 
-  test('GET /address returns customer/address/create', async ({ client }) => {
-    const user = await UserFactory.create()
+  test('GET /address returns no address when the customer has none', async ({ client, assert }) => {
+    const customer = await UserFactory.create()
 
-    const response = await client.visit('customer.address.create').loginAs(user).withInertia()
+    const response = await client.get('/address').withInertia().loginAs(customer)
 
-    response.assertInertiaComponent('customer/address/form')
-  })
-})
-
-test.group('Validation Errors', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
+    assert.isNull(response.inertiaProps.address)
   })
 
-  test('POST /address returns validation errors for invalid name', async ({ client }) => {
-    const user = await UserFactory.create()
+  test('GET /address/create renders the pinpoint form', async ({ client }) => {
+    const customer = await UserFactory.create()
+
+    const response = await client.get('/address/create').withInertia().loginAs(customer)
+
+    response.assertInertiaComponent('customer/address/create')
+  })
+
+  test('POST /address saves an address inside the service area', async ({ client, assert }) => {
+    const customer = await UserFactory.create()
 
     const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Invalid N4m3_',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
+      .post('/address')
+      .loginAs(customer)
+      .json(addressPayload(INSIDE_SERVICE_AREA))
       .withCsrfToken()
 
-    response.assertInertiaPropsContains({
-      errors: {
-        recipientName: 'Nama lengkap penerima hanya boleh berisi huruf',
-      },
-      flash: {},
-    })
+    response.assertRedirectsTo('/address')
+
+    const address = await Address.query().where('user_id', customer.id).firstOrFail()
+    assert.equal(address.street, 'Jalan Merdeka No 1')
+    assert.isTrue(address.isActive)
   })
 
-  test('POST /address returns validation errors for invalid phone', async ({ client }) => {
-    const user = await UserFactory.create()
+  test('POST /address rejects a location outside the service area', async ({ client, assert }) => {
+    const customer = await UserFactory.create()
 
     const response = await client
-      .visit('customer.address.store')
+      .post('/address')
       .withInertia()
+      .loginAs(customer)
       .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: 'waduh',
-        addressDetail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        recipientPhone: 'Nomor telepon memiliki format yang tidak valid',
-      },
-      flash: {},
-    })
-  })
-
-  test('POST /address returns validation errors for invalid address detail', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: '081313293859',
-        addressDetail: '',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        addressDetail: 'Alamat wajib diisi',
-      },
-      flash: {},
-    })
-  })
-
-  test('POST /address returns validation errors for invalid latitude', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: '',
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        latitude: 'Latitude wajib diisi',
-      },
-      flash: {},
-    })
-  })
-
-  test('POST /address returns validation errors for invalid longitude', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: '',
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
-      .withCsrfToken()
-
-    response.assertInertiaPropsContains({
-      errors: {
-        longitude: 'Longitude wajib diisi',
-      },
-      flash: {},
-    })
-  })
-
-  test('POST /address returns validation errors for invalid location', async ({ client }) => {
-    const user = await UserFactory.create()
-
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: -16.9555305,
-        longitude: 127.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
+      .json(addressPayload(OUTSIDE_SERVICE_AREA))
       .withCsrfToken()
 
     response.assertInertiaPropsContains({
       errors: {
         radius: 'Alamat Anda tidak berada dalam area layanan. Silakan pilih lokasi lain.',
       },
-      flash: {},
     })
-  })
-})
 
-test.group('POST Succeeds', (group) => {
-  group.each.setup(() => {
-    return testUtils.db().truncate()
+    assert.lengthOf(await Address.query().where('user_id', customer.id), 0)
   })
 
-  test('POST /address succeeds for valid data', async ({ client, db }) => {
-    const user = await UserFactory.create()
+  /**
+   * An address that has routed an order is history — the record of where those
+   * shoes were collected from — so it is retired rather than removed.
+   */
+  test('POST /address keeps a previous address an order still points at', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.create()
+    const previous = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
+    await OrderFactory.merge({ userId: customer.id, addressId: previous.id }).create()
 
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
+    await client
+      .post('/address')
+      .loginAs(customer)
+      .json(addressPayload(INSIDE_SERVICE_AREA))
       .withCsrfToken()
 
-    await db.assertHas(
-      'addresses',
-      {
-        user_id: user.id,
-        recipient_name: 'Valid Name',
-        recipient_phone: '081313293859',
-        address_detail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-        is_active: true,
-      },
+    await previous.refresh()
+    assert.isFalse(previous.isActive)
+
+    const addresses = await Address.query().where('user_id', customer.id)
+    assert.lengthOf(addresses, 2)
+    assert.lengthOf(
+      addresses.filter((address) => address.isActive),
       1
     )
-    response.assertRedirectsTo('/address')
   })
 
-  test('POST /address succeeds for valid existing data', async ({ client, db }) => {
-    const user = await UserFactory.with('addresses', 1, (address) => {
-      address.merge([
-        {
-          recipientName: 'Valid Name satu',
-          recipientPhone: '081313293859',
-          addressDetail: 'Jalan Braga',
-          latitude: -6.9555306,
-          longitude: 107.6540354,
-          note: 'Tolong diantar ke depan rumah',
-          isActive: true,
-        },
-      ])
-    }).create()
+  /**
+   * One that never routed anything is a typo the customer corrected a minute
+   * later. Keeping it means the shop accumulates a pile of addresses nobody
+   * has been to and nothing will ever point at.
+   */
+  test('POST /address discards a previous address nothing points at', async ({
+    client,
+    assert,
+  }) => {
+    const customer = await UserFactory.create()
+    const previous = await AddressFactory.merge({ userId: customer.id, isActive: true }).create()
 
-    const response = await client
-      .visit('customer.address.store')
-      .withInertia()
-      .header('referer', '/address/create')
-      .json({
-        recipientName: 'Valid Name dua',
-        recipientPhone: '081313293859',
-        addressDetail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-      })
-      .loginAs(user)
+    await client
+      .post('/address')
+      .loginAs(customer)
+      .json(addressPayload(INSIDE_SERVICE_AREA))
       .withCsrfToken()
 
-    await db.assertHas(
-      'addresses',
-      {
-        user_id: user.id,
-        recipient_name: 'Valid Name dua',
-        recipient_phone: '081313293859',
-        address_detail: 'Jalan Braga',
-        latitude: -6.9555305,
-        longitude: 107.6540353,
-        note: 'Tolong diantar ke depan rumah',
-        is_active: true,
-      },
-      1
-    )
+    assert.isNull(await Address.find(previous.id))
 
-    await db.assertHas(
-      'addresses',
-      {
-        user_id: user.id,
-        recipient_name: 'Valid Name satu',
-        recipient_phone: '081313293859',
-        address_detail: 'Jalan Braga',
-        latitude: -6.9555306,
-        longitude: 107.6540354,
-        note: 'Tolong diantar ke depan rumah',
-        is_active: false,
-      },
-      1
-    )
+    const addresses = await Address.query().where('user_id', customer.id)
+    assert.lengthOf(addresses, 1)
+    assert.isTrue(addresses[0].isActive)
+  })
 
-    await db.assertHas(
-      'addresses',
-      {
-        user_id: user.id,
-      },
-      2
-    )
-    response.assertRedirectsTo('/address')
+  test('a guest cannot reach the address pages', async ({ client }) => {
+    const response = await client.get('/address').withInertia()
+
+    response.assertRedirectsTo('/login')
   })
 })

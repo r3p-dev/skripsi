@@ -1,17 +1,18 @@
 import '@/css/app.css'
 import { type ReactElement } from 'react'
+import { client } from './client'
+import Layout from '@/components/layouts/default'
 import { type Data } from '@/generated/data'
 import { createRoot } from 'react-dom/client'
+import { registerServiceWorker } from '@/lib/pwa'
 import { createInertiaApp } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
-import Layout from '@/components/layouts/default'
-import { client } from './client'
 
 const appName = import.meta.env.VITE_APP_NAME || 'UmimaClean'
 
 createInertiaApp({
-  title: (title) => (title ? `${title} | ${appName}` : appName),
+  title: (title) => (title ? `${title} - ${appName}` : appName),
   resolve: (name) => {
     return resolvePageComponent(
       `./pages/${name}.tsx`,
@@ -30,3 +31,5 @@ createInertiaApp({
     color: '#4B5563',
   },
 })
+
+registerServiceWorker()

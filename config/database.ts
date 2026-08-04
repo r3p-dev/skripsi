@@ -9,10 +9,6 @@ const dbConfig = defineConfig({
   connection: 'pg',
 
   connections: {
-    /**
-     * PostgreSQL connection.
-     * Install package to switch: npm install pg
-     */
     pg: {
       client: 'pg',
       connection: {
@@ -31,7 +27,7 @@ const dbConfig = defineConfig({
         rulesPaths: ['#database/schema_rules'],
       },
       seeders: {
-        paths: ['./database/seeders'],
+        paths: ['database/seeders'],
         naturalSort: true,
       },
       debug: app.inDev,

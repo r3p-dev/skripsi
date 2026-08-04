@@ -1,4 +1,4 @@
-import { TransactionStatus } from '#enums/transaction_status_enum'
+import { TransactionStatus } from '#enums/transaction_enum'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
@@ -15,11 +15,12 @@ export default class extends BaseSchema {
         .inTable('orders')
         .onDelete('CASCADE')
 
+      table.string('payment_method').notNullable()
       table.string('midtrans_order_id').nullable().index()
       table.string('midtrans_transaction_id').nullable().index()
-      table.string('snap_token').nullable()
-      table.string('snap_redirect_url').nullable()
+      table.text('qr_code').nullable()
       table.string('status').notNullable().index()
+      table.decimal('cash_received', 10, 2).nullable()
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()

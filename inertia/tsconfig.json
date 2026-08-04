@@ -3,16 +3,16 @@
   "compilerOptions": {
     "module": "ESNext",
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
+      "@/enums/*": ["../app/enums/*"],
       "@/generated/*": ["../.adonisjs/client/*"]
-    },
-    "ignoreDeprecations": "6.0"
+    }
   },
   "include": [
     "./**/*.ts",
     "./**/*.tsx",
+    "../app/enums/**/*.ts",
     "../.adonisjs/client/**/*.ts",
     "../.adonisjs/server/**/*.ts"
   ]

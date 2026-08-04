@@ -9,21 +9,19 @@ import { DateTime } from 'luxon'
 
 export class AddressSchema extends BaseModel {
   static $columns = [
-    'addressDetail',
     'createdAt',
     'id',
     'isActive',
     'latitude',
     'longitude',
+    'name',
     'note',
-    'recipientName',
-    'recipientPhone',
+    'phone',
+    'street',
     'updatedAt',
     'userId',
   ] as const
   $columns = AddressSchema.$columns
-  @column()
-  declare addressDetail: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -35,11 +33,13 @@ export class AddressSchema extends BaseModel {
   @column()
   declare longitude: number
   @column()
+  declare name: string
+  @column()
   declare note: string | null
   @column()
-  declare recipientName: string
+  declare phone: string
   @column()
-  declare recipientPhone: string
+  declare street: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -169,10 +169,14 @@ export class OrderSchema extends BaseModel {
     'customerName',
     'customerPhone',
     'id',
+    'lockedById',
+    'lockedTask',
+    'lockedUntil',
     'orderNumber',
     'pickupDate',
     'status',
     'totalPrice',
+    'type',
     'updatedAt',
     'userId',
   ] as const
@@ -188,6 +192,12 @@ export class OrderSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
+  declare lockedById: number | null
+  @column()
+  declare lockedTask: string | null
+  @column.dateTime()
+  declare lockedUntil: DateTime | null
+  @column()
   declare orderNumber: string
   @column.date()
   declare pickupDate: DateTime | null
@@ -195,6 +205,8 @@ export class OrderSchema extends BaseModel {
   declare status: string
   @column()
   declare totalPrice: number | null
+  @column()
+  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -261,17 +273,20 @@ export class ServiceSchema extends BaseModel {
 
 export class TransactionSchema extends BaseModel {
   static $columns = [
+    'cashReceived',
     'createdAt',
     'id',
     'midtransOrderId',
     'midtransTransactionId',
     'orderId',
-    'snapRedirectUrl',
-    'snapToken',
+    'paymentMethod',
+    'qrCode',
     'status',
     'updatedAt',
   ] as const
   $columns = TransactionSchema.$columns
+  @column()
+  declare cashReceived: number | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -283,9 +298,9 @@ export class TransactionSchema extends BaseModel {
   @column()
   declare orderId: number
   @column()
-  declare snapRedirectUrl: string | null
+  declare paymentMethod: string
   @column()
-  declare snapToken: string | null
+  declare qrCode: string | null
   @column()
   declare status: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -293,16 +308,30 @@ export class TransactionSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'name', 'password', 'phone', 'role', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'isActive',
+    'name',
+    'password',
+    'passwordChangedAt',
+    'phone',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
   declare id: number
   @column()
+  declare isActive: boolean
+  @column()
   declare name: string
   @column({ serializeAs: null })
   declare password: string
+  @column.dateTime()
+  declare passwordChangedAt: DateTime | null
   @column()
   declare phone: string
   @column()

@@ -12,15 +12,11 @@ import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client'
 import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client'
-import type { Registry } from '../.adonisjs/client/registry/schema.d.ts'
+import type { Registry } from '../.adonisjs/client/registry/schema.js'
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file
  */
-
-declare module '@japa/api-client/types' {
-  interface RoutesRegistry extends Registry {}
-}
 
 /**
  * Configure Japa plugins in the plugins array.
@@ -29,11 +25,11 @@ declare module '@japa/api-client/types' {
 export const plugins: Config['plugins'] = [
   assert(),
   pluginAdonisJS(app),
+  dbAssertions(app),
   apiClient(),
   authApiClient(app),
   sessionApiClient(app),
   shieldApiClient(),
-  dbAssertions(app),
   inertiaApiClient(app),
   browserClient({ runInSuites: ['browser'] }),
   sessionBrowserClient(app),
@@ -60,4 +56,8 @@ export const configureSuite: Config['configureSuite'] = (suite) => {
   if (['browser', 'functional', 'e2e'].includes(suite.name)) {
     return suite.setup(() => testUtils.httpServer().start())
   }
+}
+
+declare module '@japa/api-client/types' {
+  interface RoutesRegistry extends Registry {}
 }

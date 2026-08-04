@@ -1,20 +1,20 @@
 import vine from '@vinejs/vine'
-import { name, note, phone } from '#validators/shared'
 import type { Infer } from '@vinejs/vine/types'
+import { name, password, phone } from '#validators/shared'
 
-/**
- * Validate customer address payloads.
- */
-export const addressValidator = vine.create({
-  recipientName: name(),
-  recipientPhone: phone(),
-  addressDetail: vine.string().trim().maxLength(255),
-  latitude: vine.number().min(-90).max(90),
-  longitude: vine.number().min(-180).max(180),
-  note: note(),
+export const changePasswordValidator = vine.create({
+  currentPassword: password(),
+  password: password().confirmed({ as: 'passwordConfirmation' }),
 })
 
-/**
- * Type definition for the address data.
- */
-export type AddressData = Infer<typeof addressValidator>
+export const changeNameValidator = vine.create({
+  name: name(),
+})
+
+export const changePhoneValidator = vine.create({
+  phone: phone(),
+})
+
+export type ChangePasswordData = Infer<typeof changePasswordValidator>
+export type ChangeNameData = Infer<typeof changeNameValidator>
+export type ChangePhoneData = Infer<typeof changePhoneValidator>

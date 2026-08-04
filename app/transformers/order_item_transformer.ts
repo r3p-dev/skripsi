@@ -1,29 +1,34 @@
-import { BaseTransformer } from '@adonisjs/core/transformers'
 import type OrderItem from '#models/order_item'
-import { DateTime } from 'luxon'
+import { BaseTransformer } from '@adonisjs/core/transformers'
 import ServiceTransformer from '#transformers/service_transformer'
-import ShoeTransformer from '#transformers/item_transformer'
-import OrderTransformer from '#transformers/order_transformer'
-import { formatRupiah } from '#utils/currency'
+import ItemTransformer from '#transformers/item_transformer'
+import { DateTime } from 'luxon'
 
-/**
- * Serialize order item models for API responses.
- */
 export default class OrderItemTransformer extends BaseTransformer<OrderItem> {
   /**
-   * Convert an order item model into the public response payload.
+   * A priced line on an order, on its own.
    */
   toObject() {
     return {
       ...this.pick(this.resource, ['id', 'name']),
 
-      price: formatRupiah(this.resource.price),
-      subtotal: formatRupiah(this.resource.subtotal),
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      price: Number(this.resource.price),
+      subtotal: Number(this.resource.subtotal),
+      createdAt: this.resource.createdAt.toLocaleString(DateTime.DATE_FULL),
+    }
+  }
+
+  /**
+   * The line together with the thing being cleaned and the service picked for
+   * it, which is what the inspection correction form and the order detail view
+   * both read.
+   */
+  toDetail() {
+    return {
+      ...this.toObject(),
 
       service: ServiceTransformer.transform(this.whenLoaded(this.resource.service)),
-      item: ShoeTransformer.transform(this.whenLoaded(this.resource.item)),
-      order: OrderTransformer.transform(this.whenLoaded(this.resource.order)),
+      item: ItemTransformer.transform(this.whenLoaded(this.resource.item)),
     }
   }
 }

@@ -3,86 +3,94 @@ import { PhoneInput } from '@/components/atoms/phone_input'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from '@/components/ui/field'
-import { Spinner } from '@/components/ui/spinner'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Form, Link } from '@adonisjs/inertia/react'
+import { IconChevronRight } from '@tabler/icons-react'
 
 export default function Login() {
   return (
     <AuthLayout
       title="Masuk"
-      description="Masuk ke akun Anda untuk mengakses layanan dan fitur lengkap di platform kami dengan mudah dan aman."
-      cardTitle="Masuk ke akun Anda"
-      cardDescription="Masukkan detail Anda di bawah untuk masuk ke akun"
+      description="Masukkan nomor telepon dan kata sandi Anda untuk melanjutkan"
+      metaTitle="Masuk"
+      metaDescription="Masuk ke akun UmimaClean Anda"
     >
-      <Form route="session.store" disableWhileProcessing resetOnSuccess>
+      <Form route="session.store" className="space-y-5">
         {({ errors, processing }) => (
           <>
-            <FieldSet>
-              <FieldGroup>
-                <Field data-invalid={errors.phone ? 'true' : undefined}>
-                  <FieldLabel className="text-sm">Nomor Telepon</FieldLabel>
-                  <PhoneInput
-                    className="h-10 px-3 py-1"
-                    name="phone"
-                    placeholder="Masukkan nomor telepon"
-                  />
-                  <FieldDescription>Format: 08xx</FieldDescription>
-                  <FieldError errors={errors.phone ? [{ message: errors.phone }] : undefined} />
-                </Field>
+            <Field data-invalid={errors.phone ? 'true' : undefined}>
+              <FieldLabel
+                htmlFor="phone"
+                className="text-xs tracking-widest text-gray-700 uppercase"
+              >
+                Nomor Telepon
+              </FieldLabel>
+              <PhoneInput
+                id="phone"
+                name="phone"
+                autoComplete="tel"
+                aria-invalid={!!errors.phone}
+                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+              />
+              <FieldError>{errors.phone}</FieldError>
+            </Field>
 
-                <Field data-invalid={errors.password ? 'true' : undefined}>
-                  <div className="flex items-center">
-                    <FieldLabel className="text-sm">Kata Sandi</FieldLabel>
-                    <Link
-                      route="password_reset.create"
-                      className="ml-auto underline text-black text-sm"
-                      tabIndex={5}
-                    >
-                      Lupa kata sandi?
-                    </Link>
-                  </div>
-                  <PasswordInput
-                    className="h-10 px-3 py-1"
-                    name="password"
-                    placeholder="Masukkan kata sandi"
-                  />
-                  <FieldError
-                    errors={errors.password ? [{ message: errors.password }] : undefined}
-                  />
-                </Field>
+            <Field data-invalid={errors.password ? 'true' : undefined}>
+              <FieldLabel
+                htmlFor="password"
+                className="text-xs tracking-widest text-gray-700 uppercase"
+              >
+                Kata Sandi
+              </FieldLabel>
+              <PasswordInput
+                id="password"
+                name="password"
+                autoComplete="current-password"
+                aria-invalid={!!errors.password}
+                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+              />
+              <FieldError>{errors.password}</FieldError>
+            </Field>
 
-                <Field>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox name="remember_me" />
-                    <FieldLabel className="text-sm">Ingat saya</FieldLabel>
-                  </div>
-                </Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="rememberMe" className="gap-2 text-sm font-normal text-gray-700">
+                <Checkbox
+                  id="rememberMe"
+                  name="rememberMe"
+                  className="border-gray-300 data-checked:border-black data-checked:bg-black"
+                />
+                Ingat saya
+              </FieldLabel>
 
-                <Field>
-                  <Button type="submit" className="w-full h-10 text-lg cursor-pointer">
-                    {processing ? <Spinner /> : 'Masuk'}
-                  </Button>
-                </Field>
-              </FieldGroup>
-            </FieldSet>
-
-            <div className="text-center text-sm text-muted-foreground mt-6">
-              Belum punya akun?{' '}
-              <Link route="signup.create" className="underline text-black">
-                Daftar
+              <Link
+                route="password_reset.create"
+                className="text-xs font-medium tracking-wide text-gray-600 underline underline-offset-4"
+              >
+                Lupa kata sandi?
               </Link>
             </div>
+
+            <Button
+              type="submit"
+              disabled={processing}
+              className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
+            >
+              Masuk
+              <IconChevronRight className="size-5" />
+            </Button>
           </>
         )}
       </Form>
+
+      <p className="mt-8 text-center text-sm text-gray-700">
+        Belum punya akun?{' '}
+        <Link
+          route="signup.create"
+          className="font-semibold text-black underline underline-offset-4"
+        >
+          Daftar
+        </Link>
+      </p>
     </AuthLayout>
   )
 }
