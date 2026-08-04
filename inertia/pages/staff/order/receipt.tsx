@@ -1,18 +1,35 @@
 import { buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { OrderTypeLabel } from '@/enums/order_type_enum'
 import { PaymentMethodLabel } from '@/enums/transaction_enum'
 import { formatDateTime, formatRupiah } from '@/lib/format'
+import { groupLinesByItem } from '@/lib/order'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
 import { IconArrowLeft, IconPrinter } from '@tabler/icons-react'
+import { type ReactNode } from 'react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   change: number
 }>
+
+/** A label-and-value line, the way a till prints one. */
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="text-gray-600">{label}</span>
+      <span className="receipt-leader" />
+      <span className="text-right font-semibold">{children}</span>
+    </div>
+  )
+}
+
+/** The dashed rule a till prints between blocks. */
+function Perforation() {
+  return <div className="border-t border-dashed border-gray-300" />
+}
 
 /**
  * One copy of the counter receipt.
@@ -33,69 +50,79 @@ function ReceiptCopy({
   copy: string
 }) {
   const transaction = order.transactions?.at(0)
+  const itemGroups = groupLinesByItem(order.items ?? [])
 
   return (
-    <Card className="gap-0 break-inside-avoid rounded-2xl border border-gray-300 p-0">
-      <div className="border-b border-dashed border-gray-300 px-5 py-4 text-center">
-        <img src="/images/logo.jpg" alt="UmimaClean" className="mx-auto size-10" />
-        <h2 className="text-lg font-bold tracking-tight text-black">UmimaClean</h2>
-        <p className="text-[10px] tracking-widest text-gray-500">{copy}</p>
+    <div className="receipt-paper break-inside-avoid bg-white font-mono text-black shadow-sm print:shadow-none">
+      <div className="px-5 pt-6 pb-4 text-center">
+        <img
+          src="/images/logo.jpg"
+          alt="Logo UmimaClean"
+          width={40}
+          height={40}
+          className="mx-auto size-10"
+        />
+        <h2 className="font-sans text-lg font-bold tracking-tight">UmimaClean</h2>
+        <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Layanan Cuci Sepatu</p>
+        <p className="mt-2 text-[10px] tracking-[0.2em] text-gray-500 uppercase">{copy}</p>
       </div>
 
-      <div className="space-y-3 border-b border-dashed border-gray-300 p-5">
+      <Perforation />
+
+      <div className="space-y-3 px-5 py-5">
         <div className="text-center">
-          <p className="text-xs tracking-widest text-gray-500 uppercase">Nomor Pesanan</p>
-          <p className="text-lg font-bold tracking-tight text-black">{order.orderNumber}</p>
+          <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Nomor Pesanan</p>
+          <p className="text-lg font-bold tracking-tight">{order.orderNumber}</p>
         </div>
 
-        <div className="flex flex-col gap-1.5 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Pelanggan</span>
-            <span className="font-semibold text-black">{order.customerName}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Telepon</span>
-            <span className="font-semibold text-black">{order.customerPhone}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Tipe</span>
-            <span className="font-semibold text-black">
-              {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Waktu</span>
-            <span className="font-semibold text-black">{formatDateTime(order.createdAt)}</span>
-          </div>
+        <div className="flex flex-col gap-1.5 text-xs">
+          <Row label="Pelanggan">{order.customerName}</Row>
+          <Row label="Telepon">{order.customerPhone}</Row>
+          <Row label="Tipe">{OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}</Row>
+          <Row label="Waktu">{formatDateTime(order.createdAt)}</Row>
         </div>
       </div>
 
-      <div className="border-b border-dashed border-gray-300 p-5">
-        <div className="divide-y divide-gray-200">
-          {(order.items ?? []).map((item) => (
-            <div key={item.id} className="flex items-start justify-between gap-3 py-2 text-sm">
-              <span className="text-gray-700">{item.name}</span>
-              <span className="shrink-0 font-medium text-black">{formatRupiah(item.subtotal)}</span>
-            </div>
-          ))}
-        </div>
+      <Perforation />
+
+      {/*
+        Grouped by the pair of shoes, matching the order detail screen. The
+        counter copy used to print one flat row per charge, so a pair with a
+        wash and a repaint appeared as two unrelated lines — and the one thing
+        the slip stapled to the shoes has to make obvious is which work belongs
+        to which pair.
+      */}
+      <div className="space-y-3 px-5 py-5">
+        {itemGroups.map((group) => (
+          <div key={group.key} className="space-y-1">
+            <p className="text-xs font-semibold">{group.title}</p>
+            {group.lines.map((line) => (
+              <div key={line.id} className="flex items-baseline gap-2 text-xs">
+                <span className="text-gray-600">{line.service?.name ?? line.name}</span>
+                <span className="receipt-leader" />
+                <span className="tabular-nums whitespace-nowrap">
+                  {formatRupiah(line.subtotal)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
-      <div className="space-y-1.5 p-5 text-sm">
-        <div className="flex items-center justify-between">
-          <span className="tracking-widest text-gray-600 uppercase">Total</span>
-          <span className="text-lg font-bold tracking-tight text-black">
+      <Perforation />
+
+      <div className="space-y-1.5 px-5 py-5 text-xs">
+        <div className="flex items-baseline justify-between">
+          <span className="tracking-[0.2em] uppercase">Total</span>
+          <span className="text-lg font-bold tracking-tight tabular-nums">
             {formatRupiah(order.totalPrice ?? 0)}
           </span>
         </div>
 
         {transaction && (
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Metode</span>
-            <span className="font-semibold text-black">
-              {PaymentMethodLabel[transaction.paymentMethod as keyof typeof PaymentMethodLabel]}
-            </span>
-          </div>
+          <Row label="Metode">
+            {PaymentMethodLabel[transaction.paymentMethod as keyof typeof PaymentMethodLabel]}
+          </Row>
         )}
 
         {/*
@@ -105,26 +132,24 @@ function ReceiptCopy({
         */}
         {transaction?.cashReceived !== null && transaction?.cashReceived !== undefined && (
           <>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Tunai</span>
-              <span className="font-semibold text-black">
-                {formatRupiah(transaction.cashReceived)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Kembalian</span>
-              <span className="font-bold text-black">{formatRupiah(change)}</span>
-            </div>
+            <Row label="Tunai">{formatRupiah(transaction.cashReceived)}</Row>
+            <Row label="Kembalian">{formatRupiah(change)}</Row>
           </>
         )}
       </div>
-    </Card>
+
+      <Perforation />
+
+      <div className="px-5 pt-4 pb-7 text-center">
+        <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Terima Kasih</p>
+      </div>
+    </div>
   )
 }
 
 export default function Receipt({ order, change }: PageProps) {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-gray-100 print:bg-white">
       <Head>
         <title>{`Struk ${order.orderNumber}`}</title>
         <meta name="description" content="Struk pesanan konter UmimaClean" />
@@ -133,7 +158,7 @@ export default function Receipt({ order, change }: PageProps) {
       <div className="flex items-center gap-3 px-6 py-5 print:hidden">
         <Link
           route="staff.trip.index"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-black transition-colors hover:bg-gray-50 active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
@@ -143,7 +168,7 @@ export default function Receipt({ order, change }: PageProps) {
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 px-6 pb-page">
+      <div className="flex-1 space-y-5 px-6 pb-page">
         <ReceiptCopy order={order} change={change} copy="Salinan Pelanggan" />
         <ReceiptCopy order={order} change={change} copy="Salinan Toko — Tempel di Barang" />
 
@@ -153,7 +178,7 @@ export default function Receipt({ order, change }: PageProps) {
           className={buttonVariants({
             variant: 'outline',
             className:
-              'h-12 w-full rounded-xl text-base font-semibold tracking-wide text-black active:scale-95 print:hidden',
+              'h-12 w-full rounded-xl bg-white text-base font-semibold tracking-wide text-black active:scale-95 print:hidden',
           })}
         >
           <IconPrinter className="size-5" />

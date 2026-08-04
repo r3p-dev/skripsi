@@ -1,5 +1,8 @@
+@let(appUrl = config('app.appUrl'))
+@let(description = 'Layanan cuci sepatu profesional di Bandung Raya dengan antar-jemput gratis. Pembersihan dan perawatan sepatu selesai dalam 2-4 hari.')
+
 <!DOCTYPE html>
-<html>
+<html lang="id">
   <head>
     <meta charset="utf-8" />
     {{--
@@ -10,9 +13,81 @@
     --}}
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
+
     <title inertia>
-      UmimaClean
+      UmimaClean — Layanan Cuci Sepatu Bandung
     </title>
+
+    {{--
+      Server-side rendering is off, so anything Inertia's <Head> writes only
+      exists once React has booted. The link previews on WhatsApp, Instagram and
+      Facebook read the first HTML response and nothing more, so the description
+      and the social cards have to be rendered here to be seen at all. Only the
+      landing page is public — every other route sits behind auth — so one
+      site-wide set of tags covers what actually gets indexed or shared.
+    --}}
+    <meta name="description" content="{{ description }}" />
+    <link rel="canonical" href="{{ appUrl }}{{ request.url() }}" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="UmimaClean" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:title" content="UmimaClean — Layanan Cuci Sepatu Bandung" />
+    <meta property="og:description" content="{{ description }}" />
+    <meta property="og:url" content="{{ appUrl }}{{ request.url() }}" />
+    <meta property="og:image" content="{{ appUrl }}/images/logo.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="UmimaClean — Layanan Cuci Sepatu Bandung" />
+    <meta name="twitter:description" content="{{ description }}" />
+    <meta name="twitter:image" content="{{ appUrl }}/images/logo.jpg" />
+
+    {{--
+      Installable app. The manifest names it, sizes it and gives Android the
+      icon to mask; the `apple-*` tags are the same job for iOS, which reads
+      none of the manifest beyond the icons. `apple-mobile-web-app-capable` is
+      deprecated in favour of the unprefixed name, but Safari still only honours
+      the prefixed one, so both are here.
+    --}}
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="application-name" content="UmimaClean" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="UmimaClean" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    {{--
+      A shop with one physical address competes in local search, not general
+      search. LocalBusiness is what puts the address and the map pin into the
+      result itself, rather than leaving Google to infer them from page copy.
+      The coordinates come from config/app.ts so moving the shop stays one edit.
+    --}}
+    <script type="application/ld+json">
+      {{{ JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: 'UmimaClean',
+        description: description,
+        url: appUrl,
+        image: appUrl + '/images/logo.jpg',
+        priceRange: 'Rp',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Bandung',
+          addressRegion: 'Jawa Barat',
+          addressCountry: 'ID',
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: config('app.shop').latitude,
+          longitude: config('app.shop').longitude,
+        },
+        areaServed: ['Bandung', 'Cimahi', 'Kabupaten Bandung', 'Kabupaten Bandung Barat'],
+      }) }}}
+    </script>
 
     @viteReactRefresh()
     @vite(['inertia/app.tsx'])

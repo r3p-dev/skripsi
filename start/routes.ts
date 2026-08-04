@@ -10,6 +10,7 @@
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
+import { appUrl } from '#config/app'
 import { Role } from '#enums/role_enum'
 import Order from '#models/order'
 import transmit from '@adonisjs/transmit/services/main'
@@ -23,6 +24,56 @@ import {
 } from '#start/limiter'
 
 router.get('/', [controllers.Home, 'index']).as('home')
+
+/**
+ * The landing page is the only thing here worth indexing. Everything else is
+ * either behind auth or a form that produces nothing a search result could use,
+ * and the order routes carry an order number in the path — crawling those is
+ * how private URLs end up in a search index.
+ *
+ * Both files are served from routes rather than `public/` so the absolute URLs
+ * inside them follow APP_URL instead of being hardcoded per environment.
+ */
+router
+  .get('robots.txt', ({ response }) => {
+    return response.type('text/plain').send(
+      [
+        'User-agent: *',
+        'Disallow: /admin',
+        'Disallow: /staff',
+        // Prefix match, so this covers /orders and /orders/:number too.
+        'Disallow: /order',
+        'Disallow: /profile',
+        'Disallow: /address',
+        'Disallow: /login',
+        'Disallow: /signup',
+        'Disallow: /forgot-password',
+        'Disallow: /reset-password',
+        '',
+        `Sitemap: ${appUrl}/sitemap.xml`,
+      ].join('\n')
+    )
+  })
+  .as('robots')
+
+router
+  .get('sitemap.xml', ({ response }) => {
+    return response
+      .type('application/xml')
+      .send(
+        [
+          '<?xml version="1.0" encoding="UTF-8"?>',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+          '  <url>',
+          `    <loc>${appUrl}/</loc>`,
+          '    <changefreq>weekly</changefreq>',
+          '    <priority>1.0</priority>',
+          '  </url>',
+          '</urlset>',
+        ].join('\n')
+      )
+  })
+  .as('sitemap')
 
 transmit.registerRoutes((route) => {
   route.use(middleware.auth())

@@ -46,7 +46,13 @@ export default function Home({ services }: PageProps) {
     <div className="mx-auto max-w-md">
       <section className="bg-white px-6 py-5">
         <div className="mb-10 flex items-center gap-3">
-          <img src="/images/logo.jpg" alt="Premium Care" className="size-14" />
+          <img
+            src="/images/logo.jpg"
+            alt="Logo UmimaClean"
+            width={56}
+            height={56}
+            className="size-14"
+          />
           <div>
             <h1 className="mb-0.5 text-2xl font-bold tracking-tight text-black">UmimaClean</h1>
             <p className="text-xs tracking-widest text-gray-600 uppercase">Layanan Cuci Sepatu</p>

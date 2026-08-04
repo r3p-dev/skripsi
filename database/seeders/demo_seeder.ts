@@ -31,9 +31,11 @@ import { deflateSync } from 'node:zlib'
  * price list and one admin account. This one loads what a shop looks like on
  * an ordinary Tuesday — every role signed up, every order status somewhere in
  * the pipeline, every action in some order's history, and every payment state
- * a transaction can end up in. Nothing here goes through the services: the
- * rows are written directly so seeding never charges Midtrans, sends a
- * WhatsApp message, or broadcasts to a listener that isn't there.
+ * a transaction can end up in — plus one quoted order left deliberately
+ * uncharged, which is the only one that reaches Midtrans when somebody presses
+ * pay. Nothing here goes through the services: the rows are written directly so
+ * seeding never charges Midtrans, sends a WhatsApp message, or broadcasts to a
+ * listener that isn't there.
  *
  * It is `development`-only and refuses to run twice, so it can never be the
  * thing that puts invented orders into a real shop's books.
@@ -217,6 +219,13 @@ const CUSTOMERS: {
  * The item's `type` is not stated here for the same reason the inspection form
  * does not ask for it — it follows from the category of the service chosen, so
  * a helmet can never end up filed as a shoe.
+ *
+ * `additional` draws only on the `ADDITIONAL` category, because that is the
+ * split the inspection form itself makes: a main service is picked from the
+ * categories an item can belong to, and everything in `ADDITIONAL` is offered
+ * alongside it. A service priced as an add-on but filed under `SHOE_WASH` —
+ * Unyellowing, say — is a main service as far as the form is concerned, so
+ * putting it here would build an order staff could not have booked.
  */
 type Line = {
   brand: string
@@ -282,8 +291,8 @@ const SNEAKER: Line = {
   material: 'Kulit sintetis',
   size: '42',
   condition: 'Kotor di bagian midsole dan tali.',
-  service: 'Deep Clean Sepatu',
-  additional: ['Unyellowing'],
+  service: 'Medium',
+  additional: ['One Day Service'],
 }
 
 const RUNNER: Line = {
@@ -292,7 +301,7 @@ const RUNNER: Line = {
   material: 'Primeknit',
   size: '41',
   condition: 'Noda lumpur di upper, sol masih rapat.',
-  service: 'Fast Clean Sepatu',
+  service: 'Mild',
 }
 
 const SUEDE: Line = {
@@ -302,8 +311,8 @@ const SUEDE: Line = {
   size: '43',
   condition: 'Bahan suede kusam, perlu penanganan khusus.',
   note: 'Jangan disikat keras, bahan mudah botak.',
-  service: 'Deep Clean Sepatu Premium',
-  additional: ['Water Repellent'],
+  service: 'Premium For Suede',
+  additional: ['One Day Service'],
 }
 
 const BOOT: Line = {
@@ -311,9 +320,8 @@ const BOOT: Line = {
   model: 'Signore',
   material: 'Kulit sapi',
   size: '43',
-  condition: 'Sol depan mulai terlepas, warna pudar.',
-  service: 'Lem Sol Sepatu',
-  additional: ['Anti Bau'],
+  condition: 'Midsole menguning dan warnanya sudah tidak rata.',
+  service: 'Midsole Repaint / Recolour',
 }
 
 const FADED: Line = {
@@ -322,7 +330,7 @@ const FADED: Line = {
   material: 'Kanvas',
   size: '40',
   condition: 'Warna hitam sudah memudar kecoklatan.',
-  service: 'Repaint Sepatu',
+  service: 'Premium Repaint',
 }
 
 const TOTE: Line = {
@@ -331,8 +339,7 @@ const TOTE: Line = {
   material: 'Kanvas',
   size: 'L',
   condition: 'Bau apek dan noda tinta di kantong depan.',
-  service: 'Cuci Tas',
-  additional: ['Anti Bau'],
+  service: 'Large Canvas/Fabric',
 }
 
 const HELMET: Line = {
@@ -341,7 +348,7 @@ const HELMET: Line = {
   material: 'Polikarbonat',
   size: 'L',
   condition: 'Busa dalam berbau, visor berjamur.',
-  service: 'Cuci Helm',
+  service: 'Helmet SPA Premium',
 }
 
 const SCHOOL_SHOES: Line = {
@@ -349,9 +356,8 @@ const SCHOOL_SHOES: Line = {
   model: 'Sekolah Hitam',
   material: 'Kanvas',
   size: '38',
-  condition: 'Kotor merata, sol menguning.',
-  service: 'Fast Clean Sepatu',
-  additional: ['Unyellowing'],
+  condition: 'Kotor merata dengan noda membandel di bahan kanvas.',
+  service: 'Hard',
 }
 
 /**
@@ -527,6 +533,28 @@ const ORDERS: Blueprint[] = [
     items: [SCHOOL_SHOES, HELMET],
     steps: [...pickedUp('bagas'), ...inspected('ilham')],
     payments: [{ method: PaymentMethod.QRIS, status: TransactionStatus.PENDING, hoursAfter: 21 }],
+  },
+  {
+    /**
+     * The one payable order with no transaction against it at all, and the
+     * only way through this seeder that reaches Midtrans.
+     *
+     * Everywhere else a quoted order already carries a seeded PENDING charge,
+     * and `createQrisTransaction` hands an existing pending row straight back
+     * rather than charging again — so pressing "Bayar Sekarang" on those
+     * returns the drawn placeholder QR, which scans as nothing and will never
+     * produce a callback. Starting from nothing is what makes this one issue a
+     * real charge, a real scannable QR, and a notification worth waiting for.
+     */
+    shows: 'Quoted with nothing charged yet — the live Midtrans QRIS test',
+    customer: 'andi',
+    address: 'active',
+    type: OrderType.ONLINE,
+    status: OrderStatus.AWAITING_PAYMENT,
+    createdHoursAgo: 32,
+    pickupInDays: -1,
+    items: [SNEAKER],
+    steps: [...pickedUp('putra'), ...inspected('dewi')],
   },
   {
     shows: 'Expired charge, items corrected, reminder already sent',

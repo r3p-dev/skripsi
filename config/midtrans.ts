@@ -31,14 +31,14 @@ export interface MidtransNotification {
  * Whether Midtrans requests should hit the production API instead of the
  * sandbox.
  */
-const isProduction = env.get('NODE_ENV') === 'production'
+// const isProduction = env.get('NODE_ENV') === 'production'
 
 /**
  * Core API client used to charge Midtrans payment transactions
  * server-to-server (no Snap redirect/popup involved).
  */
 export const core = new midtransClient.CoreApi({
-  isProduction,
+  isProduction: false, // Set to true in production
   serverKey: env.get('MIDTRANS_SERVER_KEY').release(),
 })
 

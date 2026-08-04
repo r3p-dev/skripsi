@@ -1,17 +1,25 @@
 import StaffLayout from '@/components/layouts/staff_layout'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { ItemCard, useItemRows } from '@/components/organisms/item_fields'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
-import { whatsappUrl } from '@/lib/utils'
+import { telUrl, whatsappUrl } from '@/lib/utils'
 import { OrderStatusLabel } from '@/enums/order_status_enum'
 import { formatDate } from '@/lib/format'
 import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft, IconLock, IconMapPin, IconPhone, IconUser } from '@tabler/icons-react'
+import {
+  IconArrowLeft,
+  IconBrandWhatsapp,
+  IconLock,
+  IconMapPin,
+  IconPhone,
+  IconPhoneCall,
+  IconUser,
+} from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
@@ -84,18 +92,42 @@ export default function Show({ order, services, blocked }: PageProps) {
                   </div>
                   <div className="flex items-start gap-3">
                     <IconPhone className="mt-0.5 size-4 shrink-0 text-gray-500" />
-                    <a
-                      href={whatsappUrl(order.address.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-gray-700 underline underline-offset-4"
-                    >
-                      {order.address.phone}
-                    </a>
+                    <p className="text-sm text-gray-700">{order.address.phone}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <IconMapPin className="mt-0.5 size-4 shrink-0 text-gray-500" />
                     <p className="text-sm leading-relaxed text-gray-700">{order.address.street}</p>
+                  </div>
+
+                  {/*
+                    Two buttons rather than the number as a link: a tap that
+                    dials and a tap that opens a chat, each saying which it is.
+                  */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={telUrl(order.address.phone)}
+                      className={buttonVariants({
+                        variant: 'outline',
+                        className:
+                          'h-11 rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95',
+                      })}
+                    >
+                      <IconPhoneCall className="size-4" />
+                      Telepon
+                    </a>
+                    <a
+                      href={whatsappUrl(order.address.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: 'outline',
+                        className:
+                          'h-11 rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95',
+                      })}
+                    >
+                      <IconBrandWhatsapp className="size-4" />
+                      WhatsApp
+                    </a>
                   </div>
                 </CardContent>
               </Card>

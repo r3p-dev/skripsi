@@ -174,6 +174,57 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/**
+ * The torn top and bottom edge of a slip of till roll.
+ *
+ * Two conic gradients used as a mask, each a row of 90° wedges: one biting
+ * down into the top edge, one biting up into the bottom. Away from the edges
+ * the wedges widen past the tile and the paper is simply opaque, so only the
+ * outer few pixels are actually toothed.
+ *
+ * A mask rather than a drawn border because the teeth have to cut *through*
+ * whatever sits behind them — the header block on these receipts is solid
+ * black, and a white zigzag painted over it would read as a stripe.
+ */
+@utility receipt-paper {
+  --tooth: 12px;
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 90deg, #0000 91deg) top / var(--tooth) 50%
+      repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 90deg, #0000 91deg) bottom / var(--tooth)
+      50% repeat-x;
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 90deg, #0000 91deg) top / var(--tooth) 50%
+      repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 90deg, #0000 91deg) bottom / var(--tooth)
+      50% repeat-x;
+}
+
+/**
+ * The run of dots between an item and its price, as a printer fills the gap.
+ * Sits in a flex row as its own element so it takes whatever width is left
+ * after the two labels have been laid out.
+ */
+@utility receipt-leader {
+  flex: 1 1 auto;
+  align-self: end;
+  margin-bottom: 0.3em;
+  border-bottom: 1px dotted var(--color-gray-300);
+}
+
+/*
+ * Print is the one place a receipt is not a metaphor. The mask survives to
+ * paper unevenly across browsers and a half-drawn zigzag looks like a printer
+ * fault, so the edges go straight and everything decorative gets out of the
+ * way of the ink.
+ */
+@media print {
+  .receipt-paper {
+    -webkit-mask: none;
+    mask: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

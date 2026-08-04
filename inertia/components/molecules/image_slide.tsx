@@ -113,7 +113,13 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
     >
       {/* AFTER image (background) */}
       <div className="absolute inset-0">
-        <img src={afterImage} alt="Sesudah" className="h-full w-full object-cover grayscale" />
+        <img
+          src={afterImage}
+          alt="Sepatu setelah dibersihkan"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover grayscale"
+        />
       </div>
 
       {/* BEFORE image (clipped) */}
@@ -121,7 +127,13 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <img src={beforeImage} alt="Sebelum" className="h-full w-full object-cover grayscale" />
+        <img
+          src={beforeImage}
+          alt="Sepatu sebelum dibersihkan"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover grayscale"
+        />
       </div>
 
       {/* Slider handle */}

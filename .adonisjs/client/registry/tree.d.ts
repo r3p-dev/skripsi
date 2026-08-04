@@ -8,6 +8,8 @@ export interface ApiDefinition {
     }
   }
   home: typeof routes['home']
+  robots: typeof routes['robots']
+  sitemap: typeof routes['sitemap']
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']
