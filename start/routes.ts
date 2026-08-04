@@ -225,14 +225,6 @@ router
     router.get('dashboard', [controllers.admin.Dashboard, 'index'])
     router.get('dashboard/export', [controllers.admin.Dashboard, 'export'])
 
-    /**
-     * Registration for the people who work here. There is no public route to
-     * a staff or admin account by design, so this is the one that exists, and
-     * it sits inside the admin area behind the admin role.
-     */
-    router.get('signup', [controllers.admin.Signup, 'create'])
-    router.post('signup', [controllers.admin.Signup, 'store']).use(signupLimiter)
-
     router.get('orders', [controllers.admin.Order, 'index'])
     /**
      * Registered ahead of `orders/:number`, which would otherwise match first

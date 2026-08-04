@@ -121,10 +121,6 @@ export interface ApiDefinition {
       index: typeof routes['admin.dashboard.index']
       export: typeof routes['admin.dashboard.export']
     }
-    signup: {
-      create: typeof routes['admin.signup.create']
-      store: typeof routes['admin.signup.store']
-    }
     order: {
       index: typeof routes['admin.order.index']
       export: typeof routes['admin.order.export']

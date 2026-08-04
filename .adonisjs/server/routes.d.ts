@@ -66,8 +66,6 @@ export type ScannedRoutes = {
     'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard.export': { paramsTuple?: []; params?: {} }
-    'admin.signup.create': { paramsTuple?: []; params?: {} }
-    'admin.signup.store': { paramsTuple?: []; params?: {} }
     'admin.order.index': { paramsTuple?: []; params?: {} }
     'admin.order.export': { paramsTuple?: []; params?: {} }
     'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -125,7 +123,6 @@ export type ScannedRoutes = {
     'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard.export': { paramsTuple?: []; params?: {} }
-    'admin.signup.create': { paramsTuple?: []; params?: {} }
     'admin.order.index': { paramsTuple?: []; params?: {} }
     'admin.order.export': { paramsTuple?: []; params?: {} }
     'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -176,7 +173,6 @@ export type ScannedRoutes = {
     'admin.phone.update': { paramsTuple?: []; params?: {} }
     'admin.dashboard.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard.export': { paramsTuple?: []; params?: {} }
-    'admin.signup.create': { paramsTuple?: []; params?: {} }
     'admin.order.index': { paramsTuple?: []; params?: {} }
     'admin.order.export': { paramsTuple?: []; params?: {} }
     'admin.order.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -211,7 +207,6 @@ export type ScannedRoutes = {
     'staff.notification.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
-    'admin.signup.store': { paramsTuple?: []; params?: {} }
     'admin.service.store': { paramsTuple?: []; params?: {} }
     'admin.user.store': { paramsTuple?: []; params?: {} }
   }

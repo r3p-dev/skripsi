@@ -751,30 +751,6 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/dashboard_controller').default['export']>>>
     }
   }
-  'admin.signup.create': {
-    methods: ["GET","HEAD"]
-    pattern: '/admin/signup'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['create']>>>
-    }
-  }
-  'admin.signup.store': {
-    methods: ["POST"]
-    pattern: '/admin/signup'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/user_validator').staffSignupValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/signup_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
   'admin.order.index': {
     methods: ["GET","HEAD"]
     pattern: '/admin/orders'

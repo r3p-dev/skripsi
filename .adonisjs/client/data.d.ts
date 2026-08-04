@@ -8,6 +8,7 @@ import type { InferData, InferVariants } from '@adonisjs/core/types/transformers
 import type { InferSharedProps } from '@adonisjs/inertia/types'
 import type AddressTransformer from '#transformers/address_transformer'
 import type ItemTransformer from '#transformers/item_transformer'
+import type NotificationTransformer from '#transformers/notification_transformer'
 import type OrderActionTransformer from '#transformers/order_action_transformer'
 import type OrderItemTransformer from '#transformers/order_item_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
@@ -25,6 +26,10 @@ export namespace Data {
   export type Item = InferData<ItemTransformer>
   export namespace Item {
     export type Variants = InferVariants<ItemTransformer>
+  }
+  export type Notification = InferData<NotificationTransformer>
+  export namespace Notification {
+    export type Variants = InferVariants<NotificationTransformer>
   }
   export type OrderAction = InferData<OrderActionTransformer>
   export namespace OrderAction {

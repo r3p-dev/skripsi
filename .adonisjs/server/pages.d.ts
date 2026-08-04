@@ -21,7 +21,6 @@ declare module '@adonisjs/inertia/types' {
     'admin/service/create': ExtractProps<(typeof import('../../inertia/pages/admin/service/create.tsx'))['default']>
     'admin/service/edit': ExtractProps<(typeof import('../../inertia/pages/admin/service/edit.tsx'))['default']>
     'admin/service/index': ExtractProps<(typeof import('../../inertia/pages/admin/service/index.tsx'))['default']>
-    'admin/signup': ExtractProps<(typeof import('../../inertia/pages/admin/signup.tsx'))['default']>
     'admin/user/create': ExtractProps<(typeof import('../../inertia/pages/admin/user/create.tsx'))['default']>
     'admin/user/edit': ExtractProps<(typeof import('../../inertia/pages/admin/user/edit.tsx'))['default']>
     'admin/user/index': ExtractProps<(typeof import('../../inertia/pages/admin/user/index.tsx'))['default']>
@@ -47,7 +46,6 @@ declare module '@adonisjs/inertia/types' {
     'staff/order/receipt': ExtractProps<(typeof import('../../inertia/pages/staff/order/receipt.tsx'))['default']>
     'staff/order/tag': ExtractProps<(typeof import('../../inertia/pages/staff/order/tag.tsx'))['default']>
     'staff/profile/show': ExtractProps<(typeof import('../../inertia/pages/staff/profile/show.tsx'))['default']>
-    'staff/task/edit': ExtractProps<(typeof import('../../inertia/pages/staff/task/edit.tsx'))['default']>
     'staff/trip/index': ExtractProps<(typeof import('../../inertia/pages/staff/trip/index.tsx'))['default']>
     'staff/trip/show': ExtractProps<(typeof import('../../inertia/pages/staff/trip/show.tsx'))['default']>
   }

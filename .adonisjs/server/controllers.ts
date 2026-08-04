@@ -12,7 +12,6 @@ export const controllers = {
     Reconciliation: () => import('#controllers/admin/reconciliation_controller'),
     Report: () => import('#controllers/admin/report_controller'),
     Service: () => import('#controllers/admin/service_controller'),
-    Signup: () => import('#controllers/admin/signup_controller'),
     User: () => import('#controllers/admin/user_controller'),
   },
   auth: {

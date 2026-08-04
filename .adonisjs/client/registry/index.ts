@@ -378,18 +378,6 @@ const routes = {
     tokens: [{"old":"/admin/dashboard/export","type":0,"val":"admin","end":""},{"old":"/admin/dashboard/export","type":0,"val":"dashboard","end":""},{"old":"/admin/dashboard/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['admin.dashboard.export']['types'],
   },
-  'admin.signup.create': {
-    methods: ["GET","HEAD"],
-    pattern: '/admin/signup',
-    tokens: [{"old":"/admin/signup","type":0,"val":"admin","end":""},{"old":"/admin/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['admin.signup.create']['types'],
-  },
-  'admin.signup.store': {
-    methods: ["POST"],
-    pattern: '/admin/signup',
-    tokens: [{"old":"/admin/signup","type":0,"val":"admin","end":""},{"old":"/admin/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['admin.signup.store']['types'],
-  },
   'admin.order.index': {
     methods: ["GET","HEAD"],
     pattern: '/admin/orders',

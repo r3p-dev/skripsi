@@ -27,14 +27,7 @@ import {
 import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
-import {
-  IconCircleOff,
-  IconPencil,
-  IconPlus,
-  IconSearch,
-  IconShieldLock,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconCircleOff, IconPencil, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react'
 import { Role, RoleLabel } from '@/enums/role_enum'
 import { neutralBadgeStyle } from '@/lib/constants'
 import { formatShortDate } from '@/lib/format'
@@ -83,20 +76,6 @@ export default function Index({
         action={
           <div className="flex flex-wrap items-center gap-2">
             <ExportButton />
-            {/*
-              The dedicated sign-up form for the people who work here. Staff and
-              admin accounts have no public route into existence, so this is it.
-            */}
-            <Link
-              route="admin.signup.create"
-              className={buttonVariants({
-                variant: 'outline',
-                className: 'rounded-xl border-gray-300',
-              })}
-            >
-              <IconShieldLock className="size-4" />
-              Daftar Petugas
-            </Link>
             <Link
               route="admin.user.create"
               className={buttonVariants({
