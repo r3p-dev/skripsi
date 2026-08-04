@@ -76,4 +76,19 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   FONNTE_API_KEY: Env.schema.secret(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for configuring the OSRM road router
+  |----------------------------------------------------------
+  |
+  | All optional: with none of them set the app plans routes from
+  | straight-line distances, which is what it did before OSRM existed.
+  |
+  */
+  OSRM_ENABLED: Env.schema.boolean.optional(),
+  OSRM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  OSRM_PROFILE: Env.schema.string.optional(),
+  OSRM_TIMEOUT_MS: Env.schema.number.optional(),
+  OSRM_MAX_TABLE_SIZE: Env.schema.number.optional(),
 })

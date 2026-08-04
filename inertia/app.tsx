@@ -4,6 +4,7 @@ import { client } from './client'
 import Layout from '@/components/layouts/default'
 import { type Data } from '@/generated/data'
 import { createRoot } from 'react-dom/client'
+import { registerServiceWorker } from '@/lib/pwa'
 import { createInertiaApp } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
@@ -30,3 +31,5 @@ createInertiaApp({
     color: '#4B5563',
   },
 })
+
+registerServiceWorker()
