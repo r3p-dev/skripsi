@@ -32,11 +32,6 @@ export default function Show({ order, services, blocked }: PageProps) {
 
   return (
     <StaffLayout title={`Inspeksi - ${order.orderNumber}`} description="Detail tugas inspeksi">
-      {/*
-        No back link on purpose: claiming a task holds it against everyone
-        else, so it has to be finished or cancelled rather than abandoned.
-        A blocked task is the exception — nothing was claimed.
-      */}
       <div className="flex items-center gap-3 px-6 py-5">
         {blocked && (
           <Link
@@ -99,10 +94,6 @@ export default function Show({ order, services, blocked }: PageProps) {
                     <p className="text-sm leading-relaxed text-gray-700">{order.address.street}</p>
                   </div>
 
-                  {/*
-                    Two buttons rather than the number as a link: a tap that
-                    dials and a tap that opens a chat, each saying which it is.
-                  */}
                   <div className="grid grid-cols-2 gap-2">
                     <a
                       href={telUrl(order.address.phone)}

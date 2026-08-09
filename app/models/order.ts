@@ -2,7 +2,6 @@ import { OrderSchema } from '#database/schema'
 import { belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Address from '#models/address'
-import OrderAction from '#models/order_action'
 import OrderItem from '#models/order_item'
 import Transaction from '#models/transaction'
 import User from '#models/user'
@@ -23,10 +22,10 @@ export default class Order extends OrderSchema {
   })
   declare items: HasMany<typeof OrderItem>
 
-  @hasMany(() => OrderAction, {
+  @hasMany(() => OrderItem, {
     foreignKey: 'orderId',
   })
-  declare actions: HasMany<typeof OrderAction>
+  declare orderItems: HasMany<typeof OrderItem>
 
   @hasMany(() => Transaction, {
     foreignKey: 'orderId',

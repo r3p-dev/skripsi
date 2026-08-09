@@ -32,14 +32,6 @@ export default function Create({ services }: PageProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>('')
   const [cashReceived, setCashReceived] = useState('')
 
-  /**
-   * What the order will cost, worked out as staff pick services.
-   *
-   * Only the main service on each row counts here — the additional-service
-   * checkboxes are uncontrolled, so the running total is a close estimate
-   * rather than the final figure. It exists to make the change calculation
-   * useful at the counter; the server prices the order for real.
-   */
   const runningTotal = items.reduce((total, row) => {
     const service = services.find((candidate) => String(candidate.id) === row.serviceId)
 
@@ -71,12 +63,6 @@ export default function Create({ services }: PageProps) {
         <Form route="staff.order.store" className="space-y-4">
           {({ errors, processing }) => (
             <>
-              {/*
-                The form's own count, not `items.length` under another name.
-                It says how many item forms this page is showing, which is what
-                the page needs to render — the server counts what actually
-                arrives.
-              */}
               <input type="hidden" name="totalItems" value={items.length} />
 
               <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
@@ -133,12 +119,6 @@ export default function Create({ services }: PageProps) {
                   <FieldError>{errors.phone}</FieldError>
                 </Field>
 
-                {/*
-                  Delivery needs somewhere to deliver to, and the only address
-                  the system trusts is one the customer pinned on a map
-                  themselves. That lives on their account, so this is offered
-                  only once an account has been picked.
-                */}
                 <Field data-invalid={errors.delivery ? 'true' : undefined}>
                   <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-gray-700">
                     <input
@@ -186,11 +166,6 @@ export default function Create({ services }: PageProps) {
               </Button>
 
               <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                {/*
-                  A counter order never goes through inspection, so this is the
-                  only record of what condition the shoes arrived in — which is
-                  exactly the record any later disagreement turns on.
-                */}
                 <Field data-invalid={errors.photo ? 'true' : undefined}>
                   <FieldLabel
                     htmlFor="photo"
@@ -241,12 +216,6 @@ export default function Create({ services }: PageProps) {
                   <FieldError>{errors.paymentMethod}</FieldError>
                 </Field>
 
-                {/*
-                  The change, worked out as staff type, so nobody has to reach
-                  for a calculator with a customer waiting. The estimate uses
-                  the main service on each row; additional services are priced
-                  by the server and appear on the receipt.
-                */}
                 {isCash && (
                   <Field data-invalid={errors.cashReceived ? 'true' : undefined}>
                     <FieldLabel

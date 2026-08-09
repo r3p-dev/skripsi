@@ -73,10 +73,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
     }
   }, [handleMouseMove, handleTouchMove])
 
-  /**
-   * Keyboard equivalent of the drag, so the comparison is not mouse-and-thumb
-   * only (WCAG 2.1.1). Arrow keys move the divider in 5% steps.
-   */
   function handleKeyDown(event: ReactKeyboardEvent) {
     const step =
       event.key === 'ArrowLeft' || event.key === 'ArrowDown'
@@ -92,12 +88,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
   }
 
   return (
-    /*
-     * `touch-pan-y` hands vertical gestures back to the page. Without it the
-     * handle sat in the middle of a tall page and swallowed the swipe: trying
-     * to scroll past the comparison just dragged the divider, and the page
-     * appeared stuck.
-     */
     <div
       ref={containerRef}
       className="relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-2xl select-none"
@@ -111,7 +101,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      {/* AFTER image (background) */}
       <div className="absolute inset-0">
         <img
           src={afterImage}
@@ -122,7 +111,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
         />
       </div>
 
-      {/* BEFORE image (clipped) */}
       <div
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -136,7 +124,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
         />
       </div>
 
-      {/* Slider handle */}
       <div
         className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize"
         style={{ left: `${sliderPosition}%` }}
@@ -149,7 +136,6 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
         </div>
       </div>
 
-      {/* Labels */}
       <div className="absolute top-4 left-4 rounded bg-black px-3 py-1.5 text-xs tracking-wider text-white font-medium">
         Sebelum
       </div>

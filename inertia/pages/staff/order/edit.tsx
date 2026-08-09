@@ -14,20 +14,8 @@ type PageProps = InertiaProps<{
   services: Data.Service[]
 }>
 
-/**
- * The order's priced lines, which arrive nested inside the order at the depth
- * the transformer asks for rather than as a second prop assembled alongside it.
- */
 type OrderLine = NonNullable<Data.Order.Variants['toDetail']['items']>[number]
 
-/**
- * Rebuilds the form rows from the priced lines on the order.
- *
- * An order has one line per item *and service*, so a pair of shoes with a main
- * wash plus a deodorizer arrives as two lines sharing the same item. They are
- * grouped back into one row per item, with the non-additional service as the
- * main one.
- */
 function toItemRows(orderItems: OrderLine[]): ItemRow[] {
   const rowsByItemId = new Map<number, ItemRow>()
 

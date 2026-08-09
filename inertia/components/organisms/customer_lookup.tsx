@@ -9,20 +9,6 @@ export type FoundCustomer = {
   phone: string
 }
 
-/**
- * Finds a walk-in customer who has used the app before.
- *
- * Someone who books online and then one day carries their shoes in themselves
- * is the same person, but retyping their details at the counter creates a
- * second one: an order their own history will never show, and a customer
- * record that quietly forks in two. Picking the account instead binds the
- * order to it — which is also what makes counter delivery possible at all,
- * since the address it would go to is the one on the account.
- *
- * Deliberately opt-in. Most people who walk in have never used the app, and
- * making staff dismiss a search box for every one of them would be worse than
- * the problem it solves.
- */
 export function CustomerLookup({
   selected,
   onSelect,

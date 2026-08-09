@@ -8,13 +8,6 @@ import { Transmit } from '@adonisjs/transmit-client'
 import { IconAntennaBars5 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 
-/**
- * What arrives on the admin channel.
- *
- * Stored values, never their Indonesian wording: a broadcast is data landing
- * on a screen that already knows how to print it, and baking the label in
- * would mean two places decide what a status is called.
- */
 type AdminOrderEvent = {
   event: 'order:created' | 'order:updated' | 'order:paid'
   orderNumber: string
@@ -36,17 +29,8 @@ const EVENT_STYLE: Record<AdminOrderEvent['event'], string> = {
   'order:paid': 'bg-green-100 text-green-700',
 }
 
-/** How much of the feed is kept on screen before the oldest entries drop off. */
 const FEED_LENGTH = 8
 
-/**
- * The shop's activity as it happens.
- *
- * Three events and no more: work arriving, work moving, and money landing.
- * An admin needs to know about those; everything else is detail they go and
- * look at, and pushing all of it would turn the dashboard into a firehose
- * nobody can leave open.
- */
 export function LiveOrders() {
   const [events, setEvents] = useState<AdminOrderEvent[]>([])
 

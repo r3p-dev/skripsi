@@ -33,14 +33,6 @@ type PageProps = InertiaProps<{
   canCancel: boolean
 }>
 
-/**
- * The milestones shown on the customer timeline.
- *
- * Matched on the stored action name, not on its Indonesian caption. The two
- * used to be the same string, which meant rewording a caption silently emptied
- * this timeline — the captions live in `ActionNameLabel` and are printed, and
- * these are what the code matches on.
- */
 const ORDER_STEPS = [
   {
     key: ActionName.PICKUP,
@@ -64,29 +56,9 @@ const ORDER_STEPS = [
   },
 ] as const
 
-/**
- * Whether every one of these images can still be fetched.
- *
- * Proof photos are kept for ninety days and then deleted by `prune:records`,
- * and the signed URLs handed out with them expire on the same schedule. Most
- * of the time the column is blanked at the same moment, so a missing photo
- * simply is not in the data — but an order photographed on the boundary can
- * arrive with a path that no longer resolves, and a comparison slider with one
- * broken half is worse than no comparison at all. Asking the browser first
- * means the section is never rendered around an image that will not load.
- *
- * `null` while the answer is still unknown, so nothing flashes on screen and
- * then vanishes.
- */
 function useImagesAvailable(sources: string[]): boolean | null {
   const key = sources.join('|')
 
-  /*
-   * The answer is stored against the sources it was measured for, so a change
-   * of source reads as "unknown again" during render. Resetting it from inside
-   * the effect would be a second render pass for something the render already
-   * knows.
-   */
   const [checked, setChecked] = useState<{ key: string; available: boolean } | null>(null)
 
   useEffect(() => {
@@ -124,14 +96,6 @@ function useImagesAvailable(sources: string[]): boolean | null {
   return checked?.key === key ? checked.available : null
 }
 
-/**
- * One proof photo, or the space where one used to be.
- *
- * The strip shows them small so the page stays short, and tapping one opens it
- * at full size — a button rather than a link because the accordion this sits
- * inside underlines every anchor it contains, which under an image tile reads
- * as a stray line rather than as a caption.
- */
 function ProofPhoto({ label, path }: { label: string; path: string }) {
   const [failed, setFailed] = useState(false)
 
@@ -181,11 +145,6 @@ export default function Show({ order, canCancel }: PageProps) {
     }
   }
 
-  /**
-   * The pair worth comparing: the shoes as they arrived (inspection) against the
-   * shoes as they left (cleaning). Only shown once both exist — walk-ins are
-   * never inspected, and an order still being washed has no "after" yet.
-   */
   const inspectionPhoto = order.actions?.find(
     (action) => action.name === ActionName.INSPECTION
   )?.photoPath
@@ -206,12 +165,6 @@ export default function Show({ order, canCancel }: PageProps) {
 
   const itemGroups = groupLinesByItem(order.items ?? [])
 
-  /**
-   * The receipt is the record of a finished transaction. Offering it while the
-   * shoes are still on the rack invites a customer to treat a work-in-progress
-   * quote as a final bill — the items can still be corrected right up until the
-   * order is paid for.
-   */
   const hasReceipt = order.status === OrderStatus.COMPLETED
 
   const recordedDates = stepActions.filter((step) => step.action)
@@ -289,10 +242,6 @@ export default function Show({ order, canCancel }: PageProps) {
           </Card>
         )}
 
-        {/*
-          Left open rather than folded away: this is the one thing on the page
-          a customer came to see, and it is a single frame either way.
-        */}
         {beforeAfter && comparisonLoads && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
             <CardHeader>
@@ -306,13 +255,6 @@ export default function Show({ order, canCancel }: PageProps) {
           </Card>
         )}
 
-        {/*
-          Folded away, and scrolling sideways when opened. Four proof photos
-          stacked full-width used to add some two thousand pixels to this page,
-          which pushed the dates, the items and the total far below the fold —
-          so the sections a customer opens the page to read were the hardest
-          ones to reach.
-        */}
         {proofPhotos.length > 0 && (
           <Card className="rounded-2xl border border-gray-200 bg-gray-50">
             <CardContent className="px-0">
@@ -370,11 +312,6 @@ export default function Show({ order, canCancel }: PageProps) {
           )}
         </Card>
 
-        {/*
-          Reference data — the order number, when each stage happened. Worth
-          having, rarely the reason the page was opened, and it grows a row
-          with every milestone. Folded.
-        */}
         <Card className="rounded-2xl border border-gray-200 bg-gray-50">
           <CardContent className="px-0">
             <Accordion>
@@ -382,12 +319,6 @@ export default function Show({ order, canCancel }: PageProps) {
                 <AccordionTrigger className="px-5 text-sm font-semibold text-black">
                   Detail Pesanan
                 </AccordionTrigger>
-                {/*
-                  Rows are spans, not paragraphs: the accordion panel puts a
-                  bottom margin on every `p` it contains except the last, which
-                  on a table of label-and-value pairs pushes each value onto a
-                  line of its own.
-                */}
                 <AccordionContent className="px-5">
                   <div className="divide-y divide-gray-200">
                     <div className="flex items-center justify-between gap-3 py-2">
@@ -466,10 +397,6 @@ export default function Show({ order, canCancel }: PageProps) {
           </Link>
         )}
 
-        {/*
-          Always rendered, disabled once the pickup day arrives, so the rule
-          stays visible instead of the button silently disappearing.
-        */}
         <Form route="customer.order.update" routeParams={{ number: order.orderNumber }}>
           {({ processing }) => (
             <>

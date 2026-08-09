@@ -23,11 +23,6 @@ type PageProps = InertiaProps<{
   services: Data.Service[]
 }>
 
-/**
- * Formats a date as YYYY-MM-DD in the browser's local time. `toISOString()`
- * is deliberately avoided: it converts to UTC, which shifts the date back a
- * day for evening pickups in Indonesia's timezone.
- */
 function toLocalDateString(date: Date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -39,13 +34,6 @@ function toLocalDateString(date: Date) {
 export default function Create({ address, services }: PageProps) {
   const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
 
-  /**
-   * The earliest day that can actually be collected.
-   *
-   * Not today: the van is already out on a route planned this morning, so a
-   * pickup booked for today is one nobody is coming to. The server refuses it
-   * either way — this is so the customer never gets as far as choosing it.
-   */
   const earliestPickup = useMemo(() => {
     const tomorrow = new Date()
     tomorrow.setHours(0, 0, 0, 0)

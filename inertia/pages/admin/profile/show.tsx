@@ -15,10 +15,6 @@ type PageProps = InertiaProps<{
   transactions: number
 }>
 
-/**
- * Which row is currently showing a form instead of its read-only view. Only
- * one may be open at a time, matching the customer and staff profiles.
- */
 type EditableField = 'phone' | 'password'
 
 export default function Show({ user, teamSize, transactions }: PageProps) {
@@ -41,10 +37,6 @@ export default function Show({ user, teamSize, transactions }: PageProps) {
           </CardHeader>
 
           <CardContent className="flex flex-col divide-y divide-gray-200">
-            {/*
-              An admin's name is attributed on every payment override they
-              record, so it is fixed the same way a staff member's is.
-            */}
             <div className="py-4">
               <p className="text-xs tracking-widest text-gray-500 uppercase">Nama</p>
               <p className="mt-1 text-base font-medium text-black">{user.name}</p>

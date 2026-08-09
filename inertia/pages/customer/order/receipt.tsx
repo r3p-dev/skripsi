@@ -38,11 +38,6 @@ export default function Receipt({ order }: PageProps) {
       </div>
 
       <div className="flex-1 px-6 pb-page">
-        {/*
-          Monospace throughout, because that is what a till prints and because
-          it is what makes the column of prices line up on the decimal without
-          a table.
-        */}
         <div className="receipt-paper bg-white font-mono text-black shadow-sm print:shadow-none">
           <div className="relative bg-black px-6 pt-8 pb-6 text-center text-white">
             <div
@@ -98,12 +93,6 @@ export default function Receipt({ order }: PageProps) {
             <>
               <Perforation />
 
-              {/*
-                Grouped by the pair of shoes rather than listed flat, matching
-                the order page this receipt is opened from. An order carries one
-                line per item *and* service, so a flat list repeats the same
-                shoes once per charge.
-              */}
               <div className="space-y-4 px-6 py-6">
                 <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Rincian</p>
 
@@ -161,7 +150,6 @@ export default function Receipt({ order }: PageProps) {
   )
 }
 
-/** A label-and-value line, the way a till prints one. */
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-baseline gap-2">
@@ -172,7 +160,6 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-/** The dashed rule a till prints between blocks. */
 function Perforation() {
   return <div className="border-t border-dashed border-gray-300" />
 }

@@ -35,11 +35,6 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
         }
       />
 
-      {/*
-        A price is copied onto the order line at inspection time, so editing it
-        here never reprices an order that has already been quoted. Worth saying
-        out loud: it is the first thing an admin worries about.
-      */}
       {isInUse && (
         <div className="mb-4 flex max-w-2xl items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
           <IconInfoCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />

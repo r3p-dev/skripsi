@@ -10,6 +10,7 @@ export default class AddressController {
 
   async show({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
+
     const address = await this.addressService.getActiveAddress(user)
 
     return inertia.render('customer/address/show', {
@@ -19,6 +20,7 @@ export default class AddressController {
 
   async create({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
+
     const address = await this.addressService.getActiveAddress(user)
 
     return inertia.render('customer/address/create', {
@@ -27,8 +29,9 @@ export default class AddressController {
   }
 
   async store({ auth, request, response, session }: HttpContext) {
-    const payload = await request.validateUsing(addressValidator)
     const user = auth.getUserOrFail()
+
+    const payload = await request.validateUsing(addressValidator)
 
     await this.addressService.replaceActiveAddress(user, payload)
 

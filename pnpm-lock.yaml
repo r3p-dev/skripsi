@@ -59,6 +59,9 @@ importers:
       '@inertiajs/react':
         specifier: ^2.3.24
         version: 2.3.27(debug@4.4.3(supports-color@10.2.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)
+      '@julienbenac/vine-plugin-phone':
+        specifier: ^1.1.0
+        version: 1.1.0(@vinejs/vine@4.4.0)
       '@tabler/icons-react':
         specifier: ^3.45.0
         version: 3.45.0(react@19.2.8)
@@ -1214,6 +1217,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@julienbenac/vine-plugin-phone@1.1.0':
+    resolution: {integrity: sha512-kOe0q/Z0c31zzenSh+RAS8lsWskuUFregNAUvltRqWJ8RuWOh6+DvUyZidVIXw62zZfXA3SLgBWrBKp5UTnMPQ==}
+    engines: {node: '>=20.17.0'}
+    peerDependencies:
+      '@vinejs/vine': ^4.1.0
 
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
@@ -3621,6 +3630,9 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
+
+  libphonenumber-js@1.13.10:
+    resolution: {integrity: sha512-xJxrdqvbl2rtn2MaUJrUejz8J7/uZNC0V77oks2LxYrO/+ZtVpRmz+fEQMuu6VusnEB1fmpByiLS1WXecOnAnw==}
 
   lie@3.3.0:
     resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
@@ -6081,6 +6093,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@julienbenac/vine-plugin-phone@1.1.0(@vinejs/vine@4.4.0)':
+    dependencies:
+      '@vinejs/vine': 4.4.0
+      libphonenumber-js: 1.13.10
+
   '@modelcontextprotocol/sdk@1.29.0(supports-color@10.2.2)(zod@3.25.76)':
     dependencies:
       '@hono/node-server': 1.19.15(hono@4.12.32)
@@ -8520,6 +8537,8 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  libphonenumber-js@1.13.10: {}
 
   lie@3.3.0:
     dependencies:

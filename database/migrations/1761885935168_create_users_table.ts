@@ -12,8 +12,8 @@ export default class extends BaseSchema {
       table.string('phone').notNullable().unique()
       table.string('password').notNullable()
       table.boolean('is_active').notNullable().defaultTo(true).index()
-      table.timestamp('password_changed_at').nullable()
 
+      table.timestamp('password_changed_at').nullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })

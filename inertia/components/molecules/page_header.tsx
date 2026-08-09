@@ -1,13 +1,5 @@
 import { type ReactNode } from 'react'
 
-/**
- * The eyebrow-plus-heading pairing every admin screen opens with, with room
- * for an action on the right.
- *
- * The action sits beside the heading where there is room and drops onto its
- * own line below it where there is not, rather than squeezing the title into a
- * two-word column on a phone.
- */
 export function PageHeader({
   eyebrow,
   title,

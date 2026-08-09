@@ -95,10 +95,6 @@ export default function Index({ report }: PageProps) {
         action={<ExportButton />}
       />
 
-      {/*
-        Submitted as a GET so a report is a link: an admin can bookmark a
-        month or paste it into a message and get the same numbers back.
-      */}
       <Form route="admin.report.index" className="mb-6">
         {() => (
           <div className="flex flex-wrap items-end gap-3">

@@ -7,15 +7,8 @@
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
 import type AddressTransformer from '#transformers/address_transformer'
-import type ItemTransformer from '#transformers/item_transformer'
-import type NotificationTransformer from '#transformers/notification_transformer'
-import type OrderActionTransformer from '#transformers/order_action_transformer'
-import type OrderItemTransformer from '#transformers/order_item_transformer'
-import type OrderTransformer from '#transformers/order_transformer'
-import type RouteItemTransformer from '#transformers/route_item_transformer'
-import type ServiceTransformer from '#transformers/service_transformer'
-import type TransactionTransformer from '#transformers/transaction_transformer'
 import type UserTransformer from '#transformers/user_transformer'
+import type CatalogueTransformer from '#transformers/catalogue_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
 export namespace Data {
@@ -23,41 +16,13 @@ export namespace Data {
   export namespace Address {
     export type Variants = InferVariants<AddressTransformer>
   }
-  export type Item = InferData<ItemTransformer>
-  export namespace Item {
-    export type Variants = InferVariants<ItemTransformer>
-  }
-  export type Notification = InferData<NotificationTransformer>
-  export namespace Notification {
-    export type Variants = InferVariants<NotificationTransformer>
-  }
-  export type OrderAction = InferData<OrderActionTransformer>
-  export namespace OrderAction {
-    export type Variants = InferVariants<OrderActionTransformer>
-  }
-  export type OrderItem = InferData<OrderItemTransformer>
-  export namespace OrderItem {
-    export type Variants = InferVariants<OrderItemTransformer>
-  }
-  export type Order = InferData<OrderTransformer>
-  export namespace Order {
-    export type Variants = InferVariants<OrderTransformer>
-  }
-  export type RouteItem = InferData<RouteItemTransformer>
-  export namespace RouteItem {
-    export type Variants = InferVariants<RouteItemTransformer>
-  }
-  export type Service = InferData<ServiceTransformer>
-  export namespace Service {
-    export type Variants = InferVariants<ServiceTransformer>
-  }
-  export type Transaction = InferData<TransactionTransformer>
-  export namespace Transaction {
-    export type Variants = InferVariants<TransactionTransformer>
-  }
   export type User = InferData<UserTransformer>
   export namespace User {
     export type Variants = InferVariants<UserTransformer>
+  }
+  export type Catalogue = InferData<CatalogueTransformer>
+  export namespace Catalogue {
+    export type Variants = InferVariants<CatalogueTransformer>
   }
   export type SharedProps = InferSharedProps<InertiaMiddleware>
 }

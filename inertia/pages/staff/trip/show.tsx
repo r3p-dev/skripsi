@@ -38,11 +38,6 @@ const typeLabels: Record<TripType, string> = {
 export default function Show({ type, order, blocked }: PageProps) {
   return (
     <StaffLayout title={`${typeLabels[type]} - ${order.orderNumber}`} description="Detail tugas">
-      {/*
-        No back link on purpose: claiming a task holds it against everyone
-        else, so it has to be finished or cancelled rather than abandoned.
-        A blocked task is the exception — nothing was claimed.
-      */}
       <div className="flex items-center gap-3 px-6 py-5">
         {blocked && (
           <Link
@@ -111,12 +106,6 @@ export default function Show({ type, order, blocked }: PageProps) {
                       <p className="text-sm text-gray-700">{order.address.phone}</p>
                     </div>
 
-                    {/*
-                      Two buttons rather than the number as a link. A driver at
-                      the gate is holding a phone one-handed, and an underlined
-                      run of digits is both a small target and silent about what
-                      tapping it will do — this one dials, that one opens a chat.
-                    */}
                     <div className="grid grid-cols-2 gap-2">
                       <a
                         href={telUrl(order.address.phone)}
@@ -150,12 +139,6 @@ export default function Show({ type, order, blocked }: PageProps) {
                       </p>
                     </div>
 
-                    {/*
-                      Turn-by-turn is handed off to Google Maps rather than
-                      rebuilt here — the driver already has it installed and it
-                      knows the roads. `dir` starts navigation from wherever
-                      they are now.
-                    */}
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.latitude},${order.address.longitude}`}
                       target="_blank"
@@ -173,11 +156,6 @@ export default function Show({ type, order, blocked }: PageProps) {
               </>
             )}
 
-            {/*
-              The photo is picked on the page and the whole thing is submitted
-              from inside the confirmation, so the file input is not stranded
-              behind a dialog the moment somebody wants to change it.
-            */}
             <Form
               id="complete-task"
               route="staff.trip.update"

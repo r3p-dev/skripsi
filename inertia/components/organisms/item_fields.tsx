@@ -8,10 +8,6 @@ import { formatRupiah } from '@/lib/format'
 import { IconTrash } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 
-/**
- * Maps a service's category to the physical item type it implies,
- * so staff don't have to pick the item type separately.
- */
 const itemTypeByCategory: Record<string, string> = {
   [ServiceCategory.SHOE_WASH]: ItemType.SHOE,
   [ServiceCategory.SHOE_REPAIR]: ItemType.SHOE,
@@ -19,10 +15,6 @@ const itemTypeByCategory: Record<string, string> = {
   [ServiceCategory.HELMET_WASH]: ItemType.HELMET,
 }
 
-/**
- * The values an already-recorded item starts the form with, used when staff
- * correct the items on an order that has been inspected but not yet paid.
- */
 export type ItemDefaults = {
   brand: string
   model: string
@@ -39,14 +31,6 @@ export type ItemRow = {
   defaults?: ItemDefaults
 }
 
-/**
- * Manages a dynamic, addable/removable list of inspected or
- * offline-order items, each tracking only the service it needs
- * to derive the item's physical type.
- *
- * Pass `initialRows` to edit items that already exist; a new item form starts
- * with one empty row.
- */
 export function useItemRows(initialRows?: ItemRow[]) {
   const [items, setItems] = useState<ItemRow[]>(initialRows ?? [{ key: 0, serviceId: '' }])
   const nextKey = useRef(items.length)
@@ -66,11 +50,6 @@ export function useItemRows(initialRows?: ItemRow[]) {
   return { items, addItem, removeItem, setServiceId }
 }
 
-/**
- * Renders the input fields for a single item: physical details,
- * the main service (used to derive the item's type), and any
- * additional services.
- */
 function ItemFields({
   index,
   services,
@@ -201,10 +180,6 @@ function ItemFields({
   )
 }
 
-/**
- * A single "Barang N" card: item fields plus a remove button
- * (hidden when it is the only remaining item).
- */
 export function ItemCard({
   index,
   services,

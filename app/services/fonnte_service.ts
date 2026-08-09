@@ -6,15 +6,9 @@ type FonnteResponse = {
   detail: unknown
 }
 
-/**
- * Sends WhatsApp messages through the Fonnte API.
- */
 export default class FonnteService {
-  /**
-   * Sends a password reset link to a customer's WhatsApp number.
-   */
   async sendPasswordResetLink(target: string, resetUrl: string): Promise<void> {
-    await this.sendMessage(
+    await this.#sendMessage(
       target,
       [
         'Umima.Clean menerima permintaan reset password untuk akun Anda.',
@@ -25,11 +19,8 @@ export default class FonnteService {
     )
   }
 
-  /**
-   * Sends a link that verifies ownership of a new phone number.
-   */
   async sendVerificationLink(target: string, verificationUrl: string): Promise<void> {
-    await this.sendMessage(
+    await this.#sendMessage(
       target,
       [
         'Umima.Clean menerima permintaan perubahan nomor telepon untuk akun Anda.',
@@ -40,15 +31,8 @@ export default class FonnteService {
     )
   }
 
-  /**
-   * Reminds a customer that an order is still waiting to be paid for.
-   *
-   * Sent by hand from the counter rather than on a timer: staff are the ones
-   * who can see that a customer simply forgot, as opposed to one who is
-   * deciding, and an automatic nag to the second group costs goodwill.
-   */
   async sendPaymentReminder(target: string, orderNumber: string, amount: string): Promise<void> {
-    await this.sendMessage(
+    await this.#sendMessage(
       target,
       [
         `Halo! Pesanan ${orderNumber} di Umima.Clean masih menunggu pembayaran sebesar ${amount}.`,
@@ -58,14 +42,8 @@ export default class FonnteService {
     )
   }
 
-  /**
-   * Tells a walk-in customer their shoes are washed and waiting at the shop.
-   *
-   * Only counter orders get this. An order that is being delivered needs no
-   * message — it turns up at the door on its own.
-   */
   async sendReadyForCollection(target: string, orderNumber: string): Promise<void> {
-    await this.sendMessage(
+    await this.#sendMessage(
       target,
       [
         `Kabar baik! Pesanan ${orderNumber} sudah selesai dicuci.`,
@@ -75,15 +53,7 @@ export default class FonnteService {
     )
   }
 
-  /**
-   * Delivers a message and fails loudly when it is not accepted.
-   *
-   * Fonnte answers with HTTP 200 even when it rejects a message, so the
-   * response payload's own `status` flag has to be checked as well.
-   *
-   * @throws {Error} When the API is unreachable or rejects the message.
-   */
-  private async sendMessage(target: string, message: string): Promise<void> {
+  async #sendMessage(target: string, message: string): Promise<void> {
     let response: Response
 
     try {

@@ -2,8 +2,8 @@ import { OrderItemSchema } from '#database/schema'
 import { belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Order from '#models/order'
-import Service from '#models/service'
 import Item from '#models/item'
+import Catalogue from '#models/catalogue'
 
 export default class OrderItem extends OrderItemSchema {
   @belongsTo(() => Order, {
@@ -11,10 +11,10 @@ export default class OrderItem extends OrderItemSchema {
   })
   declare order: BelongsTo<typeof Order>
 
-  @belongsTo(() => Service, {
-    foreignKey: 'serviceId',
+  @belongsTo(() => Catalogue, {
+    foreignKey: 'catalogueId',
   })
-  declare service: BelongsTo<typeof Service>
+  declare catalogue: BelongsTo<typeof Catalogue>
 
   @belongsTo(() => Item, {
     foreignKey: 'itemId',

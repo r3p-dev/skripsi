@@ -2,9 +2,8 @@ import AuthService from '#services/auth_service'
 import { loginValidator } from '#validators/auth_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import { type Role, RoleRedirect } from '#enums/role_enum'
-import { errors as authErrors } from '@adonisjs/auth'
-import { errors as vineErrors } from '@vinejs/vine'
+import { LoginRedirect, type Role } from '#enums/role_enum'
+import { DateTime } from 'luxon'
 
 @inject()
 export default class SessionController {
@@ -14,34 +13,24 @@ export default class SessionController {
     return inertia.render('auth/login', {})
   }
 
+  async createInternal({ inertia }: HttpContext) {
+    return inertia.render('auth/internal_login', {})
+  }
+
   async store({ request, response, auth, session }: HttpContext) {
-    try {
-      const payload = await request.validateUsing(loginValidator)
+    const payload = await request.validateUsing(loginValidator)
 
-      const user = await this.authService.login(payload, auth, session)
+    const user = await this.authService.authenticate(payload)
 
-      session.flash('success', 'Berhasil masuk.')
-      return response.redirect().toRoute(RoleRedirect[user.role as Role])
-    } catch (error) {
-      if (error instanceof authErrors.E_INVALID_CREDENTIALS) {
-        throw new vineErrors.E_VALIDATION_ERROR([
-          {
-            field: 'phone',
-            message: 'Nomor telepon atau kata sandi salah.',
-          },
-          {
-            field: 'password',
-            message: 'Nomor telepon atau kata sandi salah.',
-          },
-        ])
-      }
+    await auth.use('web').login(user, Boolean(payload.rememberMe))
+    session.put('authenticated_at', DateTime.now().toISO())
 
-      throw error
-    }
+    session.flash('success', 'Berhasil masuk.')
+    return response.redirect().toRoute(LoginRedirect[user.role as Role])
   }
 
   async destroy({ auth, response, session }: HttpContext) {
-    await this.authService.logout(auth)
+    await auth.use('web').logout()
 
     session.flash('success', 'Berhasil keluar.')
     return response.redirect().toRoute('home')

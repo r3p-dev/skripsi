@@ -14,11 +14,11 @@ export default class extends BaseSchema {
         .inTable('orders')
         .onDelete('CASCADE')
       table
-        .integer('service_id')
+        .integer('catalogue_id')
         .notNullable()
         .index()
         .references('id')
-        .inTable('services')
+        .inTable('catalogues')
         .onDelete('RESTRICT')
       table
         .integer('item_id')
@@ -28,6 +28,7 @@ export default class extends BaseSchema {
         .inTable('items')
         .onDelete('CASCADE')
 
+      table.string('condition').notNullable()
       table.string('name').notNullable()
       table.decimal('price', 10, 2).notNullable()
       table.decimal('subtotal', 10, 2).notNullable()
@@ -35,8 +36,9 @@ export default class extends BaseSchema {
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
 
-      table.index(['order_id', 'service_id'])
-      table.index(['service_id', 'item_id'])
+      table.index(['order_id', 'catalogue_id', 'item_id'])
+      table.index(['order_id', 'catalogue_id'])
+      table.index(['catalogue_id', 'item_id'])
     })
   }
 

@@ -9,11 +9,12 @@ export default class PasswordController {
 
   async update({ auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
+
     const payload = await request.validateUsing(changePasswordValidator)
 
     await this.profileService.changePassword(payload, user)
-    session.flash('success', 'Kata sandi berhasil diperbarui')
 
+    session.flash('success', 'Kata sandi berhasil diperbarui')
     return response.redirect().toRoute('customer.profile.show')
   }
 }

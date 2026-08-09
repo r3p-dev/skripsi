@@ -4,9 +4,6 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const midtransClient = require('midtrans-client')
 
-/**
- * Payload received from Midtrans payment notification webhooks.
- */
 export interface MidtransNotification {
   transaction_type: string
   transaction_time: string
@@ -27,27 +24,11 @@ export interface MidtransNotification {
   acquirer: string
 }
 
-/**
- * Whether Midtrans requests should hit the production API instead of the
- * sandbox.
- */
-// const isProduction = env.get('NODE_ENV') === 'production'
-
-/**
- * Core API client used to charge Midtrans payment transactions
- * server-to-server (no Snap redirect/popup involved).
- */
 export const core = new midtransClient.CoreApi({
   isProduction: false, // Set to true in production
   serverKey: env.get('MIDTRANS_SERVER_KEY').release(),
 })
 
-/**
- * Verifies the `signature_key` sent with a Midtrans notification webhook,
- * proving the payload actually originated from Midtrans.
- *
- * @see https://docs.midtrans.com/docs/https-notification-webhooks
- */
 export function verifyNotificationSignature(payload: MidtransNotification): boolean {
   const serverKey = env.get('MIDTRANS_SERVER_KEY').release()
 

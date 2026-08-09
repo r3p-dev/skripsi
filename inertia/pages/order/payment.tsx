@@ -72,20 +72,6 @@ function RetryForm({
   )
 }
 
-/**
- * Saves the QR to the device.
- *
- * Paying by QRIS on the same phone that is showing the QR means leaving this
- * page for a banking app, and most of them will only scan a picture from the
- * gallery — so the code has to be saved before it can be used. Long-pressing
- * the image is the alternative, and it is not obvious enough to rely on.
- *
- * The image is fetched and handed over as a blob rather than linked with a
- * `download` attribute, which browsers ignore for a cross-origin URL — and the
- * QR is served by Midtrans, not by us. If the fetch is refused, opening the
- * image on its own is the honest fallback: the customer can still save it by
- * hand, which is exactly where they were before.
- */
 async function downloadQrCode(source: string, orderNumber: string) {
   try {
     const response = await fetch(source)
@@ -109,14 +95,6 @@ async function downloadQrCode(source: string, orderNumber: string) {
   }
 }
 
-/**
- * Displays the QRIS code for an order's payment and reflects Midtrans
- * status changes live via Transmit, without a full page reload. Kept
- * outside the customer bottom-nav shell so it can be reused for any
- * role that needs to show a customer's payment (e.g. staff assisting
- * at the counter), not just the customer app. The caller decides where
- * "back" and "retry" should lead via backRoute/retryRoute.
- */
 export default function Payment({
   order,
   transaction: initialTransaction,
@@ -134,12 +112,6 @@ export default function Payment({
     const subscription = transmit.subscription(`orders/${order.orderNumber}`)
 
     subscription.create().then(() => {
-      /**
-       * The broadcast carries the stored status, the same value the page was
-       * rendered with, so it drops straight into state and every check above
-       * keeps working. A pre-translated label would have had to be matched
-       * against Indonesian prose to mean anything.
-       */
       subscription.onMessage<{
         transactionStatus: string | null
       }>((message) => {

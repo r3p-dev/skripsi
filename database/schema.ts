@@ -6,21 +6,14 @@
 
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
+import { CatalogueCategory, CatalogueType } from '#enums/catalogue_enum'
+import { ItemType } from '#enums/item_enum'
+import { OrderStatus, OrderType } from '#enums/order_enum'
+import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
+import { Role } from '#enums/role_enum'
 
 export class AddressSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'id',
-    'isActive',
-    'latitude',
-    'longitude',
-    'name',
-    'note',
-    'phone',
-    'street',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['createdAt', 'id', 'isActive', 'latitude', 'longitude', 'name', 'note', 'phone', 'street', 'updatedAt', 'userId'] as const
   $columns = AddressSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -29,9 +22,9 @@ export class AddressSchema extends BaseModel {
   @column()
   declare isActive: boolean
   @column()
-  declare latitude: number
+  declare latitude: string
   @column()
-  declare longitude: number
+  declare longitude: string
   @column()
   declare name: string
   @column()
@@ -46,24 +39,32 @@ export class AddressSchema extends BaseModel {
   declare userId: number
 }
 
+export class CatalogueSchema extends BaseModel {
+  static $columns = ['category', 'createdAt', 'description', 'id', 'name', 'price', 'type', 'updatedAt'] as const
+  $columns = CatalogueSchema.$columns
+  @column()
+  declare category: CatalogueCategory
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string
+  @column()
+  declare price: string
+  @column()
+  declare type: CatalogueType
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class ItemSchema extends BaseModel {
-  static $columns = [
-    'brand',
-    'condition',
-    'createdAt',
-    'id',
-    'material',
-    'model',
-    'note',
-    'size',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['brand', 'createdAt', 'id', 'material', 'model', 'note', 'orderId', 'size', 'type', 'updatedAt'] as const
   $columns = ItemSchema.$columns
   @column()
   declare brand: string
-  @column()
-  declare condition: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -75,73 +76,37 @@ export class ItemSchema extends BaseModel {
   @column()
   declare note: string | null
   @column()
-  declare size: string
-  @column()
-  declare type: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-}
-
-export class NotificationSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'message', 'title', 'updatedAt', 'userId'] as const
-  $columns = NotificationSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare message: string
-  @column()
-  declare title: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-  @column()
-  declare userId: number
-}
-
-export class OrderActionSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'id',
-    'name',
-    'note',
-    'orderId',
-    'photoPath',
-    'staffId',
-    'updatedAt',
-  ] as const
-  $columns = OrderActionSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare name: string
-  @column()
-  declare note: string | null
-  @column()
   declare orderId: number
   @column()
-  declare photoPath: string | null
+  declare size: string
   @column()
-  declare staffId: number
+  declare type: ItemType
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class OperationalAreaSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'isActive', 'name', 'updatedAt'] as const
+  $columns = OperationalAreaSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
 
 export class OrderItemSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'id',
-    'itemId',
-    'name',
-    'orderId',
-    'price',
-    'serviceId',
-    'subtotal',
-    'updatedAt',
-  ] as const
+  static $columns = ['catalogueId', 'condition', 'createdAt', 'id', 'itemId', 'name', 'orderId', 'price', 'subtotal', 'updatedAt'] as const
   $columns = OrderItemSchema.$columns
+  @column()
+  declare catalogueId: number
+  @column()
+  declare condition: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -153,33 +118,15 @@ export class OrderItemSchema extends BaseModel {
   @column()
   declare orderId: number
   @column()
-  declare price: number
+  declare price: string
   @column()
-  declare serviceId: number
-  @column()
-  declare subtotal: number
+  declare subtotal: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
 
 export class OrderSchema extends BaseModel {
-  static $columns = [
-    'addressId',
-    'createdAt',
-    'customerName',
-    'customerPhone',
-    'id',
-    'lockedById',
-    'lockedTask',
-    'lockedUntil',
-    'orderNumber',
-    'pickupDate',
-    'status',
-    'totalPrice',
-    'type',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['addressId', 'createdAt', 'customerName', 'customerPhone', 'id', 'orderNumber', 'pickupDate', 'status', 'totalPrice', 'type', 'updatedAt', 'userId'] as const
   $columns = OrderSchema.$columns
   @column()
   declare addressId: number | null
@@ -192,21 +139,15 @@ export class OrderSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare lockedById: number | null
-  @column()
-  declare lockedTask: string | null
-  @column.dateTime()
-  declare lockedUntil: DateTime | null
-  @column()
   declare orderNumber: string
   @column.date()
   declare pickupDate: DateTime | null
   @column()
-  declare status: string
+  declare status: OrderStatus
   @column()
-  declare totalPrice: number | null
+  declare totalPrice: string | null
   @column()
-  declare type: string
+  declare type: OrderType
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -241,52 +182,26 @@ export class RememberMeTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
-export class ServiceSchema extends BaseModel {
-  static $columns = [
-    'category',
-    'createdAt',
-    'description',
-    'id',
-    'name',
-    'price',
-    'type',
-    'updatedAt',
-  ] as const
-  $columns = ServiceSchema.$columns
+export class SpatialRefSySchema extends BaseModel {
+  static $columns = ['authName', 'authSrid', 'proj4Text', 'srid', 'srtext'] as const
+  $columns = SpatialRefSySchema.$columns
   @column()
-  declare category: string
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
+  declare authName: string | null
   @column()
-  declare description: string
+  declare authSrid: number | null
+  @column()
+  declare proj4Text: string | null
   @column({ isPrimary: true })
-  declare id: number
+  declare srid: number
   @column()
-  declare name: string
-  @column()
-  declare price: number
-  @column()
-  declare type: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
+  declare srtext: string | null
 }
 
 export class TransactionSchema extends BaseModel {
-  static $columns = [
-    'cashReceived',
-    'createdAt',
-    'id',
-    'midtransOrderId',
-    'midtransTransactionId',
-    'orderId',
-    'paymentMethod',
-    'qrCode',
-    'status',
-    'updatedAt',
-  ] as const
+  static $columns = ['cashReceived', 'createdAt', 'id', 'midtransOrderId', 'midtransTransactionId', 'orderId', 'paymentMethod', 'qrCode', 'status', 'updatedAt'] as const
   $columns = TransactionSchema.$columns
   @column()
-  declare cashReceived: number | null
+  declare cashReceived: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
@@ -298,27 +213,17 @@ export class TransactionSchema extends BaseModel {
   @column()
   declare orderId: number
   @column()
-  declare paymentMethod: string
+  declare paymentMethod: PaymentMethod
   @column()
   declare qrCode: string | null
   @column()
-  declare status: string
+  declare status: TransactionStatus
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'id',
-    'isActive',
-    'name',
-    'password',
-    'passwordChangedAt',
-    'phone',
-    'role',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'id', 'isActive', 'name', 'password', 'passwordChangedAt', 'phone', 'role', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -335,7 +240,7 @@ export class UserSchema extends BaseModel {
   @column()
   declare phone: string
   @column()
-  declare role: string
+  declare role: Role
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

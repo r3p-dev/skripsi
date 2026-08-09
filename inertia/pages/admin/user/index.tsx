@@ -109,7 +109,6 @@ export default function Index({
       <Form route="admin.user.index" className="mb-6">
         {() => (
           <div className="flex flex-wrap items-center gap-3">
-            {/* Keeps the active tab when the search is submitted. */}
             <input type="hidden" name="role" value={role} />
 
             <div className="relative min-w-56 flex-1">
@@ -149,12 +148,6 @@ export default function Index({
                       <span className={account.isActive ? '' : 'text-gray-400 line-through'}>
                         {account.name}
                       </span>
-                      {/*
-                        Somebody who has left keeps every collection and
-                        delivery they ever recorded, so their account is
-                        switched off rather than deleted — and the list has to
-                        say which of these people can still sign in.
-                      */}
                       {!account.isActive && (
                         <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
                           <IconCircleOff className="size-3" />
@@ -182,12 +175,6 @@ export default function Index({
                           <IconPencil size={18} />
                         </Link>
 
-                        {/*
-                          Orders and order actions reference users with
-                          RESTRICT: an account that appears anywhere in the
-                          record cannot be removed without taking the history
-                          of what happened with it.
-                        */}
                         {undeletable.has(account.id) ? (
                           <button
                             type="button"

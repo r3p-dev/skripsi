@@ -10,12 +10,6 @@ type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
 }>
 
-/**
- * A tag staff cut out and attach to the customer's batch of items while it
- * sits on the cleaning rack, so nobody has to guess whose shoes are whose.
- *
- * Everything outside the tag itself is hidden when printing.
- */
 export default function Tag({ order }: PageProps) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
@@ -55,11 +49,6 @@ export default function Tag({ order }: PageProps) {
           <div className="px-5 py-4">
             {order.items?.length ? (
               <div className="divide-y divide-dashed divide-gray-400">
-                {/*
-                  `name` is composed by the transformer as
-                  "<service> - <brand> <model>", which is what tells two
-                  otherwise similar pairs apart on the rack.
-                */}
                 {order.items.map((item, index) => (
                   <div key={item.id} className="flex items-start gap-3 py-2">
                     <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-black text-xs font-bold">

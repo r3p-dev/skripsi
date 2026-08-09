@@ -189,11 +189,6 @@ export default function Home({ services }: PageProps) {
           </Carousel>
         </div>
 
-        {/*
-          The dot stays 10px — it is an indicator, not a button you are meant to
-          aim at. What grew is the invisible box around it, so the dot can be
-          hit with a thumb rather than only with a mouse.
-        */}
         <div className="-my-3 flex justify-between">
           {Array.from({ length: count }).map((_, i) => (
             <button

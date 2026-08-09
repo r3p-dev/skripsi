@@ -36,11 +36,6 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
 }
 
 export default function Show({ order }: PageProps) {
-  /**
-   * The lines and the audit trail arrive nested inside the order now, at the
-   * depth the transformer asks for, rather than as two sibling props the
-   * controller assembled by hand.
-   */
   const items = order.items ?? []
   const actions = order.actions ?? []
 
@@ -196,10 +191,6 @@ export default function Show({ order }: PageProps) {
           </CardContent>
         </Card>
 
-        {/*
-          The audit trail. Every action names the staff member who recorded it,
-          which is what makes a manual payment override attributable.
-        */}
         <Card className="rounded-2xl border border-gray-200 bg-white">
           <CardHeader>
             <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">

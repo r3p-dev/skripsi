@@ -6,9 +6,7 @@ import hash from '@adonisjs/core/services/hash'
 import { hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Address from '#models/address'
-import Notification from '#models/notification'
 import Order from '#models/order'
-import OrderAction from '#models/order_action'
 
 const AuthFinder = withAuthFinder(hash, {
   uids: ['phone'],
@@ -25,16 +23,6 @@ export default class User extends compose(UserSchema, AuthFinder) {
     foreignKey: 'userId',
   })
   declare orders: HasMany<typeof Order>
-
-  @hasMany(() => OrderAction, {
-    foreignKey: 'staffId',
-  })
-  declare actions: HasMany<typeof OrderAction>
-
-  @hasMany(() => Notification, {
-    foreignKey: 'userId',
-  })
-  declare notifications: HasMany<typeof Notification>
 
   static rememberMeTokens = DbRememberMeTokensProvider.forModel(User)
 }

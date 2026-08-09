@@ -15,7 +15,6 @@ type PageProps = InertiaProps<{
   change: number
 }>
 
-/** A label-and-value line, the way a till prints one. */
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-baseline gap-2">
@@ -26,20 +25,10 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-/** The dashed rule a till prints between blocks. */
 function Perforation() {
   return <div className="border-t border-dashed border-gray-300" />
 }
 
-/**
- * One copy of the counter receipt.
- *
- * Rendered twice on the page, with a label saying which is which. One goes
- * home with the customer and one is stapled to the shoes, so the batch on the
- * rack can be matched to the person coming back for it without anyone looking
- * it up. Printing the page twice would do the same job, and would also mean
- * two trips to the printer with a queue at the counter.
- */
 function ReceiptCopy({
   order,
   change,
@@ -85,13 +74,6 @@ function ReceiptCopy({
 
       <Perforation />
 
-      {/*
-        Grouped by the pair of shoes, matching the order detail screen. The
-        counter copy used to print one flat row per charge, so a pair with a
-        wash and a repaint appeared as two unrelated lines — and the one thing
-        the slip stapled to the shoes has to make obvious is which work belongs
-        to which pair.
-      */}
       <div className="space-y-3 px-5 py-5">
         {itemGroups.map((group) => (
           <div key={group.key} className="space-y-1">
@@ -125,11 +107,6 @@ function ReceiptCopy({
           </Row>
         )}
 
-        {/*
-          Only cash has anything to say here. A debit or QRIS payment is always
-          for the exact amount, so there is no change and printing a zero would
-          only invite the question.
-        */}
         {transaction?.cashReceived !== null && transaction?.cashReceived !== undefined && (
           <>
             <Row label="Tunai">{formatRupiah(transaction.cashReceived)}</Row>

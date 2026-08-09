@@ -51,16 +51,6 @@ const EMPTY_MESSAGE: Record<TabKey, string> = {
   collections: 'Belum ada barang yang menunggu diambil',
 }
 
-/**
- * A stop on the route.
- *
- * The order number, what kind of stop it is, and how far away it is —
- * deliberately nothing else. This board is on the screen of everyone on shift
- * whether or not they take the job, and a queue is not a place to browse
- * customers' names, phone numbers and front doors. All of that arrives with
- * the task once it is claimed, at which point the claim is on the record under
- * the name of whoever made it. That is the whole reason claiming exists.
- */
 function TripCard({ item }: { item: Data.RouteItem }) {
   const isDelivery = item.type === 'delivery'
   const kind = isDelivery ? 'Pengantaran' : 'Penjemputan'
@@ -100,10 +90,6 @@ function TripCard({ item }: { item: Data.RouteItem }) {
         <AlertDialogCancel className="h-11 rounded-xl text-sm font-semibold">
           Batal
         </AlertDialogCancel>
-        {/*
-          Opening the task is the claim, so the confirmation leads to a plain
-          navigation rather than a form submit.
-        */}
         <Link
           route="staff.trip.show"
           routeParams={{ number: item.orderNumber, type: item.type }}
@@ -157,19 +143,10 @@ function InspectionCard({ order }: { order: Data.Order.Variants['toQueue'] }) {
 }
 
 function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
-  /**
-   * The photo taken at inspection, shown as the "before" the washer compares
-   * their work against. Matched on the stored action name rather than its
-   * caption, so rewording the caption cannot silently empty this.
-   */
   const inspectionPhoto = order.actions?.find(
     (action) => action.name === ActionName.INSPECTION
   )?.photoPath
 
-  /**
-   * A counter order has no inspection, but it does have the intake photo staff
-   * took when the shoes came over the counter, which serves the same purpose.
-   */
   const intakePhoto = order.actions?.find(
     (action) => action.name === ActionName.OFFLINE_ORDER
   )?.photoPath
@@ -203,11 +180,6 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
           Cetak Label
         </Link>
 
-        {/*
-          Behind a confirmation dialog on purpose: marking a batch washed cannot
-          be undone, and the button sits on a list of cards that are easy to
-          mis-tap. The "after" photo is collected in the same step.
-        */}
         <AlertDialog>
           <AlertDialogTrigger className="h-11 flex-1 rounded-xl bg-black text-sm font-semibold tracking-wide text-white transition-colors hover:bg-black/90 active:scale-95">
             Selesai Dicuci
@@ -267,16 +239,6 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
   )
 }
 
-/**
- * A washed walk-in order sitting on the shelf, waiting for its owner.
- *
- * The name is here because somebody at the counter has to hand the right shoes
- * to the right person. The phone number is not: the message telling them their
- * shoes are ready goes out on the shop's number through the system, so nobody
- * needs to read the number, let alone copy it. The send is recorded against
- * the order, so "have we told them yet?" is a question the record answers
- * rather than one two staff members disagree about.
- */
 function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
   const alreadyNotified = order.actions?.some(
     (action) => action.name === ActionName.READY_NOTICE_SENT
@@ -315,11 +277,6 @@ function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
           )}
         </Form>
 
-        {/*
-          The form lives inside the dialog rather than around it: the popup is
-          portalled to the end of the document, so a submit button rendered
-          inside it would sit outside any surrounding <form> element.
-        */}
         <ConfirmDialog
           triggerClassName="h-11 w-full flex-1 rounded-xl bg-black text-sm font-semibold tracking-wide text-white transition-colors hover:bg-black/90 active:scale-95"
           label="Sudah Diambil"

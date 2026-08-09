@@ -1,9 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { type Icon } from '@tabler/icons-react'
 
-/**
- * One headline figure on the dashboard.
- */
 export function StatCard({
   label,
   value,

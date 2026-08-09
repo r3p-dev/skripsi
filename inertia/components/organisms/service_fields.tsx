@@ -13,13 +13,6 @@ export type ServiceDefaults = {
   type: string
 }
 
-/**
- * The catalogue entry form, shared by the create and edit screens.
- *
- * Both submit the same complete payload — there is no partial update — so the
- * only difference between the two pages is the route they post to and whether
- * the fields start filled.
- */
 export function ServiceFields({
   errors,
   defaults,
@@ -33,12 +26,6 @@ export function ServiceFields({
 }) {
   return (
     <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-      {/*
-        The field is `serviceName`, not `name`, so it carries its own label
-        from the shared validation table. `name` is labelled "Nama lengkap"
-        app-wide, which is right on a signup form and wrong here — and naming
-        the field for what it holds is cheaper than overriding one word.
-      */}
       <Field data-invalid={errors.serviceName ? 'true' : undefined}>
         <FieldLabel
           htmlFor="serviceName"
@@ -83,11 +70,6 @@ export function ServiceFields({
           id="price"
           name="price"
           type="number"
-          /*
-            Whole Rupiah, and `step` has to stay 1: the browser validates a
-            number field as `min + n * step`, so a coarser step would reject
-            every ordinary price and block the submit with no message.
-          */
           min={1}
           step={1}
           defaultValue={defaults?.price}
@@ -102,11 +84,6 @@ export function ServiceFields({
         <FieldLabel htmlFor="category" className="text-xs tracking-widest text-gray-700 uppercase">
           Kategori
         </FieldLabel>
-        {/*
-          The category decides which physical item type the inspection form
-          derives for this service, so it is not cosmetic — see
-          `itemTypeByCategory` in `item_fields`.
-        */}
         <select
           id="category"
           name="category"

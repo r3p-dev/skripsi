@@ -4,10 +4,6 @@ import { IconClipboardList, IconUser } from '@tabler/icons-react'
 import { type PropsWithChildren } from 'react'
 import { usePage } from '@inertiajs/react'
 
-/**
- * Bottom navigation tabs. `match` lists the Inertia page components that
- * should light the tab up, so detail pages stay under their parent tab.
- */
 const NAV_ITEMS = [
   {
     route: 'staff.trip.index',

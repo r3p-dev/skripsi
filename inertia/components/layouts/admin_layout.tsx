@@ -13,10 +13,6 @@ import {
 } from '@tabler/icons-react'
 import { useState, type PropsWithChildren } from 'react'
 
-/**
- * The admin sections. `match` lists the Inertia page components that belong to
- * each one, so a detail or form page keeps its parent section highlighted.
- */
 const NAV_ITEMS = [
   {
     route: 'admin.dashboard.index',
@@ -62,14 +58,6 @@ const NAV_ITEMS = [
   },
 ] as const
 
-/**
- * The admin shell.
- *
- * Unlike the customer and staff apps, this one is not mobile-first: an admin
- * reads tables and charts, which need width. The nav is a permanent sidebar on
- * a desktop and collapses behind a button on a phone, rather than the
- * bottom tab bar the other two roles use — seven sections do not fit there.
- */
 export default function AdminLayout({
   children,
   title,
@@ -88,7 +76,6 @@ export default function AdminLayout({
       <Link
         key={item.route}
         route={item.route}
-        // Following a link on a phone should reveal the page, not leave the menu open.
         onClick={() => setIsNavOpen(false)}
         aria-current={isActive ? 'page' : undefined}
         className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
@@ -118,12 +105,6 @@ export default function AdminLayout({
         <nav className="flex flex-1 flex-col gap-1">{links}</nav>
       </aside>
 
-      {/*
-        Header and drop-down menu stick as one block. They used to stick
-        separately, with the menu offset by a hand-measured `top-14.25` — a
-        number that silently stops matching the moment anything in the header
-        changes height, leaving the menu overlapping it or floating below.
-      */}
       <div className="sticky top-0 z-40 md:hidden">
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-2">
           <div>

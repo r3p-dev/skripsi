@@ -137,7 +137,6 @@ export default function PinpointMap({
           <CenterWatcher onChange={onChange} />
         </MapContainer>
 
-        {/* Fixed center marker */}
         <div
           className="
           pointer-events-none
@@ -161,7 +160,6 @@ export default function PinpointMap({
           />
         </div>
 
-        {/* GPS button */}
         <LocateButton onLocate={locateUser} />
       </div>
     </>

@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine'
-import type { Infer } from '@vinejs/vine/types'
+import { phoneRule } from '@julienbenac/vine-plugin-phone'
 
 export const name = () =>
   vine
@@ -9,11 +9,7 @@ export const name = () =>
     .maxLength(50)
     .alpha({ allowSpaces: true, allowDashes: true, allowUnderscores: false })
 
-export const phone = () =>
-  vine
-    .string()
-    .trim()
-    .regex(/^08[1-9]\d{8,10}$/)
+export const phone = () => vine.string().use(phoneRule({ countryCode: 'ID' }))
 
 export const password = () =>
   vine
@@ -23,7 +19,7 @@ export const password = () =>
     .maxLength(16)
     .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/)
 
-export const amount = () => vine.number().positive()
+export const price = () => vine.number().positive().max(100_000_000)
 
 export const image = () =>
   vine.file({
@@ -33,33 +29,7 @@ export const image = () =>
 
 export const note = () => vine.string().trim().optional()
 
-export const service = () => vine.number().positive()
-
-export const item = vine.object({
-  brand: vine.string().trim(),
-  model: vine.string().trim(),
-  type: vine.string().trim(),
-  size: vine.string().trim(),
-  material: vine.string().trim(),
-  condition: vine.string().trim(),
-  note: note(),
-  service: service(),
-  additionalServices: vine.array(service()).optional(),
-})
-
 export type Filters = {
   search: string
   page: number
 }
-
-/**
- * The admin order monitor's filters. Both narrowing fields are raw enum
- * values rather than the Indonesian labels pages usually receive, because a
- * filter has to survive a round trip through the query string.
- */
-export type OrderFilters = Filters & {
-  status: string
-  type: string
-}
-
-export type ItemData = Infer<typeof item>

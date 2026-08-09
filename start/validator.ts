@@ -1,26 +1,6 @@
-/*
-|--------------------------------------------------------------------------
-| Validator file
-|--------------------------------------------------------------------------
-|
-| The validator file is used for configuring global transforms for VineJS.
-| The transform below converts all VineJS date outputs from JavaScript
-| Date objects to Luxon DateTime instances, so that validated dates are
-| ready to use with Lucid models and other parts of the app that expect
-| Luxon DateTime.
-|
-*/
-
 import { DateTime } from 'luxon'
 import vine, { VineDate, SimpleMessagesProvider } from '@vinejs/vine'
 
-/**
- * The Indonesian wording for every rule the app uses.
- *
- * Exported so a single form can borrow it while relabelling one field — see
- * `serviceValidator`, where the shared `name` label ("Nama lengkap") would read
- * as nonsense on a catalogue entry.
- */
 export const validationMessages = {
   'required': '{{ field }} wajib diisi',
   'string': '{{ field }} harus berupa teks',
@@ -68,9 +48,6 @@ export const validationMessages = {
   'file.extname': 'Format {{ field }} tidak didukung',
 }
 
-/**
- * The Indonesian label printed in place of each field name.
- */
 export const validationFields = {
   name: 'Nama lengkap',
   serviceName: 'Nama layanan',

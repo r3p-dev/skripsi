@@ -126,12 +126,6 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                           <IconPencil size={18} />
                         </Link>
 
-                        {/*
-                          A service that has priced an order is history: the
-                          receipt for that order still names it, and the
-                          foreign key refuses the delete anyway. The button is
-                          disabled rather than hidden so the rule stays visible.
-                        */}
                         {inUse.has(service.id) ? (
                           <button
                             type="button"

@@ -1,14 +1,3 @@
-/*
-|--------------------------------------------------------------------------
-| Define HTTP limiters
-|--------------------------------------------------------------------------
-|
-| The "limiter.define" method creates an HTTP middleware to apply rate
-| limits on a route or a group of routes. Feel free to define as many
-| throttle middleware as needed.
-|
-*/
-
 import limiter from '@adonisjs/limiter/services/main'
 import { errors } from '@vinejs/vine'
 
@@ -81,18 +70,6 @@ export const resetPasswordLimiter = limiter.define('reset-password', (ctx) => {
     })
 })
 
-/**
- * Caps how often one signed-in person may ask to pay for anything.
- *
- * The per-order limit below protects Midtrans from a loop on a single order.
- * This protects the shop from someone spraying payment requests across many
- * orders at once, which that limit cannot see: each individual order is well
- * inside its own budget while the provider is being hammered all the same.
- *
- * The allowance is generous, because a customer legitimately retries — the QR
- * expired, they closed the tab, the bank app failed — and a staff member at
- * the counter serves one walk-in after another.
- */
 export const paymentLimiter = limiter.define('payment', (ctx) => {
   return limiter
     .allowRequests(15)
@@ -109,16 +86,6 @@ export const paymentLimiter = limiter.define('payment', (ctx) => {
     })
 })
 
-/**
- * Caps how often a single order may be charged at Midtrans.
- *
- * Applied around the charge itself rather than on the route, because asking to
- * pay usually returns the existing pending QR without contacting Midtrans at
- * all — only a genuinely new charge should count against the limit.
- *
- * The allowance leaves room for legitimate retries after a QR expires or a
- * payment fails, while stopping a loop from hammering the provider.
- */
 export const midtransChargeLimiter = limiter.use({
   requests: 5,
   duration: '15 minutes',

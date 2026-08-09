@@ -94,11 +94,6 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                 >
                   Peran
                 </FieldLabel>
-                {/*
-                  An admin cannot change their own role: the save would take
-                  effect immediately and role middleware would lock them out of
-                  the admin area, possibly leaving the shop without one at all.
-                */}
                 <select
                   id="role"
                   name="role"
@@ -115,7 +110,6 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                 </select>
                 {isSelf && (
                   <>
-                    {/* Disabled inputs are not submitted, so send it explicitly. */}
                     <input type="hidden" name="role" value={account.role} />
                     <p className="text-xs text-gray-500">
                       Anda tidak dapat mengubah peran akun Anda sendiri.
@@ -125,16 +119,6 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                 <FieldError>{errors.role}</FieldError>
               </Field>
 
-              {/*
-                Switching an account off is how somebody stops working here.
-                Their name is on every collection, inspection and delivery they
-                ever recorded, and those belong to the shop's history, so the
-                account cannot be deleted — it stops opening instead, from
-                their very next request.
-
-                An admin cannot switch off their own, for the same reason they
-                cannot demote it: it is a one-way door out of the admin area.
-              */}
               <Field data-invalid={errors.isActive ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="isActive"

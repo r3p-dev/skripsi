@@ -1,17 +1,16 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import OrderService from '#services/order_service'
-import ServiceTransformer from '#transformers/service_transformer'
+import CatalogueService from '#services/catalogue_service'
 
 @inject()
 export default class HomeController {
-  constructor(protected orderService: OrderService) {}
+  constructor(protected catalogService: CatalogueService) {}
 
   async index({ inertia }: HttpContext) {
-    const services = await this.orderService.getAvailableServices()
+    const catalogues = await this.catalogService.getAvailableCatalogues()
 
     return inertia.render('home', {
-      services: ServiceTransformer.transform(services),
+      catalogues,
     })
   }
 }

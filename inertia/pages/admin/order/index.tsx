@@ -42,11 +42,6 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
         action={<ExportButton />}
       />
 
-      {/*
-        One form for all three filters, submitted as a GET so the resulting
-        list stays linkable. `page` is deliberately absent: changing a filter
-        should return to the first page, not to page four of a different list.
-      */}
       <Form route="admin.order.index" className="mb-6">
         {() => (
           <div className="flex flex-wrap items-center gap-3">
