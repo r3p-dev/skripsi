@@ -156,53 +156,11 @@ const routes = {
     tokens: [{"old":"/address","type":0,"val":"address","end":""}],
     types: placeholder as Registry['customer.address.store']['types'],
   },
-  'customer.order.create': {
+  'customer.address.geocode': {
     methods: ["GET","HEAD"],
-    pattern: '/order',
-    tokens: [{"old":"/order","type":0,"val":"order","end":""}],
-    types: placeholder as Registry['customer.order.create']['types'],
-  },
-  'customer.order.receipt': {
-    methods: ["GET","HEAD"],
-    pattern: '/orders/:number/receipt',
-    tokens: [{"old":"/orders/:number/receipt","type":0,"val":"orders","end":""},{"old":"/orders/:number/receipt","type":1,"val":"number","end":""},{"old":"/orders/:number/receipt","type":0,"val":"receipt","end":""}],
-    types: placeholder as Registry['customer.order.receipt']['types'],
-  },
-  'customer.orders.index': {
-    methods: ["GET","HEAD"],
-    pattern: '/orders',
-    tokens: [{"old":"/orders","type":0,"val":"orders","end":""}],
-    types: placeholder as Registry['customer.orders.index']['types'],
-  },
-  'customer.orders.store': {
-    methods: ["POST"],
-    pattern: '/orders',
-    tokens: [{"old":"/orders","type":0,"val":"orders","end":""}],
-    types: placeholder as Registry['customer.orders.store']['types'],
-  },
-  'customer.orders.show': {
-    methods: ["GET","HEAD"],
-    pattern: '/orders/:id',
-    tokens: [{"old":"/orders/:id","type":0,"val":"orders","end":""},{"old":"/orders/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['customer.orders.show']['types'],
-  },
-  'customer.orders.update': {
-    methods: ["PUT","PATCH"],
-    pattern: '/orders/:id',
-    tokens: [{"old":"/orders/:id","type":0,"val":"orders","end":""},{"old":"/orders/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['customer.orders.update']['types'],
-  },
-  'customer.transaction.store': {
-    methods: ["POST"],
-    pattern: '/orders/:number/transactions',
-    tokens: [{"old":"/orders/:number/transactions","type":0,"val":"orders","end":""},{"old":"/orders/:number/transactions","type":1,"val":"number","end":""},{"old":"/orders/:number/transactions","type":0,"val":"transactions","end":""}],
-    types: placeholder as Registry['customer.transaction.store']['types'],
-  },
-  'customer.transaction.show': {
-    methods: ["GET","HEAD"],
-    pattern: '/orders/:number/transactions/latest',
-    tokens: [{"old":"/orders/:number/transactions/latest","type":0,"val":"orders","end":""},{"old":"/orders/:number/transactions/latest","type":1,"val":"number","end":""},{"old":"/orders/:number/transactions/latest","type":0,"val":"transactions","end":""},{"old":"/orders/:number/transactions/latest","type":0,"val":"latest","end":""}],
-    types: placeholder as Registry['customer.transaction.show']['types'],
+    pattern: '/address/geocode',
+    tokens: [{"old":"/address/geocode","type":0,"val":"address","end":""},{"old":"/address/geocode","type":0,"val":"geocode","end":""}],
+    types: placeholder as Registry['customer.address.geocode']['types'],
   },
   'staff.profile.show': {
     methods: ["GET","HEAD"],

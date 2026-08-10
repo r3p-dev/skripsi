@@ -1,18 +1,28 @@
 import L from 'leaflet'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { useEffect } from 'react'
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 
 type StaticMapProps = {
   latitude: number
   longitude: number
+  height?: number | string
 }
 
-export default function StaticMap({ latitude, longitude }: StaticMapProps) {
+function ResizeOnMount() {
+  const map = useMap()
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => map.invalidateSize())
+
+    return () => cancelAnimationFrame(frame)
+  }, [map])
+
+  return null
+}
+
+export default function StaticMap({ latitude, longitude, height = '350px' }: StaticMapProps) {
   return (
-    <div
-      style={{ height: '350px', width: '100%' }}
-      role="application"
-      aria-label="Interactive location map"
-    >
+    <div style={{ height, width: '100%' }} role="application" aria-label="Interactive location map">
       <MapContainer
         center={new L.LatLng(latitude, longitude)}
         zoom={18}
@@ -36,6 +46,8 @@ export default function StaticMap({ latitude, longitude }: StaticMapProps) {
         <Marker position={new L.LatLng(latitude, longitude)}>
           <Popup>Ini adalah lokasi yang ditandai pada peta.</Popup>
         </Marker>
+
+        <ResizeOnMount />
       </MapContainer>
     </div>
   )

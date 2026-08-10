@@ -4,7 +4,7 @@ import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
 import { IconArrowLeft, IconPrinter } from '@tabler/icons-react'
-import { OrderStatusLabel } from '@/enums/order_status_enum'
+import { OrderStatusLabel } from '@/enums/order_enum'
 import { formatDate, formatRupiah } from '@/lib/format'
 import { groupLinesByItem } from '@/lib/order'
 import { type ReactNode } from 'react'
@@ -17,7 +17,7 @@ export default function Receipt({ order }: PageProps) {
   const itemGroups = groupLinesByItem(order.items ?? [])
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-gray-100 print:bg-white">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-paper-tint print:bg-white">
       <Head>
         <title>{`Struk ${order.orderNumber}`}</title>
         <meta name="description" content="Struk pesanan UmimaClean Anda" />
@@ -27,19 +27,19 @@ export default function Receipt({ order }: PageProps) {
         <Link
           route="customer.order.show"
           routeParams={{ number: order.orderNumber }}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-black transition-colors hover:bg-gray-50 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field bg-white text-ink transition-colors hover:bg-paper-tint active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
         <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Pesanan</p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">Struk Pesanan</h1>
+          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">Pesanan</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Struk Pesanan</h1>
         </div>
       </div>
 
       <div className="flex-1 px-6 pb-page">
-        <div className="receipt-paper bg-white font-mono text-black shadow-sm print:shadow-none">
-          <div className="relative bg-black px-6 pt-8 pb-6 text-center text-white">
+        <div className="receipt-paper bg-white font-mono text-ink shadow-sm print:shadow-none">
+          <div className="relative bg-ink px-6 pt-8 pb-6 text-center text-white">
             <div
               className="absolute inset-0 opacity-5"
               style={{
@@ -65,7 +65,9 @@ export default function Receipt({ order }: PageProps) {
 
           <div className="space-y-4 px-6 py-6">
             <div className="text-center">
-              <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Nomor Pesanan</p>
+              <p className="text-[10px] tracking-[0.2em] text-ink-subtle uppercase">
+                Nomor Pesanan
+              </p>
               <p className="text-lg font-bold tracking-tight">{order.orderNumber}</p>
             </div>
 
@@ -81,11 +83,11 @@ export default function Receipt({ order }: PageProps) {
           <Perforation />
 
           <div className="space-y-1 px-6 py-6 text-xs">
-            <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Penerima</p>
+            <p className="text-[10px] tracking-[0.2em] text-ink-subtle uppercase">Penerima</p>
             <p className="font-semibold">{order.customerName}</p>
-            <p className="text-gray-600">{order.customerPhone}</p>
+            <p className="text-ink-soft">{order.customerPhone}</p>
             {order.address && (
-              <p className="leading-relaxed text-gray-600">{order.address.street}</p>
+              <p className="leading-relaxed text-ink-soft">{order.address.street}</p>
             )}
           </div>
 
@@ -94,14 +96,14 @@ export default function Receipt({ order }: PageProps) {
               <Perforation />
 
               <div className="space-y-4 px-6 py-6">
-                <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Rincian</p>
+                <p className="text-[10px] tracking-[0.2em] text-ink-subtle uppercase">Rincian</p>
 
                 {itemGroups.map((group) => (
                   <div key={group.key} className="space-y-1">
                     <p className="text-xs font-semibold">{group.title}</p>
                     {group.lines.map((line) => (
                       <div key={line.id} className="flex items-baseline gap-2 text-xs">
-                        <span className="text-gray-600">{line.service?.name ?? line.name}</span>
+                        <span className="text-ink-soft">{line.service?.name ?? line.name}</span>
                         <span className="receipt-leader" />
                         <span className="whitespace-nowrap tabular-nums">
                           {formatRupiah(line.subtotal)}
@@ -126,8 +128,8 @@ export default function Receipt({ order }: PageProps) {
           <Perforation />
 
           <div className="space-y-1 px-6 pt-6 pb-8 text-center">
-            <p className="text-[10px] tracking-[0.2em] text-gray-500 uppercase">Terima Kasih</p>
-            <p className="text-[10px] leading-relaxed text-gray-500">
+            <p className="text-[10px] tracking-[0.2em] text-ink-subtle uppercase">Terima Kasih</p>
+            <p className="text-[10px] leading-relaxed text-ink-subtle">
               Simpan struk ini sebagai bukti pesanan Anda
             </p>
           </div>
@@ -139,7 +141,7 @@ export default function Receipt({ order }: PageProps) {
           className={buttonVariants({
             variant: 'outline',
             className:
-              'mt-6 h-12 w-full rounded-xl bg-white text-base font-semibold tracking-wide text-black active:scale-95 print:hidden',
+              'mt-6 h-12 w-full rounded-none bg-white text-base font-semibold tracking-wide text-ink active:scale-95 print:hidden',
           })}
         >
           <IconPrinter className="size-5" />
@@ -153,7 +155,7 @@ export default function Receipt({ order }: PageProps) {
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="text-gray-600">{label}</span>
+      <span className="text-ink-soft">{label}</span>
       <span className="receipt-leader" />
       <span className="text-right font-semibold">{children}</span>
     </div>
@@ -161,5 +163,5 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Perforation() {
-  return <div className="border-t border-dashed border-gray-300" />
+  return <div className="border-t border-dashed border-rule-field" />
 }

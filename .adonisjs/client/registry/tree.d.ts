@@ -47,20 +47,7 @@ export interface ApiDefinition {
       show: typeof routes['customer.address.show']
       create: typeof routes['customer.address.create']
       store: typeof routes['customer.address.store']
-    }
-    order: {
-      create: typeof routes['customer.order.create']
-      receipt: typeof routes['customer.order.receipt']
-    }
-    orders: {
-      index: typeof routes['customer.orders.index']
-      store: typeof routes['customer.orders.store']
-      show: typeof routes['customer.orders.show']
-      update: typeof routes['customer.orders.update']
-    }
-    transaction: {
-      store: typeof routes['customer.transaction.store']
-      show: typeof routes['customer.transaction.show']
+      geocode: typeof routes['customer.address.geocode']
     }
   }
   staff: {

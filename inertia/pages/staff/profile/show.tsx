@@ -1,152 +1,88 @@
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
+import { BackLink, Eyebrow, Lede, OutlineButton, PageTitle } from '@/components/atoms/editorial'
 import StaffLayout from '@/components/layouts/staff_layout'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { EditActions, ProfileRow, ReadOnlyRow } from '@/components/molecules/profile_row'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import type { InertiaProps } from '@/types'
 import { Form } from '@adonisjs/inertia/react'
-import { IconLogout, IconPencil } from '@tabler/icons-react'
 import { useState } from 'react'
 
-type PageProps = InertiaProps<{
-  totalTasks: number
-}>
+type PageProps = InertiaProps
 
 type EditableField = 'phone' | 'password'
 
-export default function Show({ user, totalTasks }: PageProps) {
-  const [editingField, setEditingField] = useState<EditableField | null>(null)
+export default function Show({ user }: PageProps) {
+  const [editing, setEditing] = useState<EditableField | null>(null)
 
   if (!user) {
     return <p>Pengguna tidak ditemukan</p>
   }
 
+  const close = () => setEditing(null)
+
   return (
     <StaffLayout title="Profil" description="Kelola akun petugas UmimaClean">
-      <div className="px-6 py-5">
-        <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Akun</p>
-        <h1 className="text-3xl font-bold tracking-tight text-black">Profil Saya</h1>
-      </div>
+      <header className="gutter pt-6">
+        <BackLink route="home">← Kembali</BackLink>
+      </header>
 
-      <div className="flex-1 space-y-4 px-6 pb-nav">
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
-          <CardHeader>
-            <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
-              Informasi Akun
-            </p>
-          </CardHeader>
+      <main className="flex-1 pb-nav">
+        <div className="gutter pt-7 pb-2">
+          <PageTitle className="mb-1.5">Profil Saya</PageTitle>
+          <Lede>Kelola informasi akun Anda.</Lede>
+        </div>
 
-          <CardContent className="flex flex-col divide-y divide-gray-200">
-            <div className="py-4">
-              <p className="text-xs tracking-widest text-gray-500 uppercase">Nama</p>
-              <p className="mt-1 text-base font-medium text-black">{user.name}</p>
-            </div>
+        <section className="gutter pt-6">
+          <Eyebrow className="mb-2">Informasi Akun</Eyebrow>
 
-            <div className="py-4">
-              {editingField === 'phone' ? (
-                <Form
-                  route="staff.phone.store"
-                  onSuccess={() => setEditingField(null)}
-                  className="space-y-3"
-                >
-                  {({ errors, processing }) => (
-                    <>
-                      <Field data-invalid={errors.phone ? 'true' : undefined}>
-                        <FieldLabel
-                          htmlFor="phone"
-                          className="text-xs tracking-widest text-gray-700 uppercase"
-                        >
-                          Nomor Telepon
-                        </FieldLabel>
-                        <PhoneInput
-                          id="phone"
-                          name="phone"
-                          autoComplete="tel"
-                          defaultValue={user.phone}
-                          autoFocus
-                          aria-invalid={!!errors.phone}
-                          className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
-                        />
-                        <FieldError>{errors.phone}</FieldError>
-                        <p className="text-xs text-gray-500">
-                          Tautan verifikasi akan dikirim melalui WhatsApp ke nomor baru.
-                        </p>
-                      </Field>
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setEditingField(null)}
-                          className="h-11 rounded-lg px-4 text-gray-600 hover:bg-gray-100"
-                        >
-                          Batal
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={processing}
-                          className="h-11 rounded-lg px-5 bg-black text-white hover:bg-black/90"
-                        >
-                          Kirim
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </Form>
-              ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs tracking-widest text-gray-500 uppercase">Nomor Telepon</p>
-                    <p className="mt-1 text-base font-medium text-black">{user.phone}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setEditingField('phone')}
-                    aria-label="Ubah nomor telepon"
-                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
-                  >
-                    <IconPencil size={18} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          <ProfileRow label="Nama">
+            <span className="text-lead leading-[1.4] text-ink">{user.name}</span>
+          </ProfileRow>
 
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
-          <CardHeader>
-            <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">Statistik</p>
-          </CardHeader>
-          <CardContent className="flex flex-col divide-y divide-gray-200">
-            <div className="flex items-center justify-between py-4">
-              <p className="text-sm text-gray-600">Tugas Selesai</p>
-              <p className="text-base font-semibold text-black">{totalTasks}</p>
-            </div>
-            <div className="flex items-center justify-between py-4">
-              <p className="text-sm text-gray-600">Bergabung Sejak</p>
-              <p className="text-base font-semibold text-black">{user.createdAt}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
-          <CardHeader>
-            <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">Keamanan</p>
-          </CardHeader>
-          <CardContent className="py-4">
-            {editingField === 'password' ? (
-              <Form
-                route="staff.profile.update"
-                onSuccess={() => setEditingField(null)}
-                className="space-y-3"
-              >
+          <ProfileRow label="No. HP">
+            {editing === 'phone' ? (
+              <Form route="staff.phone.store" onSuccess={close}>
                 {({ errors, processing }) => (
                   <>
-                    <Field data-invalid={errors.currentPassword ? 'true' : undefined}>
-                      <FieldLabel
-                        htmlFor="currentPassword"
-                        className="text-xs tracking-widest text-gray-700 uppercase"
-                      >
+                    <Field className="mb-2">
+                      <FieldLabel htmlFor="phone" className="sr-only">
+                        Nomor Telepon
+                      </FieldLabel>
+                      <PhoneInput
+                        id="phone"
+                        name="phone"
+                        autoComplete="tel"
+                        defaultValue={user.phone}
+                        autoFocus
+                        aria-invalid={!!errors.phone}
+                        className="underline-field h-auto border-b-ink py-1.5 focus-visible:border-ink focus-visible:ring-0"
+                      />
+                      <FieldError>{errors.phone}</FieldError>
+                      <p className="text-meta text-ink-subtle">
+                        Tautan verifikasi akan dikirim melalui WhatsApp ke nomor baru.
+                      </p>
+                    </Field>
+                    <EditActions processing={processing} onCancel={close} />
+                  </>
+                )}
+              </Form>
+            ) : (
+              <ReadOnlyRow
+                value={user.phone}
+                label="Ubah nomor HP"
+                onEdit={() => setEditing('phone')}
+              />
+            )}
+          </ProfileRow>
+
+          <ProfileRow label="Kata Sandi">
+            {editing === 'password' ? (
+              <Form route="staff.profile.update" onSuccess={close}>
+                {({ errors, processing }) => (
+                  <>
+                    <Field className="mb-3">
+                      <FieldLabel htmlFor="currentPassword" className="field-label mb-2">
                         Kata Sandi Saat Ini
                       </FieldLabel>
                       <PasswordInput
@@ -155,16 +91,13 @@ export default function Show({ user, totalTasks }: PageProps) {
                         autoComplete="current-password"
                         autoFocus
                         aria-invalid={!!errors.currentPassword}
-                        className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
                       />
                       <FieldError>{errors.currentPassword}</FieldError>
                     </Field>
 
-                    <Field data-invalid={errors.password ? 'true' : undefined}>
-                      <FieldLabel
-                        htmlFor="password"
-                        className="text-xs tracking-widest text-gray-700 uppercase"
-                      >
+                    <Field className="mb-3">
+                      <FieldLabel htmlFor="password" className="field-label mb-2">
                         Kata Sandi Baru
                       </FieldLabel>
                       <PasswordInput
@@ -172,16 +105,13 @@ export default function Show({ user, totalTasks }: PageProps) {
                         name="password"
                         autoComplete="new-password"
                         aria-invalid={!!errors.password}
-                        className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
                       />
                       <FieldError>{errors.password}</FieldError>
                     </Field>
 
-                    <Field data-invalid={errors.passwordConfirmation ? 'true' : undefined}>
-                      <FieldLabel
-                        htmlFor="passwordConfirmation"
-                        className="text-xs tracking-widest text-gray-700 uppercase"
-                      >
+                    <Field className="mb-3">
+                      <FieldLabel htmlFor="passwordConfirmation" className="field-label mb-2">
                         Konfirmasi Kata Sandi
                       </FieldLabel>
                       <PasswordInput
@@ -189,61 +119,39 @@ export default function Show({ user, totalTasks }: PageProps) {
                         name="passwordConfirmation"
                         autoComplete="new-password"
                         aria-invalid={!!errors.passwordConfirmation}
-                        className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
                       />
                       <FieldError>{errors.passwordConfirmation}</FieldError>
                     </Field>
 
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setEditingField(null)}
-                        className="h-11 rounded-lg px-4 text-gray-600 hover:bg-gray-100"
-                      >
-                        Batal
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={processing}
-                        className="h-11 rounded-lg px-5 bg-black text-white hover:bg-black/90"
-                      >
-                        Simpan
-                      </Button>
-                    </div>
+                    {errors.form && (
+                      <p className="mb-3 text-small text-destructive">{errors.form}</p>
+                    )}
+
+                    <EditActions processing={processing} onCancel={close} />
                   </>
                 )}
               </Form>
             ) : (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs tracking-widest text-gray-500 uppercase">Kata Sandi</p>
-                  <p className="mt-1 text-base font-medium text-black">••••••••••</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingField('password')}
-                  aria-label="Ubah kata sandi"
-                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
-                >
-                  <IconPencil size={18} />
-                </button>
-              </div>
+              <ReadOnlyRow
+                value="••••••••"
+                label="Ubah kata sandi"
+                onEdit={() => setEditing('password')}
+              />
             )}
-          </CardContent>
-        </Card>
+          </ProfileRow>
+        </section>
 
-        <Form route="session.destroy">
-          <Button
-            type="submit"
-            variant="outline"
-            className="h-12 w-full rounded-2xl border-gray-200 text-base font-semibold text-destructive hover:bg-red-50 active:scale-95"
-          >
-            <IconLogout className="size-5" />
-            Keluar
-          </Button>
-        </Form>
-      </div>
+        <div className="gutter pt-10 pb-12">
+          <Form route="session.destroy">
+            {({ processing }) => (
+              <OutlineButton type="submit" disabled={processing}>
+                Keluar
+              </OutlineButton>
+            )}
+          </Form>
+        </div>
+      </main>
     </StaffLayout>
   )
 }

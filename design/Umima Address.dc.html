@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  body{margin:0;background:#e9e9e7;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif}
+  a{color:#111;text-decoration:none}
+  a:hover{color:#555}
+  input,textarea{font-family:inherit}
+  textarea::placeholder,input::placeholder{color:#8c8c8c}
+  #shell{max-width:430px}
+  @media (min-width:680px){#shell{max-width:680px!important;margin:56px auto!important;min-height:auto!important;border:1px solid rgba(0,0,0,.08)!important;border-radius:6px!important;box-shadow:0 24px 64px rgba(0,0,0,.08)!important}}
+  @media (min-width:1000px){#shell{max-width:760px!important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+</style>
+</helmet>
+<div id="shell" style="max-width:430px;margin:0 auto;background:#fff;color:#111;min-height:100vh;box-sizing:border-box">
+
+  <header style="padding:24px clamp(24px,4vw,64px) 0">
+    <a href="Umima Profile.dc.html" style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070;letter-spacing:.04em">← Kembali</a>
+  </header>
+
+  <main>
+
+  <div style="padding:28px clamp(24px,4vw,64px) 24px">
+    <div style="font:600 clamp(20px,1.5vw + 14px,27px)/1.4 system-ui;color:#111;margin-bottom:6px">Alamat</div>
+    <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#5f5f5f">Anda hanya dapat menyimpan satu alamat utama.</div>
+  </div>
+
+  <div style="padding:0 clamp(24px,4vw,64px) clamp(24px,4vw,64px)">
+    <div role="img" aria-label="Pratinjau peta lokasi alamat" style="position:relative;aspect-ratio:16/10;background:repeating-linear-gradient(0deg,#eef0ee,#eef0ee 23px,#e3e6e2 23px,#e3e6e2 24px),repeating-linear-gradient(90deg,#eef0ee,#eef0ee 23px,#e3e6e2 23px,#e3e6e2 24px);border:1px solid rgba(0,0,0,.08)">
+      <div style="position:absolute;top:50%;left:50%;width:26px;height:26px;background:#111;border-radius:50% 50% 50% 0;transform:translate(-50%,-100%) rotate(-45deg)">
+        <div style="position:absolute;top:6px;left:6px;width:8px;height:8px;background:#fff;border-radius:50%"></div>
+      </div>
+      <div style="position:absolute;bottom:10px;right:12px;font:400 clamp(9px,0.7vw + 7px,10px)/1.4 ui-monospace,monospace;color:#707070;text-transform:uppercase;letter-spacing:.05em">Peta (Leaflet)</div>
+    </div>
+  </div>
+
+  <div style="padding:0 clamp(24px,4vw,64px)">
+    <sc-if value="{{viewing}}" hint-placeholder-val="{{true}}">
+      <div style="padding:20px;border:1px solid rgba(0,0,0,.1);margin-bottom:16px">
+        <div style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111;margin-bottom:2px">{{nama}}</div>
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070;margin-bottom:12px">{{telepon}}</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#444">{{alamat}}</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#444;margin-bottom:12px">{{kota}}, {{kodePos}}</div>
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070">{{catatan}}</div>
+      </div>
+      <button type="button" onClick="{{onEditStart}}" style="display:flex;justify-content:center;padding:16px;border:1px solid #111;background:none;color:#111;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:40px;cursor:pointer;font-family:inherit;width:100%">Ubah Alamat</button>
+    </sc-if>
+
+    <sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+      <div style="margin-bottom:20px">
+        <label for="addr-nama-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Nama Penerima</label>
+        <input id="addr-nama-input" value="{{draftNama}}" onChange="{{onNamaChange}}" placeholder="Nama lengkap" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+      </div>
+      <div style="margin-bottom:20px">
+        <label for="addr-telepon-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Nomor Telepon</label>
+        <input id="addr-telepon-input" type="tel" value="{{draftTelepon}}" onChange="{{onTeleponChange}}" placeholder="08xx-xxxx-xxxx" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+      </div>
+      <div style="margin-bottom:20px">
+        <label for="addr-alamat-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Alamat Lengkap</label>
+        <textarea id="addr-alamat-input" value="{{draftAlamat}}" onChange="{{onAlamatChange}}" placeholder="Nama jalan, nomor rumah" rows="2" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none;resize:none" style-focus="outline:2px solid #111;outline-offset:2px"></textarea>
+      </div>
+      <div style="display:flex;gap:16px;margin-bottom:20px">
+        <div style="flex:1">
+          <label for="addr-kota-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Kota</label>
+          <input id="addr-kota-input" value="{{draftKota}}" onChange="{{onKotaChange}}" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+        </div>
+        <div style="flex:1">
+          <label for="addr-kodepos-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Kode Pos</label>
+          <input id="addr-kodepos-input" value="{{draftKodePos}}" onChange="{{onKodePosChange}}" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+        </div>
+      </div>
+      <div style="margin-bottom:32px">
+        <label for="addr-catatan-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Catatan (opsional)</label>
+        <input id="addr-catatan-input" value="{{draftCatatan}}" onChange="{{onCatatanChange}}" placeholder="Patokan lokasi" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+      </div>
+      <button type="button" onClick="{{onSave}}" style="display:flex;justify-content:center;padding:17px;background:#111;color:#fff;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;border:none;cursor:pointer;font-family:inherit;width:100%">Simpan Alamat</button>
+      <button type="button" onClick="{{onCancel}}" style="display:flex;justify-content:center;padding:8px;background:none;border:none;color:#707070;font:400 clamp(13px,0.9vw + 10px,15px)/1 system-ui;margin-bottom:40px;cursor:pointer;font-family:inherit;width:100%">Batal</button>
+    </sc-if>
+  </div>
+
+</main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    editing: false,
+    nama: 'Raka Pratama',
+    telepon: '0812-3456-7890',
+    alamat: 'Jl. Margacinta No. 12',
+    kota: 'Bandung',
+    kodePos: '40287',
+    catatan: 'Dekat gerai ümima',
+    draftNama: '',
+    draftTelepon: '',
+    draftAlamat: '',
+    draftKota: '',
+    draftKodePos: '',
+    draftCatatan: ''
+  };
+
+  renderVals() {
+    const s = this.state;
+    return {
+      viewing: !s.editing,
+      editing: s.editing,
+      nama: s.nama,
+      telepon: s.telepon,
+      alamat: s.alamat,
+      kota: s.kota,
+      kodePos: s.kodePos,
+      catatan: s.catatan,
+      draftNama: s.draftNama,
+      draftTelepon: s.draftTelepon,
+      draftAlamat: s.draftAlamat,
+      draftKota: s.draftKota,
+      draftKodePos: s.draftKodePos,
+      draftCatatan: s.draftCatatan,
+      onEditStart: () => this.setState({
+        editing: true,
+        draftNama: s.nama,
+        draftTelepon: s.telepon,
+        draftAlamat: s.alamat,
+        draftKota: s.kota,
+        draftKodePos: s.kodePos,
+        draftCatatan: s.catatan
+      }),
+      onNamaChange: (e) => this.setState({ draftNama: e.target.value }),
+      onTeleponChange: (e) => this.setState({ draftTelepon: e.target.value }),
+      onAlamatChange: (e) => this.setState({ draftAlamat: e.target.value }),
+      onKotaChange: (e) => this.setState({ draftKota: e.target.value }),
+      onKodePosChange: (e) => this.setState({ draftKodePos: e.target.value }),
+      onCatatanChange: (e) => this.setState({ draftCatatan: e.target.value }),
+      onSave: () => this.setState({
+        editing: false,
+        nama: this.state.draftNama || this.state.nama,
+        telepon: this.state.draftTelepon || this.state.telepon,
+        alamat: this.state.draftAlamat || this.state.alamat,
+        kota: this.state.draftKota || this.state.kota,
+        kodePos: this.state.draftKodePos || this.state.kodePos,
+        catatan: this.state.draftCatatan
+      }),
+      onCancel: () => this.setState({ editing: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -13,13 +13,13 @@ export function StatCard({
   icon: Icon
 }) {
   return (
-    <Card className="gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-5">
+    <Card className="gap-2 rounded-none border border-rule bg-paper-tint p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">{label}</p>
-        <IconComponent className="size-5 shrink-0 text-gray-400" />
+        <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">{label}</p>
+        <IconComponent className="size-5 shrink-0 text-ink-faint" />
       </div>
-      <p className="text-2xl font-bold tracking-tight text-black">{value}</p>
-      {hint && <p className="text-xs text-gray-500">{hint}</p>}
+      <p className="text-2xl font-bold tracking-tight text-ink">{value}</p>
+      {hint && <p className="text-xs text-ink-subtle">{hint}</p>}
     </Card>
   )
 }

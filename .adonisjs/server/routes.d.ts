@@ -29,14 +29,7 @@ export type ScannedRoutes = {
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
     'customer.address.store': { paramsTuple?: []; params?: {} }
-    'customer.order.create': { paramsTuple?: []; params?: {} }
-    'customer.order.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.store': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
@@ -60,11 +53,7 @@ export type ScannedRoutes = {
     'customer.phone.update': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
-    'customer.order.create': { paramsTuple?: []; params?: {} }
-    'customer.order.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
@@ -84,11 +73,7 @@ export type ScannedRoutes = {
     'customer.phone.update': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
-    'customer.order.create': { paramsTuple?: []; params?: {} }
-    'customer.order.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'customer.orders.index': { paramsTuple?: []; params?: {} }
-    'customer.orders.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
@@ -105,20 +90,14 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.address.store': { paramsTuple?: []; params?: {} }
-    'customer.orders.store': { paramsTuple?: []; params?: {} }
-    'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'customer.password.update': { paramsTuple?: []; params?: {} }
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
-  }
-  PATCH: {
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

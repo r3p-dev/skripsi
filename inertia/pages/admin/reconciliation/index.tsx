@@ -50,7 +50,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
         action={<ExportButton />}
       />
 
-      <div className="mb-6 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="mb-6 flex items-start gap-2 rounded-none border border-amber-200 bg-amber-50 px-4 py-3">
         <IconAlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-700" />
         <p className="text-sm text-amber-800">
           Konfirmasi manual memaksa pesanan lanjut ke pencucian tanpa konfirmasi Midtrans. Pastikan
@@ -61,23 +61,23 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
       <Form route="admin.reconciliation.index" className="mb-6">
         {() => (
           <div className="relative max-w-md">
-            <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-gray-400" />
+            <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" />
             <Input
               type="text"
               name="search"
               aria-label="Cari pesanan tertahan"
               defaultValue={filters.search}
               placeholder="Cari nomor pesanan atau nama..."
-              className="h-11 rounded-xl border-gray-300 bg-gray-50 pl-10 focus-visible:border-black focus-visible:ring-black/10"
+              className="h-11 rounded-none border-rule-field bg-paper-tint pl-10 focus-visible:border-ink focus-visible:ring-black/10"
             />
           </div>
         )}
       </Form>
 
-      <Card className="rounded-2xl border border-gray-200 bg-white">
+      <Card className="rounded-none border border-rule bg-white">
         <CardContent>
           {orders.data.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-500">
+            <p className="py-12 text-center text-sm text-ink-subtle">
               Tidak ada pesanan yang menunggu pelunasan
             </p>
           ) : (
@@ -108,10 +108,10 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <p className="text-black">{order.customerName}</p>
-                        <p className="text-xs text-gray-500">{order.customerPhone}</p>
+                        <p className="text-ink">{order.customerName}</p>
+                        <p className="text-xs text-ink-subtle">{order.customerPhone}</p>
                       </TableCell>
-                      <TableCell className="text-gray-600">
+                      <TableCell className="text-ink-soft">
                         {formatShortDate(order.createdAt)}
                       </TableCell>
                       <TableCell>
@@ -128,7 +128,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                 ]
                               }
                             </Badge>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-ink-subtle">
                               {
                                 PaymentMethodLabel[
                                   latest.paymentMethod as keyof typeof PaymentMethodLabel
@@ -137,7 +137,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-500">Belum pernah ditagih</span>
+                          <span className="text-xs text-ink-subtle">Belum pernah ditagih</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
@@ -147,7 +147,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                         <AlertDialog>
                           <AlertDialogTrigger
                             aria-label={`Konfirmasi pembayaran ${order.orderNumber}`}
-                            className="rounded-lg bg-black px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-black/90 active:scale-95"
+                            className="rounded-none bg-ink px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink/90 active:scale-95"
                           >
                             Konfirmasi
                           </AlertDialogTrigger>
@@ -170,7 +170,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                   <Field data-invalid={errors.paymentMethod ? 'true' : undefined}>
                                     <FieldLabel
                                       htmlFor={`method-${order.id}`}
-                                      className="text-xs tracking-widest text-gray-700 uppercase"
+                                      className="text-xs tracking-widest text-ink-body uppercase"
                                     >
                                       Metode Pembayaran
                                     </FieldLabel>
@@ -179,7 +179,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                       name="paymentMethod"
                                       required
                                       defaultValue=""
-                                      className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+                                      className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
                                     >
                                       <option value="" disabled>
                                         Pilih metode
@@ -196,7 +196,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                   <Field data-invalid={errors.note ? 'true' : undefined}>
                                     <FieldLabel
                                       htmlFor={`note-${order.id}`}
-                                      className="text-xs tracking-widest text-gray-700 uppercase"
+                                      className="text-xs tracking-widest text-ink-body uppercase"
                                     >
                                       Alasan
                                     </FieldLabel>
@@ -206,7 +206,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                       required
                                       placeholder="Contoh: bukti transfer diterima, callback Midtrans tidak masuk"
                                       aria-invalid={!!errors.note}
-                                      className="rounded-xl bg-white"
+                                      className="rounded-none bg-white"
                                     />
                                     <FieldError>{errors.note}</FieldError>
                                   </Field>
@@ -216,7 +216,7 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
                                     <Button
                                       type="submit"
                                       disabled={processing}
-                                      className="bg-black text-white hover:bg-black/90"
+                                      className="bg-ink text-white hover:bg-ink/90"
                                     >
                                       Tandai Lunas
                                     </Button>

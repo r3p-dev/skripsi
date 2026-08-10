@@ -25,11 +25,11 @@ export function ServiceFields({
   typeOptions: Option[]
 }) {
   return (
-    <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+    <Card className="rounded-none border border-rule bg-paper-tint p-5">
       <Field data-invalid={errors.serviceName ? 'true' : undefined}>
         <FieldLabel
           htmlFor="serviceName"
-          className="text-xs tracking-widest text-gray-700 uppercase"
+          className="text-xs tracking-widest text-ink-body uppercase"
         >
           Nama Layanan
         </FieldLabel>
@@ -39,7 +39,7 @@ export function ServiceFields({
           defaultValue={defaults?.serviceName}
           required
           aria-invalid={!!errors.serviceName}
-          className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+          className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
         />
         <FieldError>{errors.serviceName}</FieldError>
       </Field>
@@ -47,7 +47,7 @@ export function ServiceFields({
       <Field data-invalid={errors.description ? 'true' : undefined}>
         <FieldLabel
           htmlFor="description"
-          className="text-xs tracking-widest text-gray-700 uppercase"
+          className="text-xs tracking-widest text-ink-body uppercase"
         >
           Deskripsi
         </FieldLabel>
@@ -57,13 +57,13 @@ export function ServiceFields({
           defaultValue={defaults?.description}
           required
           aria-invalid={!!errors.description}
-          className="rounded-xl bg-white"
+          className="rounded-none bg-white"
         />
         <FieldError>{errors.description}</FieldError>
       </Field>
 
       <Field data-invalid={errors.price ? 'true' : undefined}>
-        <FieldLabel htmlFor="price" className="text-xs tracking-widest text-gray-700 uppercase">
+        <FieldLabel htmlFor="price" className="text-xs tracking-widest text-ink-body uppercase">
           Harga (Rp)
         </FieldLabel>
         <Input
@@ -75,13 +75,13 @@ export function ServiceFields({
           defaultValue={defaults?.price}
           required
           aria-invalid={!!errors.price}
-          className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+          className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
         />
         <FieldError>{errors.price}</FieldError>
       </Field>
 
       <Field data-invalid={errors.category ? 'true' : undefined}>
-        <FieldLabel htmlFor="category" className="text-xs tracking-widest text-gray-700 uppercase">
+        <FieldLabel htmlFor="category" className="text-xs tracking-widest text-ink-body uppercase">
           Kategori
         </FieldLabel>
         <select
@@ -89,7 +89,7 @@ export function ServiceFields({
           name="category"
           required
           defaultValue={defaults?.category ?? ''}
-          className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+          className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
         >
           <option value="" disabled>
             Pilih kategori
@@ -104,7 +104,7 @@ export function ServiceFields({
       </Field>
 
       <Field data-invalid={errors.type ? 'true' : undefined}>
-        <FieldLabel htmlFor="type" className="text-xs tracking-widest text-gray-700 uppercase">
+        <FieldLabel htmlFor="type" className="text-xs tracking-widest text-ink-body uppercase">
           Tipe Harga
         </FieldLabel>
         <select
@@ -112,7 +112,7 @@ export function ServiceFields({
           name="type"
           required
           defaultValue={defaults?.type ?? ''}
-          className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+          className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
         >
           <option value="" disabled>
             Pilih tipe harga

@@ -1,3 +1,4 @@
+import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
@@ -15,8 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
-import { OrderStatusLabel } from '@/enums/order_status_enum'
-import { OrderTypeLabel } from '@/enums/order_type_enum'
 import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps, Metadata } from '@/types'
@@ -46,14 +45,14 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
         {() => (
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-56 flex-1">
-              <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-gray-400" />
+              <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" />
               <Input
                 type="text"
                 name="search"
                 aria-label="Cari pesanan"
                 defaultValue={filters.search}
                 placeholder="Cari nomor, nama, atau telepon..."
-                className="h-11 rounded-xl border-gray-300 bg-gray-50 pl-10 focus-visible:border-black focus-visible:ring-black/10"
+                className="h-11 rounded-none border-rule-field bg-paper-tint pl-10 focus-visible:border-ink focus-visible:ring-black/10"
               />
             </div>
 
@@ -61,7 +60,7 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
               name="status"
               aria-label="Status"
               defaultValue={filters.status}
-              className="h-11 rounded-xl border border-gray-300 bg-gray-50 px-3 text-sm text-black"
+              className="h-11 rounded-none border border-rule-field bg-paper-tint px-3 text-sm text-ink"
             >
               <option value="">Semua Status</option>
               {statusOptions.map((option) => (
@@ -75,7 +74,7 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
               name="type"
               aria-label="Tipe"
               defaultValue={filters.type}
-              className="h-11 rounded-xl border border-gray-300 bg-gray-50 px-3 text-sm text-black"
+              className="h-11 rounded-none border border-rule-field bg-paper-tint px-3 text-sm text-ink"
             >
               <option value="">Semua Tipe</option>
               {typeOptions.map((option) => (
@@ -87,7 +86,7 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
 
             <Button
               type="submit"
-              className="h-11 rounded-xl bg-black px-6 text-white hover:bg-black/90 active:scale-95"
+              className="h-11 rounded-none bg-ink px-6 text-white hover:bg-ink/90 active:scale-95"
             >
               Terapkan
             </Button>
@@ -95,10 +94,10 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
         )}
       </Form>
 
-      <Card className="rounded-2xl border border-gray-200 bg-white">
+      <Card className="rounded-none border border-rule bg-white">
         <CardContent>
           {orders.data.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-500">
+            <p className="py-12 text-center text-sm text-ink-subtle">
               Tidak ada pesanan yang cocok dengan filter ini
             </p>
           ) : (
@@ -126,8 +125,8 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <p className="text-black">{order.customerName}</p>
-                      <p className="text-xs text-gray-500">{order.customerPhone}</p>
+                      <p className="text-ink">{order.customerName}</p>
+                      <p className="text-xs text-ink-subtle">{order.customerPhone}</p>
                     </TableCell>
                     <TableCell>
                       <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
@@ -139,7 +138,7 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
                         {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-ink-soft">
                       {formatShortDate(order.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">

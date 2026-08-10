@@ -31,14 +31,14 @@ export function Pagination({ metadata }: { metadata: Metadata }) {
         aria-label="Halaman sebelumnya"
         className={buttonVariants({
           variant: 'outline',
-          className: `h-11 rounded-lg px-4 md:h-9 ${isFirst ? 'pointer-events-none opacity-40' : ''}`,
+          className: `h-11 rounded-none px-4 md:h-9 ${isFirst ? 'pointer-events-none opacity-40' : ''}`,
         })}
       >
         <IconChevronLeft className="size-4" />
         Sebelumnya
       </Link>
 
-      <p className="text-xs tracking-widest text-gray-500 uppercase">
+      <p className="text-xs tracking-widest text-ink-subtle uppercase">
         {metadata.currentPage} / {metadata.lastPage} · {metadata.total} data
       </p>
 
@@ -48,7 +48,7 @@ export function Pagination({ metadata }: { metadata: Metadata }) {
         aria-label="Halaman selanjutnya"
         className={buttonVariants({
           variant: 'outline',
-          className: `h-11 rounded-lg px-4 md:h-9 ${isLast ? 'pointer-events-none opacity-40' : ''}`,
+          className: `h-11 rounded-none px-4 md:h-9 ${isLast ? 'pointer-events-none opacity-40' : ''}`,
         })}
       >
         Selanjutnya

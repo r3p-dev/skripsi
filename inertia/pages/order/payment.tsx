@@ -141,18 +141,18 @@ export default function Payment({
         <BackLink
           backRoute={backRoute}
           orderNumber={order.orderNumber}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </BackLink>
         <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Pembayaran</p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">{order.orderNumber}</h1>
+          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">Pembayaran</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{order.orderNumber}</h1>
         </div>
       </div>
 
       <div className="flex-1 space-y-4 px-6 pb-page">
-        <div className="relative overflow-hidden rounded-2xl bg-black px-6 py-8 text-center text-white">
+        <div className="relative overflow-hidden rounded-none bg-ink px-6 py-8 text-center text-white">
           <div
             className="absolute inset-0 opacity-5"
             style={{
@@ -171,20 +171,20 @@ export default function Payment({
         </div>
 
         {isPaid ? (
-          <Card className="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-6 py-10 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
-              <IconCircleCheck className="size-7 text-black" />
+          <Card className="flex flex-col items-center gap-3 rounded-none border border-rule bg-paper-tint px-6 py-10 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-ink/10">
+              <IconCircleCheck className="size-7 text-ink" />
             </div>
             <div>
-              <p className="text-base font-semibold text-black">Pembayaran Berhasil</p>
-              <p className="text-sm text-gray-600">Pesanan Anda akan segera diproses</p>
+              <p className="text-base font-semibold text-ink">Pembayaran Berhasil</p>
+              <p className="text-sm text-ink-soft">Pesanan Anda akan segera diproses</p>
             </div>
             <BackLink
               backRoute={backRoute}
               orderNumber={order.orderNumber}
               className={buttonVariants({
                 className:
-                  'h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
+                  'h-11 rounded-none bg-ink px-6 text-sm font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95',
               })}
             >
               Kembali ke Pesanan
@@ -192,9 +192,9 @@ export default function Payment({
           </Card>
         ) : isPending ? (
           <>
-            <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+            <Card className="rounded-none border border-rule bg-paper-tint">
               <CardHeader>
-                <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+                <p className="text-xs tracking-widest text-ink-soft uppercase font-medium">
                   Scan QRIS untuk Membayar
                 </p>
               </CardHeader>
@@ -203,10 +203,10 @@ export default function Payment({
                   <img
                     src={transaction.qrCode}
                     alt="Kode QRIS"
-                    className="aspect-square w-full max-w-65 rounded-xl border border-gray-200 object-contain"
+                    className="aspect-square w-full max-w-65 rounded-none border border-rule object-contain"
                   />
                 ) : (
-                  <div className="flex aspect-square w-full max-w-65 items-center justify-center rounded-xl border border-dashed border-gray-300 text-center text-sm text-gray-500">
+                  <div className="flex aspect-square w-full max-w-65 items-center justify-center rounded-none border border-dashed border-rule-field text-center text-sm text-ink-subtle">
                     QR tidak tersedia
                   </div>
                 )}
@@ -215,34 +215,34 @@ export default function Payment({
                     type="button"
                     variant="outline"
                     onClick={() => downloadQrCode(transaction.qrCode!, order.orderNumber)}
-                    className="h-11 w-full rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95"
+                    className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
                   >
                     <IconDownload className="size-4" />
                     Unduh Kode QR
                   </Button>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-ink-soft">
                   <IconClock className="size-4" />
                   Menunggu pembayaran...
                 </div>
               </CardContent>
             </Card>
 
-            <p className="text-center text-xs leading-relaxed text-gray-500">
+            <p className="text-center text-xs leading-relaxed text-ink-subtle">
               Buka aplikasi e-wallet atau mobile banking Anda, lalu pindai kode QR di atas. Halaman
               ini akan otomatis diperbarui setelah pembayaran diterima.
             </p>
           </>
         ) : (
-          <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
+          <Card className="flex flex-col items-center gap-4 rounded-none border border-dashed border-rule-field bg-paper-tint px-6 py-16 text-center">
             <div className="space-y-1">
-              <p className="text-base font-semibold text-black">
+              <p className="text-base font-semibold text-ink">
                 {TransactionStatusLabel[
                   transaction.status as keyof typeof TransactionStatusLabel
                 ] ?? 'Pembayaran Gagal'}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-ink-soft">
                 Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.
               </p>
             </div>
@@ -251,7 +251,7 @@ export default function Payment({
                 <Button
                   type="submit"
                   disabled={processing}
-                  className="h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95"
+                  className="h-11 rounded-none bg-ink px-6 text-sm font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
                 >
                   <IconRefresh className="size-4" />
                   Buat Pembayaran Baru

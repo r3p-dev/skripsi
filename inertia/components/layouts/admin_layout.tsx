@@ -78,10 +78,10 @@ export default function AdminLayout({
         route={item.route}
         onClick={() => setIsNavOpen(false)}
         aria-current={isActive ? 'page' : undefined}
-        className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors ${
+        className={`flex min-h-11 items-center gap-3 px-4 py-2.5 text-small transition-colors ${
           isActive
-            ? 'bg-black font-semibold text-white'
-            : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-black'
+            ? 'bg-ink font-semibold text-white'
+            : 'font-medium text-ink-soft hover:bg-ink/5 hover:text-ink'
         }`}
       >
         <item.icon className="size-5 shrink-0" strokeWidth={isActive ? 2.25 : 1.75} />
@@ -91,46 +91,48 @@ export default function AdminLayout({
   })
 
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-paper text-ink">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
       </Head>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-gray-200 bg-white px-4 py-6 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-rule bg-white px-4 py-6 tablet:flex">
         <div className="px-4 pb-6">
-          <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">UmimaClean</p>
-          <p className="text-lg font-bold tracking-tight text-black">Admin</p>
+          <p className="eyebrow">UmimaClean</p>
+          <p className="text-lead font-semibold text-ink">Admin</p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">{links}</nav>
       </aside>
 
-      <div className="sticky top-0 z-40 md:hidden">
-        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-2">
+      <div className="sticky top-0 z-40 bg-white tablet:hidden">
+        <header className="flex items-center justify-between border-b border-rule bg-white px-5 py-2">
           <div>
-            <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase">UmimaClean</p>
-            <p className="text-base font-bold tracking-tight text-black">Admin</p>
+            <p className="text-micro tracking-[0.2em] text-ink-muted uppercase">UmimaClean</p>
+            <p className="text-body font-semibold text-ink">Admin</p>
           </div>
           <button
             type="button"
             onClick={() => setIsNavOpen((open) => !open)}
             aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
             aria-expanded={isNavOpen}
-            className="flex size-11 items-center justify-center rounded-lg border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+            className="flex size-11 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-ink/5"
           >
             {isNavOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
           </button>
         </header>
 
         {isNavOpen && (
-          <nav className="flex max-h-[calc(100dvh-4rem)] flex-col gap-1 overflow-y-auto border-b border-gray-200 bg-white px-4 py-3">
+          <nav className="flex max-h-[calc(100dvh-4rem)] flex-col gap-1 overflow-y-auto border-b border-rule bg-white px-4 py-3">
             {links}
           </nav>
         )}
       </div>
 
-      <main className="md:pl-64">
-        <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-8">{children}</div>
+      <main className="tablet:pl-64">
+        <div className="mx-auto w-full max-w-6xl bg-white px-5 py-6 tablet:px-8 tablet:py-8">
+          {children}
+        </div>
       </main>
     </div>
   )

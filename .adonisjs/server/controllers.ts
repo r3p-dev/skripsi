@@ -6,10 +6,10 @@
 export const controllers = {
   admin: {
     Catalogue: () => import('#controllers/admin/catalogue_controller'),
+    Password: () => import('#controllers/admin/password_controller'),
     Phone: () => import('#controllers/admin/phone_controller'),
     Profile: () => import('#controllers/admin/profile_controller'),
     User: () => import('#controllers/admin/user_controller'),
-    Password: () => import('#controllers/admin/password_controller'),
   },
   auth: {
     PasswordReset: () => import('#controllers/auth/password_reset_controller'),
@@ -18,15 +18,16 @@ export const controllers = {
   },
   customer: {
     Address: () => import('#controllers/customer/address_controller'),
+    Geocode: () => import('#controllers/customer/geocode_controller'),
     Password: () => import('#controllers/customer/password_controller'),
     Phone: () => import('#controllers/customer/phone_controller'),
     Profile: () => import('#controllers/customer/profile_controller'),
   },
   Home: () => import('#controllers/home_controller'),
   staff: {
+    Password: () => import('#controllers/staff/password_controller'),
     Phone: () => import('#controllers/staff/phone_controller'),
     Profile: () => import('#controllers/staff/profile_controller'),
-    Password: () => import('#controllers/staff/password_controller'),
   },
   webhooks: {
     Transaction: () => import('#controllers/webhooks/transaction_controller'),

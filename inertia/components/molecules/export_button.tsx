@@ -17,7 +17,7 @@ export function ExportButton({ label = 'Ekspor Excel' }: { label?: string }) {
       download
       className={buttonVariants({
         variant: 'outline',
-        className: 'rounded-xl border-gray-300 text-black hover:bg-gray-100 active:scale-95',
+        className: 'rounded-none border-rule-field text-ink hover:bg-paper-tint active:scale-95',
       })}
     >
       <IconFileSpreadsheet className="size-4" />

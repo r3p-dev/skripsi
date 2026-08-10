@@ -7,6 +7,7 @@ import Order from '#models/order'
 import transmit from '@adonisjs/transmit/services/main'
 import {
   forgotPasswordLimiter,
+  geocodeLimiter,
   loginLimiter,
   signupLimiter,
   resetPasswordLimiter,
@@ -108,6 +109,11 @@ router
       router.get('address', [controllers.customer.Address, 'show'])
       router.get('address/create', [controllers.customer.Address, 'create'])
       router.post('address', [controllers.customer.Address, 'store'])
+
+      router
+        .get('address/geocode', [controllers.customer.Geocode, 'show'])
+        .as('address.geocode')
+        .use(geocodeLimiter)
     })
   })
   .use([middleware.auth(), middleware.role(Role.CUSTOMER)])

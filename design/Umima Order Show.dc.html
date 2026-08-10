@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  body{margin:0;background:#e9e9e7;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif}
+  a{color:#111;text-decoration:none}
+  a:hover{color:#555}
+  #shell{max-width:430px}
+  @media (min-width:680px){#shell{max-width:680px!important;margin:56px auto!important;min-height:auto!important;border:1px solid rgba(0,0,0,.08)!important;border-radius:6px!important;box-shadow:0 24px 64px rgba(0,0,0,.08)!important}}
+  @media (min-width:1000px){#shell{max-width:760px!important}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+</style>
+</helmet>
+<div id="shell" style="max-width:430px;margin:0 auto;background:#fff;color:#111;min-height:100vh;box-sizing:border-box">
+
+  <header style="padding:24px clamp(24px,4vw,64px) 0">
+    <a href="Umima Order Index.dc.html" style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070;letter-spacing:.04em">← Riwayat Pesanan</a>
+  </header>
+
+  <main>
+
+  <sc-if value="{{found}}" hint-placeholder-val="{{true}}">
+    <div style="padding:28px clamp(24px,4vw,64px) 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div>
+        <h1 style="margin:0 0 6px 0;font:600 clamp(20px,1.5vw + 14px,27px)/1.4 system-ui;color:#111">{{order.id}}</h1>
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#5f5f5f">{{order.dateLabel}}</div>
+      </div>
+      <span style="{{order.statusStyle}}">{{order.status}}</span>
+    </div>
+
+    <div style="padding:24px clamp(24px,4vw,64px) 0">
+      <h2 style="margin:0 0 8px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Alamat Penjemputan</h2>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">{{order.address}}</div>
+    </div>
+
+    <div style="padding:24px clamp(24px,4vw,64px) 0">
+      <h2 style="margin:0 0 16px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Barang</h2>
+      <sc-for list="{{order.items}}" as="item" hint-placeholder-count="1">
+        <div style="padding:16px 0;border-top:1px solid rgba(0,0,0,.08)">
+          <div style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Barang #{{item.number}}: {{item.jenis}} — {{item.merk}} {{item.model}}</div>
+          <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070;margin-top:2px;margin-bottom:12px">Bahan: {{item.bahan}} · Ukuran: {{item.ukuran}}</div>
+          <sc-for list="{{item.layanan}}" as="l" hint-placeholder-count="1">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0">
+              <span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#333">— {{l.nama}}</span>
+              <span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#333;white-space:nowrap">{{l.hargaLabel}}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;gap:12px;padding-top:10px;margin-top:6px;border-top:1px solid rgba(0,0,0,.06)">
+            <span style="font:600 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#111">Subtotal</span>
+            <span style="font:600 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#111">{{item.subtotalLabel}}</span>
+          </div>
+        </div>
+      </sc-for>
+      <div style="display:flex;justify-content:space-between;gap:12px;padding:20px 0;margin-top:4px;border-top:2px solid #111">
+        <span style="font:600 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111">Total Pesanan</span>
+        <span style="font:700 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111">{{order.totalLabel}}</span>
+      </div>
+    </div>
+
+    <div style="padding:32px clamp(24px,4vw,64px) 48px">
+      <a href="Umima Order Index.dc.html" style="display:flex;justify-content:center;padding:16px;border:1px solid #111;color:#111;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase">Kembali ke Riwayat</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{notFound}}" hint-placeholder-val="{{false}}">
+    <div style="padding:64px clamp(24px,4vw,64px);text-align:center">
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#707070;margin-bottom:20px">Pesanan tidak ditemukan.</div>
+      <a href="Umima Order Index.dc.html" style="display:inline-block;padding:16px 32px;border:1px solid #111;color:#111;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase">Kembali ke Riwayat</a>
+    </div>
+  </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  orders = {
+    'UM-2026-0142': { dateLabel: '3 Agustus 2026', status: 'Selesai', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [
+        { jenis: 'Sepatu', merk: 'Nike', model: 'Air Force 1', bahan: 'Kulit', ukuran: '42', layanan: [{ nama: 'Cuci + Deep Clean', harga: 75000 }, { nama: 'Unyellowing (Anti Kuning)', harga: 60000 }] },
+        { jenis: 'Sepatu', merk: 'Adidas', model: 'Superstar', bahan: 'Kulit Sintetis', ukuran: '41,5', layanan: [{ nama: 'Cuci Reguler', harga: 45000 }] }
+      ] },
+    'UM-2026-0138': { dateLabel: '28 Juli 2026', status: 'Diproses', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [{ jenis: 'Tas', merk: 'Herschel', model: 'Little America', bahan: 'Kanvas', ukuran: 'Medium (< 40cm)', layanan: [{ nama: 'Cuci Tas Kanvas', harga: 60000 }] }] },
+    'UM-2026-0125': { dateLabel: '14 Juli 2026', status: 'Selesai', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [{ jenis: 'Helm', merk: 'KYT', model: 'NF-R', bahan: 'Fiberglass', ukuran: 'L', layanan: [{ nama: 'Cuci + Disinfeksi Helm', harga: 70000 }] }] },
+    'UM-2026-0119': { dateLabel: '2 Juli 2026', status: 'Dijemput', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [
+        { jenis: 'Sepatu', merk: 'Converse', model: 'Chuck 70', bahan: 'Kanvas', ukuran: '43', layanan: [{ nama: 'Cuci Reguler', harga: 45000 }, { nama: 'Repair Sol', harga: 100000 }] },
+        { jenis: 'Tas', merk: 'Fjallraven', model: 'Kanken', bahan: 'Vinylon', ukuran: 'Small (< 30cm)', layanan: [{ nama: 'Cuci Tas Kanvas', harga: 60000 }] },
+        { jenis: 'Helm', merk: 'INK', model: 'CL Max', bahan: 'ABS', ukuran: 'M', layanan: [{ nama: 'Cuci Helm Full', harga: 55000 }] }
+      ] },
+    'UM-2026-0104': { dateLabel: '19 Juni 2026', status: 'Selesai', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [{ jenis: 'Sepatu', merk: 'Vans', model: 'Old Skool', bahan: 'Kanvas', ukuran: '42,5', layanan: [{ nama: 'Cuci Reguler', harga: 45000 }] }] },
+    'UM-2026-0097': { dateLabel: '5 Juni 2026', status: 'Selesai', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [{ jenis: 'Tas', merk: 'Eiger', model: 'Rover', bahan: 'Nylon', ukuran: 'Large (< 50cm)', layanan: [{ nama: 'Cuci Tas Kulit', harga: 80000 }] }] },
+    'UM-2026-0083': { dateLabel: '22 Mei 2026', status: 'Dibatalkan', address: 'Jl. Margacinta No. 12, Bandung',
+      items: [{ jenis: 'Sepatu', merk: 'New Balance', model: '574', bahan: 'Suede', ukuran: '43', layanan: [{ nama: 'Cuci Reguler', harga: 45000 }] }] }
+  };
+
+  statusStyle(status) {
+    const base = 'font:500 clamp(9px,0.7vw + 7px,10px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:2px;white-space:nowrap';
+    return status === 'Selesai'
+      ? `${base};background:#111;color:#fff`
+      : `${base};background:none;color:#111;border:1px solid rgba(0,0,0,.3)`;
+  }
+
+  formatRupiah(n) {
+    return 'Rp ' + n.toLocaleString('id-ID');
+  }
+
+  renderVals() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const data = id && this.orders[id];
+
+    if (!data) {
+      return { found: false, notFound: true };
+    }
+
+    let total = 0;
+    const items = data.items.map((it, idx) => {
+      const layanan = it.layanan.map((l) => ({ nama: l.nama, hargaLabel: this.formatRupiah(l.harga) }));
+      const subtotal = it.layanan.reduce((sum, l) => sum + l.harga, 0);
+      total += subtotal;
+      return { ...it, number: idx + 1, layanan, subtotalLabel: this.formatRupiah(subtotal) };
+    });
+
+    return {
+      found: true,
+      notFound: false,
+      order: { id, ...data, items, totalLabel: this.formatRupiah(total), statusStyle: this.statusStyle(data.status) }
+    };
+  }
+}
+</script>
+</body>
+</html>

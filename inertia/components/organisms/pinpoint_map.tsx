@@ -1,15 +1,24 @@
 import { IconCurrentLocation } from '@tabler/icons-react'
 import { latLng, type LatLng } from 'leaflet'
 import { useCallback, useEffect, useRef } from 'react'
-import { LayersControl, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import {
+  LayersControl,
+  MapContainer,
+  Polygon,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from 'react-leaflet'
 import { toast } from 'sonner'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import { isWithinOperationalAreas, toLatLngRings, type OperationalArea } from '@/lib/geo'
 
 type PinpointMapProps = {
   value: LatLng
   onChange: (position: LatLng) => void
   disableAutoLocation?: boolean
+  areas?: OperationalArea[]
 }
 
 function ChangeView({ center }: { center: LatLng }) {
@@ -50,7 +59,7 @@ function LocateButton({ onLocate }: { onLocate: () => void }) {
         rounded-md
         bg-white
         shadow-lg
-        hover:bg-gray-100
+        hover:bg-paper-tint
       "
     >
       <IconCurrentLocation size={20} />
@@ -62,8 +71,10 @@ export default function PinpointMap({
   value,
   onChange,
   disableAutoLocation = false,
+  areas = [],
 }: PinpointMapProps) {
   const autoLocated = useRef(false)
+  const isOutside = areas.length > 0 && !isWithinOperationalAreas([value.lng, value.lat], areas)
 
   const locateUser = useCallback(() => {
     if (!navigator.geolocation) {
@@ -132,6 +143,20 @@ export default function PinpointMap({
             </LayersControl.BaseLayer>
           </LayersControl>
 
+          {areas.map((area) =>
+            area.geometry ? (
+              <Polygon
+                key={area.id}
+                positions={toLatLngRings(area.geometry)}
+                pathOptions={{
+                  color: isOutside ? '#dc2626' : '#16a34a',
+                  weight: 2,
+                  fillOpacity: 0.1,
+                }}
+              />
+            ) : null
+          )}
+
           <ChangeView center={value} />
 
           <CenterWatcher onChange={onChange} />
@@ -156,6 +181,9 @@ export default function PinpointMap({
             style={{
               width: 25,
               height: 41,
+              filter: isOutside
+                ? 'grayscale(1) sepia(1) saturate(6) hue-rotate(-40deg)'
+                : undefined,
             }}
           />
         </div>

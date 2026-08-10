@@ -26,7 +26,7 @@ export default function Create({ roleOptions }: PageProps) {
             route="admin.user.index"
             className={buttonVariants({
               variant: 'outline',
-              className: 'rounded-xl border-gray-300',
+              className: 'rounded-none border-rule-field',
             })}
           >
             <IconArrowLeft className="size-4" />
@@ -38,11 +38,11 @@ export default function Create({ roleOptions }: PageProps) {
       <Form route="admin.user.store" className="max-w-2xl space-y-4">
         {({ errors, processing }) => (
           <>
-            <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+            <Card className="rounded-none border border-rule bg-paper-tint p-5">
               <Field data-invalid={errors.name ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="name"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
+                  className="text-xs tracking-widest text-ink-body uppercase"
                 >
                   Nama Lengkap
                 </FieldLabel>
@@ -52,7 +52,7 @@ export default function Create({ roleOptions }: PageProps) {
                   autoComplete="name"
                   required
                   aria-invalid={!!errors.name}
-                  className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.name}</FieldError>
               </Field>
@@ -60,7 +60,7 @@ export default function Create({ roleOptions }: PageProps) {
               <Field data-invalid={errors.phone ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="phone"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
+                  className="text-xs tracking-widest text-ink-body uppercase"
                 >
                   Nomor Telepon
                 </FieldLabel>
@@ -69,10 +69,10 @@ export default function Create({ roleOptions }: PageProps) {
                   name="phone"
                   autoComplete="tel"
                   aria-invalid={!!errors.phone}
-                  className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.phone}</FieldError>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-ink-subtle">
                   Nomor ini dipakai untuk masuk, jadi harus belum terdaftar.
                 </p>
               </Field>
@@ -80,7 +80,7 @@ export default function Create({ roleOptions }: PageProps) {
               <Field data-invalid={errors.role ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="role"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
+                  className="text-xs tracking-widest text-ink-body uppercase"
                 >
                   Peran
                 </FieldLabel>
@@ -89,7 +89,7 @@ export default function Create({ roleOptions }: PageProps) {
                   name="role"
                   required
                   defaultValue=""
-                  className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+                  className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
                 >
                   <option value="" disabled>
                     Pilih peran
@@ -106,7 +106,7 @@ export default function Create({ roleOptions }: PageProps) {
               <Field data-invalid={errors.password ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="password"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
+                  className="text-xs tracking-widest text-ink-body uppercase"
                 >
                   Kata Sandi
                 </FieldLabel>
@@ -115,7 +115,7 @@ export default function Create({ roleOptions }: PageProps) {
                   name="password"
                   autoComplete="new-password"
                   aria-invalid={!!errors.password}
-                  className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.password}</FieldError>
               </Field>
@@ -123,7 +123,7 @@ export default function Create({ roleOptions }: PageProps) {
               <Field data-invalid={errors.passwordConfirmation ? 'true' : undefined}>
                 <FieldLabel
                   htmlFor="passwordConfirmation"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
+                  className="text-xs tracking-widest text-ink-body uppercase"
                 >
                   Konfirmasi Kata Sandi
                 </FieldLabel>
@@ -132,7 +132,7 @@ export default function Create({ roleOptions }: PageProps) {
                   name="passwordConfirmation"
                   autoComplete="new-password"
                   aria-invalid={!!errors.passwordConfirmation}
-                  className="h-11 rounded-xl border-gray-300 bg-white px-4 focus-visible:border-black focus-visible:ring-black/10"
+                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.passwordConfirmation}</FieldError>
               </Field>
@@ -141,7 +141,7 @@ export default function Create({ roleOptions }: PageProps) {
             <Button
               type="submit"
               disabled={processing}
-              className="h-12 w-full rounded-2xl bg-black text-base font-semibold text-white hover:bg-black/90 active:scale-95"
+              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
             >
               Buat Akun
             </Button>

@@ -1,96 +1,89 @@
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
+import { OutlineButton, SolidButton } from '@/components/atoms/editorial'
 import AuthLayout from '@/components/layouts/auth_layout'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconChevronRight } from '@tabler/icons-react'
 
 export default function Login() {
   return (
     <AuthLayout
-      title="Masuk"
-      description="Masukkan nomor telepon dan kata sandi Anda untuk melanjutkan"
+      title="Masuk ke Akun Anda"
+      description="Kelola pesanan perawatan sepatu, tas, dan helm Anda."
       metaTitle="Masuk"
       metaDescription="Masuk ke akun UmimaClean Anda"
+      audience="Pelanggan"
     >
-      <Form route="session.store" className="space-y-5">
+      <Form route="session.store">
         {({ errors, processing }) => (
           <>
-            <Field data-invalid={errors.phone ? 'true' : undefined}>
-              <FieldLabel
-                htmlFor="phone"
-                className="text-xs tracking-widest text-gray-700 uppercase"
-              >
+            <Field className="mb-6" data-invalid={errors.phone ? 'true' : undefined}>
+              <FieldLabel htmlFor="phone" className="field-label mb-2.5">
                 Nomor Telepon
               </FieldLabel>
               <PhoneInput
                 id="phone"
                 name="phone"
                 autoComplete="tel"
+                placeholder="08xx-xxxx-xxxx"
                 aria-invalid={!!errors.phone}
-                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
               />
               <FieldError>{errors.phone}</FieldError>
             </Field>
 
-            <Field data-invalid={errors.password ? 'true' : undefined}>
-              <FieldLabel
-                htmlFor="password"
-                className="text-xs tracking-widest text-gray-700 uppercase"
-              >
+            <Field className="mb-3" data-invalid={errors.password ? 'true' : undefined}>
+              <FieldLabel htmlFor="password" className="field-label mb-2.5">
                 Kata Sandi
               </FieldLabel>
               <PasswordInput
                 id="password"
                 name="password"
                 autoComplete="current-password"
+                placeholder="••••••••"
                 aria-invalid={!!errors.password}
-                className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
               />
               <FieldError>{errors.password}</FieldError>
             </Field>
 
-            <div className="flex items-center justify-between">
-              <FieldLabel htmlFor="rememberMe" className="gap-2 text-sm font-normal text-gray-700">
+            <div className="mb-8 flex items-center justify-between">
+              <FieldLabel
+                htmlFor="rememberMe"
+                className="gap-2 text-small font-normal text-ink-body"
+              >
                 <Checkbox
                   id="rememberMe"
                   name="rememberMe"
-                  className="border-gray-300 data-checked:border-black data-checked:bg-black"
+                  className="border-rule-field data-checked:border-ink data-checked:bg-ink"
                 />
                 Ingat saya
               </FieldLabel>
 
-              <Link
-                route="password_reset.create"
-                className="text-xs font-medium tracking-wide text-gray-600 underline underline-offset-4"
-              >
+              <Link route="password_reset.create" className="text-meta text-ink-subtle">
                 Lupa kata sandi?
               </Link>
             </div>
 
-            <Button
-              type="submit"
-              disabled={processing}
-              className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
-            >
+            {errors.form && <p className="mb-4 text-small text-destructive">{errors.form}</p>}
+
+            <SolidButton type="submit" disabled={processing} className="mb-6">
               Masuk
-              <IconChevronRight className="size-5" />
-            </Button>
+            </SolidButton>
           </>
         )}
       </Form>
 
-      <p className="mt-8 text-center text-sm text-gray-700">
-        Belum punya akun?{' '}
-        <Link
-          route="signup.create"
-          className="font-semibold text-black underline underline-offset-4"
-        >
-          Daftar
-        </Link>
-      </p>
+      <div className="mb-6 flex items-center gap-3.5">
+        <div className="h-px flex-1 bg-rule-strong" />
+        <span className="text-eyebrow tracking-[0.1em] text-ink-subtle uppercase">atau</span>
+        <div className="h-px flex-1 bg-rule-strong" />
+      </div>
+
+      <Link route="signup.create" className="mb-10 block">
+        <OutlineButton render={<span />}>Daftar Akun</OutlineButton>
+      </Link>
     </AuthLayout>
   )
 }

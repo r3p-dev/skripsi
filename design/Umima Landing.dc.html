@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  body{margin:0;background:#e9e9e7;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif}
+  a{color:#111;text-decoration:none}
+  a:hover{color:#555}
+  details summary{cursor:pointer}
+  details summary::-webkit-details-marker{display:none}
+  #shell{max-width:430px}
+  @media (min-width:680px){
+    #shell{max-width:760px!important}
+    #stickybar{max-width:760px!important}
+    #hero-row{display:grid!important;grid-template-columns:1fr 1fr!important;align-items:center!important;gap:48px!important;padding:56px clamp(24px,4vw,64px)!important}
+    #hero-copy{order:2!important;padding:0!important;align-items:flex-start!important;text-align:left!important}
+    #hero-media{order:1!important;padding:0!important}
+    #benefits-list{gap:28px 32px!important}
+    #testimonials-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:28px 32px!important}
+    #service-grid{grid-template-columns:1fr 1fr 1fr!important}
+    #before-after{max-width:440px!important;margin:0 auto!important}
+  }
+  @media (min-width:1000px){
+    #shell{max-width:1040px!important}
+    #stickybar{max-width:1040px!important}
+  }
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+</style>
+</helmet>
+<div id="shell" style="max-width:430px;margin:0 auto;background:#fff;color:#111;position:relative;padding-bottom:88px">
+  <main>
+
+  <!-- HERO -->
+  <div id="hero-row" style="display:flex;flex-direction:column">
+    <div id="hero-copy" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px clamp(24px,4vw,64px) 48px">
+      <img src="assets/umima-logo.jpg" alt="ümima" style="width:150px;object-fit:contain;margin-bottom:28px">
+      <h2 style="margin:0 0 28px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Perawatan Sepatu Profesional</h2>
+      <h1 style="margin:0 0 8px 0;font:400 clamp(16px,1.1vw + 12px,19px)/1.6 system-ui;color:#222;max-width:280px;margin-bottom:8px">Bersihkan, rawat, dan kembalikan sepatu, tas, serta helm Anda seperti baru.</h1>
+      <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.5 system-ui;color:#707070;margin-bottom:32px">Berbasis di Bandung, Jawa Barat</div>
+      <a href="#pricing" style="display:inline-block;padding:16px 44px;border:1px solid #111;color:#111;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase">Pesan Sekarang</a>
+    </div>
+    <div id="hero-media" style="padding:0 clamp(24px,4vw,64px)">
+      <div style="aspect-ratio:4/5;background:#f2f1ee;border:1px solid rgba(0,0,0,.08)"></div>
+      <div style="text-align:center;margin-top:12px;font:400 clamp(10px,0.75vw + 8px,12px)/1.4 ui-monospace,monospace;color:#767676;text-transform:uppercase;letter-spacing:.05em">Foto produk utama</div>
+    </div>
+  </div>
+
+  <div style="height:1px;background:rgba(0,0,0,.08);margin:0 clamp(24px,4vw,64px)"></div>
+
+  <!-- BENEFITS -->
+  <div style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 32px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Keunggulan</h2>
+    <div id="benefits-list" style="display:grid;grid-template-columns:1fr 1fr;gap:28px 20px">
+      <div style="display:flex;gap:14px">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#8c8c8c;flex:none;width:24px">01</div>
+        <div>
+          <div style="font:600 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111;margin-bottom:6px">Cuci Profesional</div>
+          <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#666">Teknik pembersihan khusus untuk setiap jenis material — kulit, kanvas, suede, hingga cangkang helm.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#8c8c8c;flex:none;width:24px">02</div>
+        <div>
+          <div style="font:600 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111;margin-bottom:6px">Perbaikan Detail</div>
+          <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#666">Jahitan, sol, dan bagian yang rusak diperbaiki dengan presisi oleh pengrajin berpengalaman.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#8c8c8c;flex:none;width:24px">03</div>
+        <div>
+          <div style="font:600 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111;margin-bottom:6px">Antar-Jemput</div>
+          <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#666">Kami jemput dan antar kembali barang Anda, langsung ke lokasi di area Bandung.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.4 system-ui;color:#8c8c8c;flex:none;width:24px">04</div>
+        <div>
+          <div style="font:600 clamp(15px,1vw + 11px,17px)/1.4 system-ui;color:#111;margin-bottom:6px">Garansi Hasil</div>
+          <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#666">Tidak puas dengan hasil? Kami kerjakan ulang tanpa biaya tambahan.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#111;padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 32px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Cara Kerja</h2>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.12)">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#9a9a9a;flex:none;width:22px">1</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#eee">Pesan lewat WhatsApp atau situs kami</div>
+      </div>
+      <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.12)">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#9a9a9a;flex:none;width:22px">2</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#eee">Tim kami jemput barang Anda</div>
+      </div>
+      <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.12)">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#9a9a9a;flex:none;width:22px">3</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#eee">Proses perawatan berlangsung 2–3 hari</div>
+      </div>
+      <div style="display:flex;gap:18px;padding:18px 0">
+        <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#9a9a9a;flex:none;width:22px">4</div>
+        <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#eee">Barang diantar kembali ke lokasi Anda</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEFORE / AFTER -->
+  <div style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 8px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Hasil Nyata</h2>
+    <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-bottom:28px">Geser untuk melihat perbedaannya.</div>
+    <div id="before-after" style="position:relative;aspect-ratio:4/5;overflow:hidden;user-select:none">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,#e9e9e9,#e9e9e9 9px,#dcdcdc 9px,#dcdcdc 18px)"></div>
+      <div style="position:absolute;inset:0;width:{{sliderPos}}%;overflow:hidden;border-right:2px solid #fff;background:repeating-linear-gradient(45deg,#c9c9c9,#c9c9c9 9px,#bababa 9px,#bababa 18px)"></div>
+      <div style="position:absolute;top:12px;left:12px;padding:4px 10px;background:rgba(0,0,0,.6);color:#fff;font:400 clamp(10px,0.75vw + 8px,12px)/1.4 system-ui;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:2">Sebelum</div>
+      <div style="position:absolute;top:12px;right:12px;padding:4px 10px;background:rgba(0,0,0,.6);color:#fff;font:400 clamp(10px,0.75vw + 8px,12px)/1.4 system-ui;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:2">Sesudah</div>
+      <div style="position:absolute;top:50%;left:{{sliderPos}}%;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.35);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;font:400 clamp(13px,0.9vw + 10px,15px)/1 system-ui;color:#111">↔</div>
+      <input type="range" min="0" max="100" value="{{sliderPos}}" oninput="{{onSliderChange}}" style="position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;z-index:3">
+    </div>
+  </div>
+
+  <div style="height:1px;background:rgba(0,0,0,.08);margin:0 clamp(24px,4vw,64px)"></div>
+
+  <!-- SERVICE AREA -->
+  <div style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 8px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Area Layanan</h2>
+    <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-bottom:24px">Antar-jemput gratis dalam radius tertentu dari basecamp kami di Margacinta, Bandung.</div>
+    <div id="service-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:20px">
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Margacinta</div>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Buah Batu</div>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Kordon</div>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Dayeuh Kolot</div>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Bandung Kidul</div>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#333">— Kiaracondong</div>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <div style="background:#f7f6f4;padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 28px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Testimoni</h2>
+    <div id="testimonials-list" style="display:flex;flex-direction:column;gap:28px">
+      <div>
+        <div style="font:400 clamp(15px,1vw + 11px,17px)/1.6 system-ui;color:#222;margin-bottom:10px">“Sepatu kulit kesayangan saya kembali seperti baru. Rapi dan tepat waktu.”</div>
+        <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070">— Raka, Bandung</div>
+      </div>
+      <div>
+        <div style="font:400 clamp(15px,1vw + 11px,17px)/1.6 system-ui;color:#222;margin-bottom:10px">“Helm saya bau dan kusam, sekarang wangi dan bersih total. Layanan jemputnya juga mudah.”</div>
+        <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070">— Dinda, Bandung</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RITUAL / PROCESS -->
+  <div style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 8px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Proses Perawatan</h2>
+    <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-bottom:28px">Setiap barang melewati ritual perawatan yang sama, terlepas dari mereknya.</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span style="font:400 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#333">Deep cleaning</span><span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070">Sabun & sikat khusus</span></div>
+      <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span style="font:400 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#333">Disinfeksi</span><span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070">Bebas bakteri & bau</span></div>
+      <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgba(0,0,0,.08)"><span style="font:400 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#333">Repair</span><span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070">Jahitan & sol</span></div>
+      <div style="display:flex;justify-content:space-between;padding:16px 0"><span style="font:400 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#333">Protection</span><span style="font:400 clamp(13px,0.9vw + 10px,15px)/1.5 system-ui;color:#707070">Lapisan anti air</span></div>
+    </div>
+  </div>
+
+  <div style="height:1px;background:rgba(0,0,0,.08);margin:0 clamp(24px,4vw,64px)"></div>
+
+  <!-- PRICING -->
+  <div id="pricing" style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 4px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">Harga</h2>
+    <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-bottom:28px">Katalog lengkap layanan perawatan kami.</div>
+
+    <details open style="border-bottom:1px solid rgba(0,0,0,.08)">
+      <summary style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;font:600 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#111;list-style:none">Sepatu<span style="font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;color:#707070;text-transform:none;letter-spacing:0">5 layanan</span></summary>
+      <div style="display:flex;flex-direction:column;padding-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci Reguler</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 45.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci + Deep Clean</span><span style="font:500 clamp(9px,0.7vw + 7px,10px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#111;padding:2px 6px;border-radius:2px">Populer</span></div>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 75.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Unyellowing (Anti Kuning)</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 60.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Repair Sol</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 100.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Repaint / Reglaze</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 150.000</span>
+        </div>
+      </div>
+    </details>
+
+    <details style="border-bottom:1px solid rgba(0,0,0,.08)">
+      <summary style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;font:600 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#111;list-style:none">Tas<span style="font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;color:#707070;text-transform:none;letter-spacing:0">3 layanan</span></summary>
+      <div style="display:flex;flex-direction:column;padding-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci Tas Kanvas</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 60.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci Tas Kulit</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 80.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Repair Jahitan Tas</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 70.000</span>
+        </div>
+      </div>
+    </details>
+
+    <details style="border-bottom:1px solid rgba(0,0,0,.08);margin-bottom:32px">
+      <summary style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;font:600 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#111;list-style:none">Helm<span style="font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;color:#707070;text-transform:none;letter-spacing:0">2 layanan</span></summary>
+      <div style="display:flex;flex-direction:column;padding-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci Helm Full</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 55.000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <span style="font:400 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#222">Cuci + Disinfeksi Helm</span>
+          <span style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">Rp 70.000</span>
+        </div>
+      </div>
+    </details>
+
+    <a href="Umima Order.dc.html" style="display:flex;justify-content:center;padding:17px;background:#111;color:#fff;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-top:24px">Pesan Sekarang</a>
+  </div>
+
+  <!-- FAQ -->
+  <div style="padding:56px clamp(24px,4vw,64px)">
+    <h2 style="margin:0 0 24px 0;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#5f5f5f">FAQ</h2>
+    <details style="border-bottom:1px solid rgba(0,0,0,.08);padding:16px 0">
+      <summary style="font:500 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#111;list-style:none"><h3 style="margin:0;font:inherit;display:inline">Berapa lama proses perawatan?</h3></summary>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-top:10px">Umumnya 2–3 hari kerja, tergantung jenis dan tingkat kerusakan barang.</div>
+    </details>
+    <details style="border-bottom:1px solid rgba(0,0,0,.08);padding:16px 0">
+      <summary style="font:500 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#111;list-style:none"><h3 style="margin:0;font:inherit;display:inline">Apakah tersedia layanan antar-jemput?</h3></summary>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-top:10px">Ya, kami menjemput dan mengantar kembali untuk area Bandung dan sekitarnya.</div>
+    </details>
+    <details style="border-bottom:1px solid rgba(0,0,0,.08);padding:16px 0">
+      <summary style="font:500 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#111;list-style:none"><h3 style="margin:0;font:inherit;display:inline">Material apa saja yang bisa dirawat?</h3></summary>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-top:10px">Kulit, suede, kanvas, hingga cangkang helm dan bahan sintetis lainnya.</div>
+    </details>
+    <details style="padding:16px 0">
+      <summary style="font:500 clamp(14px,1vw + 10px,16px)/1.5 system-ui;color:#111;list-style:none"><h3 style="margin:0;font:inherit;display:inline">Bagaimana cara memesan?</h3></summary>
+      <div style="font:400 clamp(14px,1vw + 10px,16px)/1.6 system-ui;color:#666;margin-top:10px">Hubungi kami melalui WhatsApp atau tekan tombol "Pesan Sekarang" di halaman ini.</div>
+    </details>
+  </div>
+
+  <!-- FOOTER -->
+  </main>
+  <footer style="padding:40px clamp(24px,4vw,64px) 32px;text-align:center">
+    <img src="assets/umima-logo.jpg" alt="ümima" style="width:110px;object-fit:contain;margin-bottom:16px">
+    <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.6 system-ui;color:#707070">Bandung, Jawa Barat</div>
+    <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.6 system-ui;color:#707070;margin-bottom:16px">© 2026 ümima. Semua hak dilindungi.</div>
+    <a href="Umima Staff Login.dc.html" style="font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;color:#8c8c8c">Login Staf & Admin</a>
+  </footer>
+
+  <!-- STICKY CTA -->
+  <div id="stickybar" style="position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;background:#fff;border-top:1px solid rgba(0,0,0,.1);padding:14px 20px;display:flex">
+    <a href="#pricing" style="flex:1;display:flex;justify-content:center;padding:16px;background:#111;color:#fff;font:500 clamp(13px,0.9vw + 10px,15px)/1 system-ui;letter-spacing:.08em;text-transform:uppercase">Pesan Sekarang</a>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sliderPos: 50 };
+  renderVals() {
+    return {
+      sliderPos: this.state.sliderPos,
+      onSliderChange: (e) => this.setState({ sliderPos: Number(e.target.value) })
+    };
+  }
+}
+</script>
+</body>
+</html>

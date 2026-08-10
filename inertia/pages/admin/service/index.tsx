@@ -28,7 +28,7 @@ import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconPencil, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react'
-import { ServiceCategoryLabel, ServiceTypeLabel } from '@/enums/service_enum'
+import { CatalogueCategoryLabel, CatalogueTypeLabel } from '@/enums/catalogue_enum'
 import { formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
@@ -52,7 +52,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
             <Link
               route="admin.service.create"
               className={buttonVariants({
-                className: 'rounded-xl bg-black text-white hover:bg-black/90 active:scale-95',
+                className: 'rounded-none bg-ink text-white hover:bg-ink/90 active:scale-95',
               })}
             >
               <IconPlus className="size-4" />
@@ -65,23 +65,23 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
       <Form route="admin.service.index" className="mb-6">
         {() => (
           <div className="relative max-w-md">
-            <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-gray-400" />
+            <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" />
             <Input
               type="text"
               name="search"
               aria-label="Cari layanan"
               defaultValue={filters.search}
               placeholder="Cari layanan..."
-              className="h-11 rounded-xl border-gray-300 bg-gray-50 pl-10 focus-visible:border-black focus-visible:ring-black/10"
+              className="h-11 rounded-none border-rule-field bg-paper-tint pl-10 focus-visible:border-ink focus-visible:ring-black/10"
             />
           </div>
         )}
       </Form>
 
-      <Card className="rounded-2xl border border-gray-200 bg-white">
+      <Card className="rounded-none border border-rule bg-white">
         <CardContent>
           {services.data.length === 0 ? (
-            <p className="py-12 text-center text-sm text-gray-500">Belum ada layanan</p>
+            <p className="py-12 text-center text-sm text-ink-subtle">Belum ada layanan</p>
           ) : (
             <Table>
               <TableHeader>
@@ -97,20 +97,20 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                 {services.data.map((service) => (
                   <TableRow key={service.id}>
                     <TableCell>
-                      <p className="font-semibold text-black">{service.name}</p>
-                      <p className="text-xs text-gray-500">{service.description}</p>
+                      <p className="font-semibold text-ink">{service.name}</p>
+                      <p className="text-xs text-ink-subtle">{service.description}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-gray-200 text-gray-700">
+                      <Badge className="bg-paper-tint text-ink-body">
                         {
-                          ServiceCategoryLabel[
-                            service.category as keyof typeof ServiceCategoryLabel
+                          CatalogueCategoryLabel[
+                            service.category as keyof typeof CatalogueCategoryLabel
                           ]
                         }
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600">
-                      {ServiceTypeLabel[service.type as keyof typeof ServiceTypeLabel]}
+                    <TableCell className="text-ink-soft">
+                      {CatalogueTypeLabel[service.type as keyof typeof CatalogueTypeLabel]}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {formatRupiah(service.price)}
@@ -121,7 +121,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                           route="admin.service.edit"
                           routeParams={{ id: service.id }}
                           aria-label={`Ubah ${service.name}`}
-                          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black active:scale-95"
+                          className="rounded-full p-2 text-ink-faint transition-colors hover:bg-paper-tint hover:text-ink active:scale-95"
                         >
                           <IconPencil size={18} />
                         </Link>
@@ -132,7 +132,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                             disabled
                             aria-label={`Hapus ${service.name}`}
                             title="Layanan ini sudah dipakai pada pesanan"
-                            className="cursor-not-allowed rounded-full p-2 text-gray-300"
+                            className="cursor-not-allowed rounded-full p-2 text-ink-faint"
                           >
                             <IconTrash size={18} />
                           </button>
@@ -140,7 +140,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
                           <AlertDialog>
                             <AlertDialogTrigger
                               aria-label={`Hapus ${service.name}`}
-                              className="rounded-full p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-destructive active:scale-95"
+                              className="rounded-full p-2 text-ink-faint transition-colors hover:bg-red-50 hover:text-destructive active:scale-95"
                             >
                               <IconTrash size={18} />
                             </AlertDialogTrigger>

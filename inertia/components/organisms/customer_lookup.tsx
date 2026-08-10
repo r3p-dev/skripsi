@@ -43,7 +43,7 @@ export function CustomerLookup({
 
   if (selected) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-none border border-green-200 bg-green-50 px-4 py-3">
         <div className="flex items-center gap-2">
           <IconUserCheck className="size-4 shrink-0 text-green-700" />
           <div>
@@ -72,14 +72,14 @@ export function CustomerLookup({
           onChange={(event) => setTerm(event.target.value)}
           placeholder="Cari nama atau nomor telepon pelanggan..."
           aria-label="Cari pelanggan terdaftar"
-          className="h-11 flex-1 rounded-xl bg-white"
+          className="h-11 flex-1 rounded-none bg-white"
         />
         <Button
           type="button"
           variant="outline"
           onClick={search}
           disabled={searching || term.trim().length < 3}
-          className="h-11 rounded-xl px-4"
+          className="h-11 rounded-none px-4"
         >
           <IconSearch className="size-4" />
           Cari
@@ -87,22 +87,22 @@ export function CustomerLookup({
       </div>
 
       {searched && results.length === 0 && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-ink-subtle">
           Tidak ada akun yang cocok. Lanjutkan dengan mengisi data pelanggan secara manual.
         </p>
       )}
 
       {results.length > 0 && (
-        <ul className="divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-300 bg-white">
+        <ul className="divide-y divide-rule overflow-hidden rounded-none border border-rule-field bg-white">
           {results.map((customer) => (
             <li key={customer.id}>
               <button
                 type="button"
                 onClick={() => onSelect(customer)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-paper-tint"
               >
-                <span className="text-sm font-medium text-black">{customer.name}</span>
-                <span className="text-xs text-gray-600">{customer.phone}</span>
+                <span className="text-sm font-medium text-ink">{customer.name}</span>
+                <span className="text-xs text-ink-soft">{customer.phone}</span>
               </button>
             </li>
           ))}

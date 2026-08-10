@@ -7,7 +7,7 @@ import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { ActionName } from '@/enums/order_action_enum'
-import { ServiceCategory } from '@/enums/service_enum'
+import { CatalogueCategory } from '@/enums/catalogue_enum'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
@@ -43,7 +43,7 @@ function toItemRows(orderItems: OrderLine[]): ItemRow[] {
       rowsByItemId.set(item.id, row)
     }
 
-    if (service.category === ServiceCategory.ADDITIONAL) {
+    if (service.category === CatalogueCategory.ADDITIONAL) {
       row.defaults!.additionalServiceIds.push(service.id)
     } else {
       row.serviceId = String(service.id)
@@ -69,34 +69,34 @@ export default function Edit({ order, services }: PageProps) {
         <Link
           route="staff.trip.index"
           aria-label="Kembali ke antrean"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
         <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">
+          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">
             Ubah Barang
           </p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">{order.orderNumber}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{order.orderNumber}</h1>
         </div>
       </div>
 
       <div className="flex-1 space-y-4 px-6 pb-nav">
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-          <p className="text-sm leading-relaxed text-gray-700">
+        <Card className="rounded-none border border-rule bg-paper-tint p-5">
+          <p className="text-sm leading-relaxed text-ink-body">
             Perbaiki merek, model, atau layanan yang salah sebelum pelanggan melunasi. Setelah
             dilunasi, data barang tidak dapat diubah lagi.
           </p>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Total saat ini</span>
-            <span className="font-semibold text-black">{order.totalPrice ?? '-'}</span>
+            <span className="text-ink-soft">Total saat ini</span>
+            <span className="font-semibold text-ink">{order.totalPrice ?? '-'}</span>
           </div>
         </Card>
 
         {inspectionPhoto && (
-          <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+          <Card className="rounded-none border border-rule bg-paper-tint">
             <CardHeader>
-              <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+              <p className="text-xs tracking-widest text-ink-soft uppercase font-medium">
                 Foto Inspeksi
               </p>
             </CardHeader>
@@ -104,7 +104,7 @@ export default function Edit({ order, services }: PageProps) {
               <img
                 src={inspectionPhoto}
                 alt="Foto inspeksi"
-                className="aspect-video w-full rounded-xl border border-gray-200 object-cover"
+                className="aspect-video w-full rounded-none border border-rule object-cover"
               />
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ export default function Edit({ order, services }: PageProps) {
                 type="button"
                 variant="outline"
                 onClick={addItem}
-                className="h-11 w-full rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95"
+                className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
               >
                 Tambah Barang
               </Button>
@@ -141,7 +141,7 @@ export default function Edit({ order, services }: PageProps) {
               <Button
                 type="submit"
                 disabled={processing}
-                className="h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95"
+                className="h-12 w-full rounded-none bg-ink text-base font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
               >
                 Simpan Barang
               </Button>
@@ -154,7 +154,7 @@ export default function Edit({ order, services }: PageProps) {
           className={buttonVariants({
             variant: 'outline',
             className:
-              'h-12 w-full rounded-xl text-base font-semibold tracking-wide text-black active:scale-95',
+              'h-12 w-full rounded-none text-base font-semibold tracking-wide text-ink active:scale-95',
           })}
         >
           Sudah Benar

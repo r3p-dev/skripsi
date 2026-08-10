@@ -1,25 +1,97 @@
 import { PhoneInput } from '@/components/atoms/phone_input'
+import {
+  BackLink,
+  Lede,
+  PageTitle,
+  SolidButton,
+  UnderlineInput,
+  UnderlineTextarea,
+} from '@/components/atoms/editorial'
 import CustomerLayout from '@/components/layouts/customer_layout'
 import PinpointMap from '@/components/organisms/pinpoint_map'
-import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
+import ConfirmLocation from '@/components/molecules/confirm_location'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft, IconChevronRight } from '@tabler/icons-react'
 import { latLng } from 'leaflet'
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { isWithinOperationalAreas, toCenter, type OperationalArea } from '@/lib/geo'
+import { geocode, GEOCODE_MESSAGES, type GeocodeReason } from '@/lib/geocode'
 
 type PageProps = InertiaProps<{
   address: Data.Address | null
+  operationalAreas: OperationalArea[]
 }>
 
-export default function Create({ address }: PageProps) {
-  const [position, setPosition] = useState(
-    address ? latLng(address.latitude, address.longitude) : latLng(-6.2088, 106.8456)
+const OUTSIDE_AREA_MESSAGE = 'Lokasi tersebut berada di luar jangkauan layanan jemput-antar kami.'
+const GEOCODE_DEBOUNCE = 800
+const GEOCODE_MIN_LENGTH = 5
+const FORM_ID = 'address-form'
+
+export default function Create({ address, operationalAreas }: PageProps) {
+  const [position, setPosition] = useState(() => {
+    if (address) {
+      return latLng(address.latitude, address.longitude)
+    }
+
+    const center = toCenter(operationalAreas)
+
+    return center ? latLng(center[1], center[0]) : latLng(-6.2088, 106.8456)
+  })
+
+  const [street, setStreet] = useState(address?.street ?? '')
+  const [isLocating, setIsLocating] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [geocodeReason, setGeocodeReason] = useState<GeocodeReason | null>(null)
+  const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null)
+  const lastGeocoded = useRef(address?.street ?? '')
+
+  const isOutsideArea = useMemo(
+    () =>
+      operationalAreas.length > 0 &&
+      !isWithinOperationalAreas([position.lng, position.lat], operationalAreas),
+    [position, operationalAreas]
   )
+
+  const geocodeMessage = geocodeReason ? GEOCODE_MESSAGES[geocodeReason] : null
+  const isAddressRejected = geocodeReason === 'not_found' || geocodeReason === 'outside_area'
+
+  useEffect(() => {
+    const query = street.trim()
+
+    if (query.length < GEOCODE_MIN_LENGTH || query === lastGeocoded.current) {
+      return
+    }
+
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setIsLocating(true)
+
+      try {
+        const { result, reason } = await geocode(query, controller.signal)
+
+        lastGeocoded.current = query
+        setGeocodeReason(reason)
+        setGeocodeLabel(result?.label ?? null)
+
+        if (result) {
+          setPosition(latLng(result.latitude, result.longitude))
+        }
+      } catch {
+        lastGeocoded.current = ''
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLocating(false)
+        }
+      }
+    }, GEOCODE_DEBOUNCE)
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [street])
 
   return (
     <CustomerLayout
@@ -30,131 +102,147 @@ export default function Create({ address }: PageProps) {
           : 'Tambahkan alamat penjemputan UmimaClean Anda'
       }
     >
-      <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="customer.address.show"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
-        <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Alamat</p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">
-            {address ? 'Ubah Alamat' : 'Tambah Alamat'}
-          </h1>
+      <header className="gutter pt-6">
+        <BackLink route="customer.address.show">← Kembali</BackLink>
+      </header>
+
+      <main className="flex-1 gutter pb-nav">
+        <div className="pt-7 pb-6">
+          <PageTitle className="mb-1.5">{address ? 'Ubah Alamat' : 'Tambah Alamat'}</PageTitle>
+          <Lede>Anda hanya dapat menyimpan satu alamat utama.</Lede>
         </div>
-      </div>
 
-      <div className="flex-1 px-6 pb-nav">
-        <p className="mb-6 text-sm leading-relaxed text-gray-700">
-          Masukkan detail Anda di bawah ini untuk {address ? 'memperbarui' : 'menambahkan'} alamat
-          penjemputan
-        </p>
-
-        <Form route="customer.address.store" className="space-y-5">
+        <Form id={FORM_ID} route="customer.address.store">
           {({ errors, processing }) => (
             <>
-              <Field data-invalid={errors.name ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="name"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
-                >
-                  Nama Lengkap
+              <Field className="mb-5" data-invalid={errors.name ? 'true' : undefined}>
+                <FieldLabel htmlFor="name" className="field-label mb-2.5">
+                  Nama Penerima
                 </FieldLabel>
-                <Input
+                <UnderlineInput
                   id="name"
                   name="name"
                   type="text"
                   autoComplete="name"
+                  placeholder="Nama lengkap"
                   defaultValue={address?.name}
                   aria-invalid={!!errors.name}
-                  className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.name}</FieldError>
               </Field>
 
-              <Field data-invalid={errors.phone ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="phone"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
-                >
+              <Field className="mb-5" data-invalid={errors.phone ? 'true' : undefined}>
+                <FieldLabel htmlFor="phone" className="field-label mb-2.5">
                   Nomor Telepon
                 </FieldLabel>
                 <PhoneInput
                   id="phone"
                   name="phone"
                   autoComplete="tel"
+                  placeholder="08xx-xxxx-xxxx"
                   defaultValue={address?.phone}
                   aria-invalid={!!errors.phone}
-                  className="h-12 rounded-xl border-gray-300 bg-gray-50 px-4 focus-visible:border-black focus-visible:ring-black/10"
+                  className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
                 />
                 <FieldError>{errors.phone}</FieldError>
               </Field>
 
-              <Field data-invalid={errors.street ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="street"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
-                >
-                  Alamat
+              <Field
+                className="mb-5"
+                data-invalid={errors.street || geocodeMessage ? 'true' : undefined}
+              >
+                <FieldLabel htmlFor="street" className="field-label mb-2.5">
+                  Alamat Lengkap
                 </FieldLabel>
-                <Textarea
+                <UnderlineTextarea
                   id="street"
                   name="street"
+                  rows={2}
+                  placeholder="Nama jalan, nomor rumah"
                   autoComplete="street-address"
-                  defaultValue={address?.street}
-                  aria-invalid={!!errors.street}
-                  className="min-h-24 rounded-xl border-gray-300 bg-gray-50 px-4 py-3 focus-visible:border-black focus-visible:ring-black/10"
+                  value={street}
+                  onChange={(event) => {
+                    setStreet(event.target.value)
+                    setGeocodeReason(null)
+                    setGeocodeLabel(null)
+                  }}
+                  aria-invalid={!!errors.street || !!geocodeMessage}
                 />
-                <FieldError>{errors.street}</FieldError>
+                {isLocating && (
+                  <p className="text-meta text-ink-subtle">Mencari lokasi alamat pada peta...</p>
+                )}
+                {!isLocating && geocodeLabel && (
+                  <p className="text-meta leading-[1.5] text-ink-soft">
+                    Titik peta diarahkan ke <span className="text-ink">{geocodeLabel}</span>. Geser
+                    peta jika belum tepat.
+                  </p>
+                )}
+                <FieldError>{geocodeMessage ?? errors.street}</FieldError>
               </Field>
 
-              <Field data-invalid={errors.radius ? 'true' : undefined}>
-                <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
-                  Titik Lokasi
-                </FieldLabel>
-                <div className="overflow-hidden rounded-xl border border-gray-300">
+              <Field
+                className="mb-5"
+                data-invalid={errors.radius || isOutsideArea ? 'true' : undefined}
+              >
+                <FieldLabel className="field-label mb-2.5">Titik Lokasi</FieldLabel>
+                <div className="border border-rule">
                   <PinpointMap
                     value={position}
                     onChange={setPosition}
                     disableAutoLocation={!!address}
+                    areas={operationalAreas}
                   />
                 </div>
-                <FieldError>{errors.radius}</FieldError>
+                <FieldError>{isOutsideArea ? OUTSIDE_AREA_MESSAGE : errors.radius}</FieldError>
               </Field>
 
-              <Field data-invalid={errors.note ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="note"
-                  className="text-xs tracking-widest text-gray-700 uppercase"
-                >
-                  Catatan Tambahan
+              <Field className="mb-8" data-invalid={errors.note ? 'true' : undefined}>
+                <FieldLabel htmlFor="note" className="field-label mb-2.5">
+                  Catatan (opsional)
                 </FieldLabel>
-                <Textarea
+                <UnderlineTextarea
                   id="note"
                   name="note"
+                  rows={2}
                   defaultValue={address?.note ?? undefined}
-                  placeholder="Contoh: rumah pagar hitam, sebelah minimarket"
+                  placeholder="Patokan lokasi"
                   aria-invalid={!!errors.note}
-                  className="min-h-20 rounded-xl border-gray-300 bg-gray-50 px-4 py-3 focus-visible:border-black focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.note}</FieldError>
               </Field>
 
-              {errors.form && <p className="text-sm text-destructive">{errors.form}</p>}
+              {errors.form && <p className="mb-4 text-small text-destructive">{errors.form}</p>}
 
-              <Button
-                type="submit"
-                disabled={processing}
-                className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
+              <SolidButton
+                type="button"
+                onClick={() => setIsConfirming(true)}
+                disabled={processing || isOutsideArea || isLocating || isAddressRejected}
+                className="mb-4"
               >
-                Simpan
-                <IconChevronRight className="size-5" />
-              </Button>
+                Simpan Alamat
+              </SolidButton>
+
+              <Link
+                route="customer.address.show"
+                className="mb-10 block py-2 text-center text-small text-ink-subtle"
+              >
+                Batal
+              </Link>
+
+              <ConfirmLocation
+                open={isConfirming}
+                onOpenChange={setIsConfirming}
+                latitude={position.lat}
+                longitude={position.lng}
+                street={street}
+                matchedLabel={geocodeLabel}
+                formId={FORM_ID}
+                processing={processing}
+              />
             </>
           )}
         </Form>
-      </div>
+      </main>
     </CustomerLayout>
   )
 }

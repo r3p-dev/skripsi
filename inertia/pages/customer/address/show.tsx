@@ -1,10 +1,8 @@
-import { buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { BackLink, Lede, OutlineButton, PageTitle, SolidButton } from '@/components/atoms/editorial'
 import StaticMap from '@/components/organisms/static_map'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft, IconMapPin, IconPencil, IconPhone, IconUser } from '@tabler/icons-react'
 import CustomerLayout from '@/components/layouts/customer_layout'
 
 type PageProps = InertiaProps<{
@@ -14,93 +12,54 @@ type PageProps = InertiaProps<{
 export default function Show({ address }: PageProps) {
   return (
     <CustomerLayout title="Alamat" description="Alamat penjemputan UmimaClean Anda">
-      <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="customer.profile.show"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
-        <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Alamat</p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">Alamat Saya</h1>
-        </div>
-      </div>
+      <header className="gutter pt-6">
+        <BackLink route="customer.profile.show">← Kembali</BackLink>
+      </header>
 
-      <div className="flex-1 px-6 pb-nav">
+      <main className="flex-1 pb-nav">
+        <div className="gutter pt-7 pb-6">
+          <PageTitle className="mb-1.5">Alamat</PageTitle>
+          <Lede>Anda hanya dapat menyimpan satu alamat utama.</Lede>
+        </div>
+
         {address ? (
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-2xl border border-gray-200">
-              <StaticMap latitude={address.latitude} longitude={address.longitude} />
+          <>
+            <div className="gutter pb-6">
+              <div className="border border-rule">
+                <StaticMap latitude={address.latitude} longitude={address.longitude} height={240} />
+              </div>
             </div>
 
-            <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
-                  <IconUser className="size-5 text-black" />
+            <div className="gutter">
+              <div className="mb-4 border border-rule-strong p-5">
+                <div className="mb-0.5 text-body leading-[1.4] font-semibold text-ink">
+                  {address.name}
                 </div>
-                <div>
-                  <p className="text-xs tracking-widest text-gray-500 uppercase">Nama Penerima</p>
-                  <p className="text-base font-medium text-black">{address.name}</p>
-                </div>
+                <div className="mb-3 text-small leading-[1.5] text-ink-subtle">{address.phone}</div>
+                <div className="text-body leading-[1.6] text-[#444]">{address.street}</div>
+                {address.note && (
+                  <div className="mt-3 text-small leading-[1.5] text-ink-subtle">
+                    {address.note}
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
-                  <IconPhone className="size-5 text-black" />
-                </div>
-                <div>
-                  <p className="text-xs tracking-widest text-gray-500 uppercase">Nomor Telepon</p>
-                  <p className="text-base font-medium text-black">{address.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-black/10">
-                  <IconMapPin className="size-5 text-black" />
-                </div>
-                <div>
-                  <p className="text-xs tracking-widest text-gray-500 uppercase">Alamat Lengkap</p>
-                  <p className="text-base font-medium text-black">{address.street}</p>
-                  {address.note && <p className="mt-1 text-sm text-gray-600">{address.note}</p>}
-                </div>
-              </div>
-            </Card>
-
-            <Link
-              route="customer.address.create"
-              className={buttonVariants({
-                className:
-                  'h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95',
-              })}
-            >
-              <IconPencil className="size-5" />
-              Ubah Alamat
+              <Link route="customer.address.create" className="mb-10 block">
+                <OutlineButton render={<span />}>Ubah Alamat</OutlineButton>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="gutter py-16 text-center">
+            <div className="mb-5 text-body leading-[1.6] text-ink-subtle">
+              Anda belum menambahkan alamat penjemputan.
+            </div>
+            <Link route="customer.address.create" className="block">
+              <SolidButton render={<span />}>Tambah Alamat</SolidButton>
             </Link>
           </div>
-        ) : (
-          <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
-              <IconMapPin className="size-7 text-black" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-base font-semibold text-black">Alamat tidak ditemukan</p>
-              <p className="text-sm text-gray-600">
-                Tambahkan alamat penjemputan untuk mulai memesan
-              </p>
-            </div>
-            <Link
-              route="customer.address.create"
-              className={buttonVariants({
-                className:
-                  'h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
-              })}
-            >
-              Tambah Alamat
-            </Link>
-          </Card>
         )}
-      </div>
+      </main>
     </CustomerLayout>
   )
 }

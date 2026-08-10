@@ -5,11 +5,19 @@ import { type CatalogueData } from '#validators/catalogue_validator'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { errors } from '@vinejs/vine'
 
+export type CatalogueOption = {
+  id: number
+  name: string
+  description: string
+  price: string
+  type: CatalogueType
+}
+
 export type ItemTypeOptions = {
   type: ItemType
   label: string
-  services: Catalogue[]
-  additionalServices: Catalogue[]
+  services: CatalogueOption[]
+  additionalServices: CatalogueOption[]
 }
 
 export type ServiceSelection = {
@@ -21,6 +29,10 @@ export type ServiceSelection = {
 export default class CatalogueService {
   async getAllCatalogues(page: number): Promise<Catalogue[]> {
     return Catalogue.query().orderBy('created_at', 'desc').paginate(page, 10)
+  }
+
+  async getPublicCatalogues(): Promise<Catalogue[]> {
+    return Catalogue.query().orderBy('price', 'asc')
   }
 
   async getCatalogueById(id: number): Promise<Catalogue | null> {
@@ -119,10 +131,10 @@ export default class CatalogueService {
     )
   }
 
-  #toServiceOption(catalogue: Catalogue): Catalogue {
+  #toServiceOption(catalogue: Catalogue): CatalogueOption {
     return {
       id: catalogue.id,
-      serviceName: catalogue.serviceName,
+      name: catalogue.name,
       description: catalogue.description,
       price: catalogue.price,
       type: catalogue.type,

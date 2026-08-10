@@ -1,3 +1,4 @@
+import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import { PageHeader } from '@/components/molecules/page_header'
 import { Badge } from '@/components/ui/badge'
@@ -13,8 +14,6 @@ import {
 } from '@/components/ui/table'
 import { neutralBadgeStyle, orderStatusStyles, transactionStatusStyles } from '@/lib/constants'
 import { ActionNameLabel } from '@/enums/order_action_enum'
-import { OrderStatusLabel } from '@/enums/order_status_enum'
-import { OrderTypeLabel } from '@/enums/order_type_enum'
 import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
@@ -28,9 +27,9 @@ type PageProps = InertiaProps<{
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="border-b border-gray-200 py-3 last:border-0">
-      <p className="text-xs tracking-widest text-gray-500 uppercase">{label}</p>
-      <p className="mt-1 text-sm font-medium text-black">{value ?? '-'}</p>
+    <div className="border-b border-rule py-3 last:border-0">
+      <p className="text-xs tracking-widest text-ink-subtle uppercase">{label}</p>
+      <p className="mt-1 text-sm font-medium text-ink">{value ?? '-'}</p>
     </div>
   )
 }
@@ -50,7 +49,7 @@ export default function Show({ order }: PageProps) {
             route="admin.order.index"
             className={buttonVariants({
               variant: 'outline',
-              className: 'rounded-xl border-gray-300',
+              className: 'rounded-none border-rule-field',
             })}
           >
             <IconArrowLeft className="size-4" />
@@ -60,9 +59,9 @@ export default function Show({ order }: PageProps) {
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+        <Card className="rounded-none border border-rule bg-paper-tint">
           <CardHeader className="flex items-center justify-between gap-3">
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">Ringkasan</p>
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">Ringkasan</p>
             <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
               {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
             </Badge>
@@ -81,9 +80,9 @@ export default function Show({ order }: PageProps) {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50 lg:col-span-2">
+        <Card className="rounded-none border border-rule bg-paper-tint lg:col-span-2">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Alamat Penjemputan
             </p>
           </CardHeader>
@@ -96,7 +95,7 @@ export default function Show({ order }: PageProps) {
                 <Detail label="Catatan" value={order.address.note} />
               </div>
             ) : (
-              <p className="py-6 text-sm text-gray-500">
+              <p className="py-6 text-sm text-ink-subtle">
                 Pesanan offline — barang diantar langsung ke toko dan diambil di konter.
               </p>
             )}
@@ -104,15 +103,15 @@ export default function Show({ order }: PageProps) {
         </Card>
       </div>
 
-      <Card className="mt-4 rounded-2xl border border-gray-200 bg-white">
+      <Card className="mt-4 rounded-none border border-rule bg-white">
         <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
             Rincian Barang
           </p>
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-500">
+            <p className="py-6 text-center text-sm text-ink-subtle">
               Barang belum diinspeksi, sehingga belum ada rincian harga
             </p>
           ) : (
@@ -128,7 +127,7 @@ export default function Show({ order }: PageProps) {
                 {items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.service?.name ?? item.name}</TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-ink-soft">
                       {item.item ? `${item.item.brand} ${item.item.model}` : '-'}
                     </TableCell>
                     <TableCell className="text-right">{formatRupiah(item.subtotal)}</TableCell>
@@ -141,13 +140,13 @@ export default function Show({ order }: PageProps) {
       </Card>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card className="rounded-2xl border border-gray-200 bg-white">
+        <Card className="rounded-none border border-rule bg-white">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">Transaksi</p>
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">Transaksi</p>
           </CardHeader>
           <CardContent>
             {!order.transactions || order.transactions.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-500">Belum ada transaksi</p>
+              <p className="py-6 text-center text-sm text-ink-subtle">Belum ada transaksi</p>
             ) : (
               <Table>
                 <TableHeader>
@@ -180,7 +179,7 @@ export default function Show({ order }: PageProps) {
                           }
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-600">
+                      <TableCell className="text-ink-soft">
                         {formatDateTime(transaction.createdAt)}
                       </TableCell>
                     </TableRow>
@@ -191,30 +190,30 @@ export default function Show({ order }: PageProps) {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 bg-white">
+        <Card className="rounded-none border border-rule bg-white">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Riwayat Tindakan
             </p>
           </CardHeader>
           <CardContent>
             {actions.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-500">Belum ada tindakan</p>
+              <p className="py-6 text-center text-sm text-ink-subtle">Belum ada tindakan</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-gray-200">
+              <ul className="flex flex-col divide-y divide-rule">
                 {actions.map((action) => (
                   <li key={action.id} className="py-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium text-black">
+                      <p className="text-sm font-medium text-ink">
                         {ActionNameLabel[action.name as keyof typeof ActionNameLabel] ??
                           action.name}
                       </p>
-                      <p className="text-xs text-gray-500">{formatDateTime(action.createdAt)}</p>
+                      <p className="text-xs text-ink-subtle">{formatDateTime(action.createdAt)}</p>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-ink-soft">
                       oleh {action.staff?.name ?? 'petugas tidak diketahui'}
                     </p>
-                    {action.note && <p className="mt-1 text-xs text-gray-600">{action.note}</p>}
+                    {action.note && <p className="mt-1 text-xs text-ink-soft">{action.note}</p>}
                   </li>
                 ))}
               </ul>

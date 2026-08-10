@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { ActionName } from '@/enums/order_action_enum'
-import { OrderTypeLabel } from '@/enums/order_type_enum'
+import { OrderTypeLabel } from '@/enums/order_enum'
 import { neutralBadgeStyle, orderTypeStyles } from '@/lib/constants'
 import { formatShortDate } from '@/lib/format'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -61,9 +61,9 @@ function TripCard({ item }: { item: Data.RouteItem }) {
       title={`Ambil tugas ${kind.toLowerCase()}?`}
       description={`Pesanan ${item.orderNumber} akan menjadi tugas Anda selama 3 jam dan hilang dari antrean petugas lain. Alamat pelanggan baru terlihat setelah tugas diambil.`}
       label={
-        <Card className="w-full rounded-2xl border border-gray-300 bg-gray-50 p-5 transition-colors hover:bg-gray-100 active:scale-95">
+        <Card className="w-full rounded-none border border-rule-field bg-paper-tint p-5 transition-colors hover:bg-paper-tint active:scale-95">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-bold tracking-wide text-black">{item.orderNumber}</p>
+            <p className="text-sm font-bold tracking-wide text-ink">{item.orderNumber}</p>
             <Badge
               className={isDelivery ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}
             >
@@ -77,17 +77,17 @@ function TripCard({ item }: { item: Data.RouteItem }) {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 text-gray-600">
+            <span className="flex items-center gap-1.5 text-ink-soft">
               <IconMapPin className="size-4" />
               {formatShortDate(item.pickupDate)}
             </span>
-            <span className="font-semibold text-black">{item.distanceKm} km</span>
+            <span className="font-semibold text-ink">{item.distanceKm} km</span>
           </div>
         </Card>
       }
     >
       <AlertDialogFooter>
-        <AlertDialogCancel className="h-11 rounded-xl text-sm font-semibold">
+        <AlertDialogCancel className="h-11 rounded-none text-sm font-semibold">
           Batal
         </AlertDialogCancel>
         <Link
@@ -95,7 +95,7 @@ function TripCard({ item }: { item: Data.RouteItem }) {
           routeParams={{ number: item.orderNumber, type: item.type }}
           className={buttonVariants({
             className:
-              'h-11 rounded-xl bg-black text-sm font-semibold tracking-wide text-white hover:bg-black/90',
+              'h-11 rounded-none bg-ink text-sm font-semibold tracking-wide text-white hover:bg-ink/90',
           })}
         >
           Ambil Tugas
@@ -112,9 +112,9 @@ function InspectionCard({ order }: { order: Data.Order.Variants['toQueue'] }) {
       title="Ambil tugas inspeksi?"
       description={`Pesanan ${order.orderNumber} akan menjadi tugas Anda selama 3 jam dan hilang dari antrean petugas lain.`}
       label={
-        <Card className="w-full rounded-2xl border border-gray-300 bg-gray-50 p-5 transition-colors hover:bg-gray-100 active:scale-95">
+        <Card className="w-full rounded-none border border-rule-field bg-paper-tint p-5 transition-colors hover:bg-paper-tint active:scale-95">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-bold tracking-wide text-black">{order.orderNumber}</p>
+            <p className="text-sm font-bold tracking-wide text-ink">{order.orderNumber}</p>
             <Badge className="bg-purple-100 text-purple-700">
               <IconSearch className="size-3" />
               Inspeksi
@@ -124,7 +124,7 @@ function InspectionCard({ order }: { order: Data.Order.Variants['toQueue'] }) {
       }
     >
       <AlertDialogFooter>
-        <AlertDialogCancel className="h-11 rounded-xl text-sm font-semibold">
+        <AlertDialogCancel className="h-11 rounded-none text-sm font-semibold">
           Batal
         </AlertDialogCancel>
         <Link
@@ -132,7 +132,7 @@ function InspectionCard({ order }: { order: Data.Order.Variants['toQueue'] }) {
           routeParams={{ number: order.orderNumber }}
           className={buttonVariants({
             className:
-              'h-11 rounded-xl bg-black text-sm font-semibold tracking-wide text-white hover:bg-black/90',
+              'h-11 rounded-none bg-ink text-sm font-semibold tracking-wide text-white hover:bg-ink/90',
           })}
         >
           Ambil Tugas
@@ -154,9 +154,9 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
   const beforePhoto = inspectionPhoto ?? intakePhoto
 
   return (
-    <Card className="rounded-2xl border border-gray-300 bg-gray-50 p-5">
+    <Card className="rounded-none border border-rule-field bg-paper-tint p-5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-bold tracking-wide text-black">{order.orderNumber}</p>
+        <p className="text-sm font-bold tracking-wide text-ink">{order.orderNumber}</p>
         <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
           <IconWashMachine className="size-3" />
           {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
@@ -164,7 +164,7 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
       </div>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-600">{order.items?.length ?? 0} item</span>
+        <span className="text-ink-soft">{order.items?.length ?? 0} item</span>
       </div>
 
       <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
           routeParams={{ number: order.orderNumber }}
           className={buttonVariants({
             variant: 'outline',
-            className: 'h-11 flex-1 rounded-xl text-sm font-semibold text-black active:scale-95',
+            className: 'h-11 flex-1 rounded-none text-sm font-semibold text-ink active:scale-95',
           })}
         >
           <IconPrinter className="size-4" />
@@ -181,7 +181,7 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
         </Link>
 
         <AlertDialog>
-          <AlertDialogTrigger className="h-11 flex-1 rounded-xl bg-black text-sm font-semibold tracking-wide text-white transition-colors hover:bg-black/90 active:scale-95">
+          <AlertDialogTrigger className="h-11 flex-1 rounded-none bg-ink text-sm font-semibold tracking-wide text-white transition-colors hover:bg-ink/90 active:scale-95">
             Selesai Dicuci
           </AlertDialogTrigger>
 
@@ -196,11 +196,11 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
 
             {beforePhoto && (
               <div className="space-y-1.5">
-                <p className="text-xs tracking-widest text-gray-600 uppercase">Foto Sebelum</p>
+                <p className="text-xs tracking-widest text-ink-soft uppercase">Foto Sebelum</p>
                 <img
                   src={beforePhoto}
                   alt="Foto sebelum dicuci"
-                  className="aspect-video w-full rounded-xl border border-gray-200 object-cover"
+                  className="aspect-video w-full rounded-none border border-rule object-cover"
                 />
               </div>
             )}
@@ -211,7 +211,7 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
                   <Field data-invalid={errors.photo ? 'true' : undefined}>
                     <FieldLabel
                       htmlFor={`cleaning-photo-${order.id}`}
-                      className="text-xs tracking-widest text-gray-700 uppercase"
+                      className="text-xs tracking-widest text-ink-body uppercase"
                     >
                       Foto Sesudah Dicuci
                     </FieldLabel>
@@ -223,7 +223,7 @@ function CleaningCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
                       capture="environment"
                       required
                       aria-invalid={!!errors.photo}
-                      className="h-12 rounded-xl border-gray-300 bg-white px-3 focus-visible:border-black focus-visible:ring-black/10"
+                      className="h-12 rounded-none border-rule-field bg-white px-3 focus-visible:border-ink focus-visible:ring-black/10"
                     />
                     <FieldError>{errors.photo}</FieldError>
                   </Field>
@@ -245,9 +245,9 @@ function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
   )
 
   return (
-    <Card className="rounded-2xl border border-gray-300 bg-gray-50 p-5">
+    <Card className="rounded-none border border-rule-field bg-paper-tint p-5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-bold tracking-wide text-black">{order.orderNumber}</p>
+        <p className="text-sm font-bold tracking-wide text-ink">{order.orderNumber}</p>
         <Badge className="bg-teal-100 text-teal-700">
           <IconShoppingBag className="size-3" />
           Siap Diambil
@@ -255,8 +255,8 @@ function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
       </div>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-700">{order.customerName}</span>
-        <span className="text-gray-600">{order.items?.length ?? 0} item</span>
+        <span className="text-ink-body">{order.customerName}</span>
+        <span className="text-ink-soft">{order.items?.length ?? 0} item</span>
       </div>
 
       <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
                 type="submit"
                 variant="outline"
                 disabled={processing || alreadyNotified}
-                className="h-11 w-full rounded-xl text-sm font-semibold text-black active:scale-95 disabled:opacity-50"
+                className="h-11 w-full rounded-none text-sm font-semibold text-ink active:scale-95 disabled:opacity-50"
               >
                 <IconBell className="size-4" />
                 {alreadyNotified ? 'Sudah Dikabari' : 'Kabari via WhatsApp'}
@@ -278,7 +278,7 @@ function CollectionCard({ order }: { order: Data.Order.Variants['toDetail'] }) {
         </Form>
 
         <ConfirmDialog
-          triggerClassName="h-11 w-full flex-1 rounded-xl bg-black text-sm font-semibold tracking-wide text-white transition-colors hover:bg-black/90 active:scale-95"
+          triggerClassName="h-11 w-full flex-1 rounded-none bg-ink text-sm font-semibold tracking-wide text-white transition-colors hover:bg-ink/90 active:scale-95"
           label="Sudah Diambil"
           title="Sudah diambil pelanggan?"
           description={`Pesanan ${order.orderNumber} akan ditandai selesai. Tindakan ini tidak dapat dibatalkan.`}
@@ -308,14 +308,14 @@ export default function Index({ trips, inspections, cleanings, collections }: Pa
     <StaffLayout title="Tugas" description="Daftar tugas penjemputan, inspeksi, dan pencucian">
       <div className="flex items-center justify-between gap-3 px-6 py-5">
         <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Tugas</p>
-          <h1 className="text-3xl font-bold tracking-tight text-black">Antrean Tugas</h1>
+          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">Tugas</p>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">Antrean Tugas</h1>
         </div>
 
         <Link
           route="staff.order.create"
           aria-label="Buat pesanan offline"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all hover:bg-black/90 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-all hover:bg-ink/90 active:scale-95"
         >
           <IconPlus className="size-5" />
         </Link>
@@ -333,13 +333,13 @@ export default function Index({ trips, inspections, cleanings, collections }: Pa
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.key)}
               className={`flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors active:scale-95 ${
-                isActive ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                isActive ? 'bg-ink text-white' : 'bg-paper-tint text-ink-soft hover:bg-paper-tint'
               }`}
             >
               {tab.label}
               <span
                 className={`flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-white text-gray-700'
+                  isActive ? 'bg-white/20 text-white' : 'bg-white text-ink-body'
                 }`}
               >
                 {tab.count}
@@ -351,9 +351,9 @@ export default function Index({ trips, inspections, cleanings, collections }: Pa
 
       <div className="flex-1 space-y-4 px-6 pt-4 pb-nav">
         {activeCount === 0 ? (
-          <Card className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
-            <p className="text-base font-semibold text-black">Tidak ada tugas</p>
-            <p className="text-sm text-gray-600">{EMPTY_MESSAGE[activeTab]}</p>
+          <Card className="flex flex-col items-center gap-2 rounded-none border border-dashed border-rule-field bg-paper-tint px-6 py-16 text-center">
+            <p className="text-base font-semibold text-ink">Tidak ada tugas</p>
+            <p className="text-sm text-ink-soft">{EMPTY_MESSAGE[activeTab]}</p>
           </Card>
         ) : (
           <>

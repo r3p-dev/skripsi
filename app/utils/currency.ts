@@ -1,8 +1,9 @@
-export function formatRupiah(value: number | string) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Number(value))
+const formatter = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  maximumFractionDigits: 0,
+})
+
+export function formatRupiah(value: string | number | null): string {
+  return formatter.format(Number(value ?? 0))
 }

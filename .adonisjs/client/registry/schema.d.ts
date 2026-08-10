@@ -307,100 +307,16 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/address_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'customer.order.create': {
+  'customer.address.geocode': {
     methods: ["GET","HEAD"]
-    pattern: '/order'
+    pattern: '/address/geocode'
     types: {
       body: {}
       paramsTuple: []
       params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['create']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['create']>>>
-    }
-  }
-  'customer.order.receipt': {
-    methods: ["GET","HEAD"]
-    pattern: '/orders/:number/receipt'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { number: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['receipt']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['receipt']>>>
-    }
-  }
-  'customer.orders.index': {
-    methods: ["GET","HEAD"]
-    pattern: '/orders'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['index']>>>
-    }
-  }
-  'customer.orders.store': {
-    methods: ["POST"]
-    pattern: '/orders'
-    types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/order_validator').orderValidator)>>
-      paramsTuple: []
-      params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/order_validator').orderValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'customer.orders.show': {
-    methods: ["GET","HEAD"]
-    pattern: '/orders/:id'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { id: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['show']>>>
-    }
-  }
-  'customer.orders.update': {
-    methods: ["PUT","PATCH"]
-    pattern: '/orders/:id'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { id: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
-    }
-  }
-  'customer.transaction.store': {
-    methods: ["POST"]
-    pattern: '/orders/:number/transactions'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { number: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['store']>>>
-    }
-  }
-  'customer.transaction.show': {
-    methods: ["GET","HEAD"]
-    pattern: '/orders/:number/transactions/latest'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { number: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/transaction_controller').default['show']>>>
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/geocode_validator').geocodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.profile.show': {
@@ -419,10 +335,10 @@ export interface Registry {
     methods: ["PUT"]
     pattern: '/staff/profile'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/profile_controller').default['update']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
@@ -467,10 +383,10 @@ export interface Registry {
     methods: ["PUT"]
     pattern: '/admin/profile'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changePasswordValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#validators/profile_validator').changeNameValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['update']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/admin/profile_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }

@@ -26,7 +26,7 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
             route="admin.service.index"
             className={buttonVariants({
               variant: 'outline',
-              className: 'rounded-xl border-gray-300',
+              className: 'rounded-none border-rule-field',
             })}
           >
             <IconArrowLeft className="size-4" />
@@ -36,7 +36,7 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
       />
 
       {isInUse && (
-        <div className="mb-4 flex max-w-2xl items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="mb-4 flex max-w-2xl items-start gap-2 rounded-none border border-amber-200 bg-amber-50 px-4 py-3">
           <IconInfoCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
           <p className="text-sm text-amber-800">
             Layanan ini sudah dipakai pada pesanan. Perubahan harga hanya berlaku untuk pesanan baru
@@ -68,7 +68,7 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
             <Button
               type="submit"
               disabled={processing}
-              className="h-12 w-full rounded-2xl bg-black text-base font-semibold text-white hover:bg-black/90 active:scale-95"
+              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
             >
               Simpan Perubahan
             </Button>

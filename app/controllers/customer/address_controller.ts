@@ -1,5 +1,6 @@
 import AddressService from '#services/address_service'
 import AddressTransformer from '#transformers/address_transformer'
+import OperationalAreaTransformer from '#transformers/operational_area_transformer'
 import { addressValidator } from '#validators/address_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
@@ -22,9 +23,11 @@ export default class AddressController {
     const user = auth.getUserOrFail()
 
     const address = await this.addressService.getActiveAddress(user)
+    const operationalAreas = await this.addressService.getOperationalAreas()
 
     return inertia.render('customer/address/create', {
       address: AddressTransformer.transform(address),
+      operationalAreas: OperationalAreaTransformer.transform(operationalAreas),
     })
   }
 

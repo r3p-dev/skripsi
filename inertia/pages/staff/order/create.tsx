@@ -10,7 +10,7 @@ import { CustomerLookup, type FoundCustomer } from '@/components/organisms/custo
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { PaymentMethod, PaymentMethodLabel } from '@/enums/transaction_enum'
-import { ServiceCategory } from '@/enums/service_enum'
+import { CatalogueCategory } from '@/enums/catalogue_enum'
 import { formatRupiah } from '@/lib/format'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft, IconInfoCircle } from '@tabler/icons-react'
@@ -47,15 +47,15 @@ export default function Create({ services }: PageProps) {
       <div className="flex items-center gap-3 px-6 py-5">
         <Link
           route="staff.trip.index"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-gray-300 text-black transition-colors hover:bg-gray-100 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
         >
           <IconArrowLeft className="size-5" />
         </Link>
         <div>
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">
+          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">
             Pesanan Offline
           </p>
-          <h1 className="text-2xl font-bold tracking-tight text-black">Pesanan Baru</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Pesanan Baru</h1>
         </div>
       </div>
 
@@ -65,8 +65,8 @@ export default function Create({ services }: PageProps) {
             <>
               <input type="hidden" name="totalItems" value={items.length} />
 
-              <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+              <Card className="rounded-none border border-rule bg-paper-tint p-5">
+                <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
                   Pelanggan
                 </p>
 
@@ -84,7 +84,7 @@ export default function Create({ services }: PageProps) {
                 <Field data-invalid={errors.name ? 'true' : undefined}>
                   <FieldLabel
                     htmlFor="name"
-                    className="text-xs tracking-widest text-gray-700 uppercase"
+                    className="text-xs tracking-widest text-ink-body uppercase"
                   >
                     Nama Pelanggan
                   </FieldLabel>
@@ -95,7 +95,7 @@ export default function Create({ services }: PageProps) {
                     defaultValue={customer?.name ?? ''}
                     required
                     aria-invalid={!!errors.name}
-                    className="h-11 rounded-xl bg-white"
+                    className="h-11 rounded-none bg-white"
                   />
                   <FieldError>{errors.name}</FieldError>
                 </Field>
@@ -103,7 +103,7 @@ export default function Create({ services }: PageProps) {
                 <Field data-invalid={errors.phone ? 'true' : undefined}>
                   <FieldLabel
                     htmlFor="phone"
-                    className="text-xs tracking-widest text-gray-700 uppercase"
+                    className="text-xs tracking-widest text-ink-body uppercase"
                   >
                     Nomor Telepon
                   </FieldLabel>
@@ -114,13 +114,13 @@ export default function Create({ services }: PageProps) {
                     defaultValue={customer?.phone ?? ''}
                     required
                     aria-invalid={!!errors.phone}
-                    className="h-11 rounded-xl bg-white"
+                    className="h-11 rounded-none bg-white"
                   />
                   <FieldError>{errors.phone}</FieldError>
                 </Field>
 
                 <Field data-invalid={errors.delivery ? 'true' : undefined}>
-                  <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-gray-700">
+                  <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-ink-body">
                     <input
                       type="checkbox"
                       name="delivery"
@@ -128,12 +128,12 @@ export default function Create({ services }: PageProps) {
                       checked={delivery}
                       disabled={!customer}
                       onChange={(event) => setDelivery(event.target.checked)}
-                      className="mt-0.5 size-5 shrink-0 rounded border-gray-300 disabled:opacity-40"
+                      className="mt-0.5 size-5 shrink-0 rounded border-rule-field disabled:opacity-40"
                     />
                     <span>
                       Antar kembali ke alamat pelanggan
                       {!customer && (
-                        <span className="block text-xs text-gray-500">
+                        <span className="block text-xs text-ink-subtle">
                           Pilih akun pelanggan terlebih dahulu — pengantaran memerlukan alamat yang
                           tersimpan di akun.
                         </span>
@@ -160,16 +160,16 @@ export default function Create({ services }: PageProps) {
                 type="button"
                 variant="outline"
                 onClick={addItem}
-                className="h-11 w-full rounded-xl text-sm font-semibold tracking-wide text-black active:scale-95"
+                className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
               >
                 Tambah Barang
               </Button>
 
-              <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+              <Card className="rounded-none border border-rule bg-paper-tint p-5">
                 <Field data-invalid={errors.photo ? 'true' : undefined}>
                   <FieldLabel
                     htmlFor="photo"
-                    className="text-xs tracking-widest text-gray-700 uppercase"
+                    className="text-xs tracking-widest text-ink-body uppercase"
                   >
                     Foto Kondisi Barang
                   </FieldLabel>
@@ -181,20 +181,20 @@ export default function Create({ services }: PageProps) {
                     capture="environment"
                     required
                     aria-invalid={!!errors.photo}
-                    className="h-12 rounded-xl border-gray-300 bg-white px-3 focus-visible:border-black focus-visible:ring-black/10"
+                    className="h-12 rounded-none border-rule-field bg-white px-3 focus-visible:border-ink focus-visible:ring-black/10"
                   />
                   <FieldError>{errors.photo}</FieldError>
                 </Field>
 
                 <Field>
-                  <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
+                  <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
                     Catatan
                   </FieldLabel>
-                  <Textarea name="note" className="rounded-xl bg-white" />
+                  <Textarea name="note" className="rounded-none bg-white" />
                 </Field>
 
                 <Field data-invalid={errors.paymentMethod ? 'true' : undefined}>
-                  <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
+                  <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
                     Metode Pembayaran
                   </FieldLabel>
                   <select
@@ -202,7 +202,7 @@ export default function Create({ services }: PageProps) {
                     required
                     value={paymentMethod}
                     onChange={(event) => setPaymentMethod(event.target.value)}
-                    className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+                    className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
                   >
                     <option value="" disabled>
                       Pilih metode pembayaran
@@ -220,7 +220,7 @@ export default function Create({ services }: PageProps) {
                   <Field data-invalid={errors.cashReceived ? 'true' : undefined}>
                     <FieldLabel
                       htmlFor="cashReceived"
-                      className="text-xs tracking-widest text-gray-700 uppercase"
+                      className="text-xs tracking-widest text-ink-body uppercase"
                     >
                       Uang Diterima
                     </FieldLabel>
@@ -234,22 +234,20 @@ export default function Create({ services }: PageProps) {
                       value={cashReceived}
                       onChange={(event) => setCashReceived(event.target.value)}
                       aria-invalid={!!errors.cashReceived}
-                      className="h-11 rounded-xl bg-white"
+                      className="h-11 rounded-none bg-white"
                     />
                     <FieldError>{errors.cashReceived}</FieldError>
 
-                    <div className="space-y-1 rounded-xl border border-gray-300 bg-white p-3 text-sm">
+                    <div className="space-y-1 rounded-none border border-rule-field bg-white p-3 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Perkiraan total</span>
-                        <span className="font-semibold text-black">
-                          {formatRupiah(runningTotal)}
-                        </span>
+                        <span className="text-ink-soft">Perkiraan total</span>
+                        <span className="font-semibold text-ink">{formatRupiah(runningTotal)}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Kembalian</span>
+                        <span className="text-ink-soft">Kembalian</span>
                         <span
                           className={`font-bold ${
-                            change !== null && change < 0 ? 'text-destructive' : 'text-black'
+                            change !== null && change < 0 ? 'text-destructive' : 'text-ink'
                           }`}
                         >
                           {change === null ? '-' : formatRupiah(change)}
@@ -262,9 +260,9 @@ export default function Create({ services }: PageProps) {
                         </p>
                       )}
                       {services.some(
-                        (service) => service.category === ServiceCategory.ADDITIONAL
+                        (service) => service.category === CatalogueCategory.ADDITIONAL
                       ) && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-ink-subtle">
                           Belum termasuk layanan tambahan — total akhir ada di struk.
                         </p>
                       )}
@@ -276,7 +274,7 @@ export default function Create({ services }: PageProps) {
               <Button
                 type="submit"
                 disabled={processing}
-                className="h-12 w-full rounded-xl bg-black text-base font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95"
+                className="h-12 w-full rounded-none bg-ink text-base font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
               >
                 Buat Pesanan
               </Button>

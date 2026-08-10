@@ -90,7 +90,7 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-2xl select-none"
+      className="relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-none select-none"
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       onKeyDown={handleKeyDown}
@@ -130,16 +130,16 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
       >
         <div className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl">
           <div className="flex gap-1.5">
-            <div className="h-5 w-0.5 bg-black" />
-            <div className="h-5 w-0.5 bg-black" />
+            <div className="h-5 w-0.5 bg-ink" />
+            <div className="h-5 w-0.5 bg-ink" />
           </div>
         </div>
       </div>
 
-      <div className="absolute top-4 left-4 rounded bg-black px-3 py-1.5 text-xs tracking-wider text-white font-medium">
+      <div className="absolute top-4 left-4 rounded bg-ink px-3 py-1.5 text-xs tracking-wider text-white font-medium">
         Sebelum
       </div>
-      <div className="absolute top-4 right-4 rounded bg-white px-3 py-1.5 text-xs tracking-wider text-black font-medium">
+      <div className="absolute top-4 right-4 rounded bg-white px-3 py-1.5 text-xs tracking-wider text-ink font-medium">
         Sesudah
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
 import { IconClipboardList, IconUser } from '@tabler/icons-react'
@@ -19,6 +20,8 @@ const NAV_ITEMS = [
   },
 ] as const
 
+const SHELL_WIDTH = 'tablet:max-w-[680px] desktop:max-w-[760px]'
+
 export default function StaffLayout({
   children,
   title,
@@ -30,16 +33,29 @@ export default function StaffLayout({
   const { component } = usePage()
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
+    <div className="bg-paper">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
       </Head>
 
-      {children}
+      <div
+        className={cn(
+          'mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-white text-ink',
+          SHELL_WIDTH,
+          'tablet:mt-14 tablet:mb-28 tablet:min-h-0 tablet:rounded-md tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]'
+        )}
+      >
+        {children}
+      </div>
 
-      <nav className="fixed inset-x-0 bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 z-50 border-t border-gray-200 bg-white pb-safe">
-        <div className="mx-auto flex max-w-md items-stretch justify-around px-4 py-1.5">
+      <nav
+        className={cn(
+          'fixed inset-x-0 bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t border-rule-strong bg-white pb-safe',
+          SHELL_WIDTH
+        )}
+      >
+        <div className="mx-auto flex items-stretch justify-around px-4 py-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive = (item.match as readonly string[]).includes(component)
 
@@ -49,7 +65,7 @@ export default function StaffLayout({
                 route={item.route}
                 aria-current={isActive ? 'page' : undefined}
                 className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 transition-colors active:scale-95 touch-target ${
-                  isActive ? 'text-black' : 'text-gray-400'
+                  isActive ? 'text-ink' : 'text-ink-faint'
                 }`}
               >
                 <item.icon className="size-6" strokeWidth={isActive ? 2.25 : 1.75} />

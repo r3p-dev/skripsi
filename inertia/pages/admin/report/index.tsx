@@ -55,9 +55,9 @@ const chartConfig = {
 
 function BreakdownTable({ title, rows }: { title: string; rows: MoneyBreakdown[] }) {
   return (
-    <Card className="rounded-2xl border border-gray-200 bg-white">
+    <Card className="rounded-none border border-rule bg-white">
       <CardHeader>
-        <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">{title}</p>
+        <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">{title}</p>
       </CardHeader>
       <CardContent>
         <Table>
@@ -101,7 +101,7 @@ export default function Index({ report }: PageProps) {
             <Field className="w-44">
               <FieldLabel
                 htmlFor="from"
-                className="text-xs tracking-widest text-gray-700 uppercase"
+                className="text-xs tracking-widest text-ink-body uppercase"
               >
                 Dari
               </FieldLabel>
@@ -110,12 +110,12 @@ export default function Index({ report }: PageProps) {
                 name="from"
                 type="date"
                 defaultValue={report.from}
-                className="h-11 rounded-xl border-gray-300 bg-gray-50 px-4"
+                className="h-11 rounded-none border-rule-field bg-paper-tint px-4"
               />
             </Field>
 
             <Field className="w-44">
-              <FieldLabel htmlFor="to" className="text-xs tracking-widest text-gray-700 uppercase">
+              <FieldLabel htmlFor="to" className="text-xs tracking-widest text-ink-body uppercase">
                 Sampai
               </FieldLabel>
               <Input
@@ -123,13 +123,13 @@ export default function Index({ report }: PageProps) {
                 name="to"
                 type="date"
                 defaultValue={report.to}
-                className="h-11 rounded-xl border-gray-300 bg-gray-50 px-4"
+                className="h-11 rounded-none border-rule-field bg-paper-tint px-4"
               />
             </Field>
 
             <Button
               type="submit"
-              className="h-11 rounded-xl bg-black px-6 text-white hover:bg-black/90 active:scale-95"
+              className="h-11 rounded-none bg-ink px-6 text-white hover:bg-ink/90 active:scale-95"
             >
               Tampilkan
             </Button>
@@ -151,9 +151,9 @@ export default function Index({ report }: PageProps) {
         />
       </div>
 
-      <Card className="mt-6 rounded-2xl border border-gray-200 bg-white">
+      <Card className="mt-6 rounded-none border border-rule bg-white">
         <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
             Pendapatan Harian
           </p>
         </CardHeader>
@@ -177,15 +177,15 @@ export default function Index({ report }: PageProps) {
         <BreakdownTable title="Tipe Pesanan" rows={report.byType} />
       </div>
 
-      <Card className="mt-6 rounded-2xl border border-gray-200 bg-white">
+      <Card className="mt-6 rounded-none border border-rule bg-white">
         <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
             Layanan Terlaris
           </p>
         </CardHeader>
         <CardContent>
           {report.topServices.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500">
+            <p className="py-8 text-center text-sm text-ink-subtle">
               Belum ada layanan terjual pada rentang ini
             </p>
           ) : (
@@ -200,7 +200,7 @@ export default function Index({ report }: PageProps) {
               <TableBody>
                 {report.topServices.map((service) => (
                   <TableRow key={service.id}>
-                    <TableCell className="font-medium text-black">{service.name}</TableCell>
+                    <TableCell className="font-medium text-ink">{service.name}</TableCell>
                     <TableCell className="text-right">{service.orders}</TableCell>
                     <TableCell className="text-right font-semibold">
                       {formatRupiah(service.revenue)}

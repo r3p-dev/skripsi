@@ -86,6 +86,22 @@ export const paymentLimiter = limiter.define('payment', (ctx) => {
     })
 })
 
+export const geocodeLimiter = limiter.define('geocode', (ctx) => {
+  return limiter
+    .allowRequests(30)
+    .every('1 minute')
+    .blockFor('1 minute')
+    .usingKey(`geocode:${ctx.auth.user?.id ?? ctx.request.ip()}`)
+    .limitExceeded(() => {
+      throw new errors.E_VALIDATION_ERROR([
+        {
+          field: 'query',
+          message: 'Terlalu banyak pencarian lokasi. Silakan coba lagi nanti.',
+        },
+      ])
+    })
+})
+
 export const midtransChargeLimiter = limiter.use({
   requests: 5,
   duration: '15 minutes',

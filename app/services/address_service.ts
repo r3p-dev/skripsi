@@ -8,6 +8,13 @@ import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
+export type AreaBounds = {
+  minLongitude: number
+  minLatitude: number
+  maxLongitude: number
+  maxLatitude: number
+}
+
 @inject()
 export default class AddressService {
   async getActiveAddress(user: User, trx?: TransactionClientContract): Promise<Address | null> {
@@ -17,18 +24,50 @@ export default class AddressService {
       .first()
   }
 
-  async isWithinOperationalArea(longitude: number, latitude: number): Promise<boolean> {
-    const area = await OperationalArea.query()
+  async getOperationalAreas(): Promise<OperationalArea[]> {
+    return OperationalArea.query()
       .where('is_active', true)
-      .whereRaw('ST_Covers(geometry, ST_SetSRID(ST_MakePoint(?, ?), 4326))', [longitude, latitude])
-      .select('id')
+      .withScopes((scopes) => scopes.withGeometry())
+  }
+
+  async getOperationalAreaBounds(): Promise<AreaBounds | null> {
+    const result = await db
+      .from('operational_areas')
+      .where('is_active', true)
+      .select(
+        db.raw('ST_XMin(ST_Extent(geometry)) as min_longitude'),
+        db.raw('ST_YMin(ST_Extent(geometry)) as min_latitude'),
+        db.raw('ST_XMax(ST_Extent(geometry)) as max_longitude'),
+        db.raw('ST_YMax(ST_Extent(geometry)) as max_latitude')
+      )
       .first()
 
-    return area !== null
+    if (!result || result.min_longitude === null) {
+      return null
+    }
+
+    return {
+      minLongitude: Number(result.min_longitude),
+      minLatitude: Number(result.min_latitude),
+      maxLongitude: Number(result.max_longitude),
+      maxLatitude: Number(result.max_latitude),
+    }
+  }
+
+  async findFirstWithinOperationalArea<T extends { latitude: number; longitude: number }>(
+    candidates: T[]
+  ): Promise<T | null> {
+    for (const candidate of candidates) {
+      if (await this.#isWithinOperationalArea(candidate.longitude, candidate.latitude)) {
+        return candidate
+      }
+    }
+
+    return null
   }
 
   async replaceActiveAddress(user: User, data: AddressData): Promise<Address> {
-    if (!(await this.isWithinOperationalArea(data.longitude, data.latitude))) {
+    if (!(await this.#isWithinOperationalArea(data.longitude, data.latitude))) {
       throw new errors.E_VALIDATION_ERROR([
         {
           field: 'radius',
@@ -51,6 +90,16 @@ export default class AddressService {
         { client: trx }
       )
     })
+  }
+
+  async #isWithinOperationalArea(longitude: number, latitude: number): Promise<boolean> {
+    const area = await OperationalArea.query()
+      .where('is_active', true)
+      .whereRaw('ST_Covers(geometry, ST_SetSRID(ST_MakePoint(?, ?), 4326))', [longitude, latitude])
+      .select('id')
+      .first()
+
+    return area !== null
   }
 
   async #removeCurrentAddress(user: User, trx: TransactionClientContract): Promise<void> {

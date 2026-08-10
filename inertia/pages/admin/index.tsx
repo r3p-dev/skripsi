@@ -1,3 +1,4 @@
+import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
@@ -15,8 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
-import { OrderStatusLabel } from '@/enums/order_status_enum'
-import { OrderTypeLabel } from '@/enums/order_type_enum'
 import { formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
@@ -98,9 +97,9 @@ export default function Index({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card className="rounded-2xl border border-gray-200 bg-white">
+        <Card className="rounded-none border border-rule bg-white">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Pendapatan 14 Hari Terakhir
             </p>
           </CardHeader>
@@ -128,9 +127,9 @@ export default function Index({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 bg-white">
+        <Card className="rounded-none border border-rule bg-white">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Beban Penjemputan 7 Hari
             </p>
           </CardHeader>
@@ -149,9 +148,9 @@ export default function Index({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50 lg:col-span-2">
+        <Card className="rounded-none border border-rule bg-paper-tint lg:col-span-2">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Pesanan per Status
             </p>
           </CardHeader>
@@ -159,18 +158,18 @@ export default function Index({
             {statusBreakdown.map((slice) => (
               <div
                 key={slice.value}
-                className="flex items-center justify-between gap-3 border-b border-gray-200 py-2 last:border-0"
+                className="flex items-center justify-between gap-3 border-b border-rule py-2 last:border-0"
               >
-                <span className="text-sm text-gray-700">{slice.label}</span>
-                <span className="text-sm font-semibold text-black">{slice.total}</span>
+                <span className="text-sm text-ink-body">{slice.label}</span>
+                <span className="text-sm font-semibold text-ink">{slice.total}</span>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-200 bg-gray-50">
+        <Card className="rounded-none border border-rule bg-paper-tint">
           <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
               Online vs Offline
             </p>
           </CardHeader>
@@ -181,13 +180,13 @@ export default function Index({
               return (
                 <div key={slice.value}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-700">{slice.label}</span>
-                    <span className="font-semibold text-black">
+                    <span className="text-ink-body">{slice.label}</span>
+                    <span className="font-semibold text-ink">
                       {slice.total} ({share}%)
                     </span>
                   </div>
-                  <div className="mt-1 h-2 w-full rounded-full bg-gray-200">
-                    <div className="h-2 rounded-full bg-black" style={{ width: `${share}%` }} />
+                  <div className="mt-1 h-2 w-full rounded-full bg-paper-tint">
+                    <div className="h-2 rounded-full bg-ink" style={{ width: `${share}%` }} />
                   </div>
                 </div>
               )
@@ -200,18 +199,18 @@ export default function Index({
         <LiveOrders />
       </div>
 
-      <Card className="mt-6 rounded-2xl border border-gray-200 bg-white">
+      <Card className="mt-6 rounded-none border border-rule bg-white">
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
             Pesanan Terbaru
           </p>
-          <Link route="admin.order.index" className="text-sm font-medium text-black underline">
+          <Link route="admin.order.index" className="text-sm font-medium text-ink underline">
             Lihat semua
           </Link>
         </CardHeader>
         <CardContent>
           {recentOrders.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-500">Belum ada pesanan</p>
+            <p className="py-6 text-center text-sm text-ink-subtle">Belum ada pesanan</p>
           ) : (
             <Table>
               <TableHeader>

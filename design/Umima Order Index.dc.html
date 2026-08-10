@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  body{margin:0;background:#e9e9e7;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif}
+  a{color:#111;text-decoration:none}
+  a:hover{color:#555}
+  input{font-family:inherit}
+  input::placeholder{color:#8c8c8c}
+  #shell{max-width:430px}
+  @media (min-width:680px){#shell{max-width:680px!important;margin:56px auto!important;min-height:auto!important;border:1px solid rgba(0,0,0,.08)!important;border-radius:6px!important;box-shadow:0 24px 64px rgba(0,0,0,.08)!important}}
+  @media (min-width:1000px){#shell{max-width:760px!important}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+</style>
+</helmet>
+<div id="shell" style="max-width:430px;margin:0 auto;background:#fff;color:#111;min-height:100vh;box-sizing:border-box">
+
+  <header style="padding:24px clamp(24px,4vw,64px) 0">
+    <a href="Umima Profile.dc.html" style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070;letter-spacing:.04em">← Kembali</a>
+  </header>
+
+  <main>
+
+  <div style="padding:28px clamp(24px,4vw,64px) 8px">
+    <h1 style="margin:0 0 6px 0;font:600 clamp(20px,1.5vw + 14px,27px)/1.4 system-ui;color:#111">Riwayat Pesanan</h1>
+    <div style="font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#5f5f5f">Cari dan lihat detail pesanan Anda.</div>
+  </div>
+
+  <div style="padding:20px clamp(24px,4vw,64px) 0">
+    <label for="order-search-input" style="display:block;font:400 clamp(11px,0.8vw + 9px,13px)/1.4 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5f5f5f;margin-bottom:10px">Cari Pesanan</label>
+    <input id="order-search-input" type="text" value="{{query}}" onChange="{{onQueryChange}}" placeholder="No. pesanan, jenis, atau merk barang" style="width:100%;box-sizing:border-box;border:none;border-bottom:1px solid rgba(0,0,0,.2);padding:10px 0;font-size:15px;color:#111;background:transparent;outline:none" style-focus="outline:2px solid #111;outline-offset:2px">
+    <div aria-live="polite" style="font:400 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#707070;margin-top:10px">{{resultCountLabel}}</div>
+  </div>
+
+  <div style="padding:20px clamp(24px,4vw,64px) 0">
+    <sc-for list="{{pageOrders}}" as="order" hint-placeholder-count="3">
+      <div style="border:1px solid rgba(0,0,0,.1);margin-bottom:16px">
+        <div style="padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div>
+            <div style="font:600 clamp(14px,1vw + 10px,16px)/1.4 system-ui;color:#111">{{order.id}}</div>
+            <div style="font:400 clamp(12px,0.85vw + 9px,14px)/1.5 system-ui;color:#707070;margin-top:2px">{{order.dateLabel}} · {{order.itemSummary}}</div>
+          </div>
+          <span style="{{order.statusStyle}}">{{order.status}}</span>
+        </div>
+        <a href="{{order.showHref}}" style="display:block;border-top:1px solid rgba(0,0,0,.08);padding:12px 20px;font:500 clamp(12px,0.85vw + 9px,14px)/1.4 system-ui;color:#111">Lihat Detail →</a>
+      </div>
+    </sc-for>
+    <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+      <div style="text-align:center;padding:32px 0;font:400 clamp(13px,0.9vw + 10px,15px)/1.6 system-ui;color:#707070">Tidak ada pesanan yang cocok dengan pencarian.</div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasPages}}" hint-placeholder-val="{{false}}">
+    <nav aria-label="Navigasi halaman pesanan" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:0 clamp(24px,4vw,64px) 40px;flex-wrap:wrap">
+      <button type="button" onClick="{{onPrevPage}}" disabled="{{isFirstPage}}" aria-label="Halaman sebelumnya" style="width:36px;height:36px;border:1px solid rgba(0,0,0,.2);border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;font:400 clamp(16px,1.1vw + 12px,19px)/1 system-ui;color:{{prevColor}};cursor:pointer;font-family:inherit">‹</button>
+      <sc-for list="{{pageNumbers}}" as="pn" hint-placeholder-count="3">
+        <button type="button" onClick="{{pn.onClick}}" aria-label="Halaman {{pn.number}}" aria-current="{{pn.current}}" style="{{pn.style}}">{{pn.number}}</button>
+      </sc-for>
+      <button type="button" onClick="{{onNextPage}}" disabled="{{isLastPage}}" aria-label="Halaman berikutnya" style="width:36px;height:36px;border:1px solid rgba(0,0,0,.2);border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;font:400 clamp(16px,1.1vw + 12px,19px)/1 system-ui;color:{{nextColor}};cursor:pointer;font-family:inherit">›</button>
+    </nav>
+  </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  pageSize = 3;
+
+  allOrders = [
+    { id: 'UM-2026-0142', dateLabel: '3 Agustus 2026', status: 'Selesai' },
+    { id: 'UM-2026-0138', dateLabel: '28 Juli 2026', status: 'Diproses' },
+    { id: 'UM-2026-0125', dateLabel: '14 Juli 2026', status: 'Selesai' },
+    { id: 'UM-2026-0119', dateLabel: '2 Juli 2026', status: 'Dijemput' },
+    { id: 'UM-2026-0104', dateLabel: '19 Juni 2026', status: 'Selesai' },
+    { id: 'UM-2026-0097', dateLabel: '5 Juni 2026', status: 'Selesai' },
+    { id: 'UM-2026-0083', dateLabel: '22 Mei 2026', status: 'Dibatalkan' }
+  ];
+
+  itemsById = {
+    'UM-2026-0142': [{ jenis: 'Sepatu', merk: 'Nike' }, { jenis: 'Sepatu', merk: 'Adidas' }],
+    'UM-2026-0138': [{ jenis: 'Tas', merk: 'Herschel' }],
+    'UM-2026-0125': [{ jenis: 'Helm', merk: 'KYT' }],
+    'UM-2026-0119': [{ jenis: 'Sepatu', merk: 'Converse' }, { jenis: 'Tas', merk: 'Fjallraven' }, { jenis: 'Helm', merk: 'INK' }],
+    'UM-2026-0104': [{ jenis: 'Sepatu', merk: 'Vans' }],
+    'UM-2026-0097': [{ jenis: 'Tas', merk: 'Eiger' }],
+    'UM-2026-0083': [{ jenis: 'Sepatu', merk: 'New Balance' }]
+  };
+
+  state = { query: '', page: 1 };
+
+  statusStyle(status) {
+    const base = 'font:500 clamp(9px,0.7vw + 7px,10px)/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:2px;white-space:nowrap';
+    return status === 'Selesai'
+      ? `${base};background:#111;color:#fff`
+      : `${base};background:none;color:#111;border:1px solid rgba(0,0,0,.3)`;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const q = s.query.trim().toLowerCase();
+
+    const filtered = this.allOrders.filter((o) => {
+      if (!q) return true;
+      if (o.id.toLowerCase().includes(q) || o.status.toLowerCase().includes(q)) return true;
+      const items = this.itemsById[o.id] || [];
+      return items.some((it) => it.jenis.toLowerCase().includes(q) || it.merk.toLowerCase().includes(q));
+    }).map((o) => {
+      const items = this.itemsById[o.id] || [];
+      const counts = {};
+      items.forEach((it) => { counts[it.jenis] = (counts[it.jenis] || 0) + 1; });
+      const itemSummary = Object.entries(counts).map(([jenis, n]) => `${n} ${jenis}`).join(', ');
+      return { ...o, itemSummary, statusStyle: this.statusStyle(o.status), showHref: `Umima Order Show.dc.html?id=${encodeURIComponent(o.id)}` };
+    });
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / this.pageSize));
+    const page = Math.min(s.page, totalPages);
+    const pageOrders = filtered.slice((page - 1) * this.pageSize, page * this.pageSize);
+    const isFirstPage = page <= 1;
+    const isLastPage = page >= totalPages;
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => {
+      const n = i + 1;
+      const current = n === page;
+      return {
+        number: n,
+        current,
+        onClick: () => this.setState({ page: n }),
+        style: `width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:${current ? '600' : '400'} clamp(13px,0.9vw + 10px,15px)/1 system-ui;cursor:pointer;font-family:inherit;background:${current ? '#111' : 'none'};color:${current ? '#fff' : '#111'};border:1px solid ${current ? '#111' : 'rgba(0,0,0,.2)'}`
+      };
+    });
+
+    return {
+      query: s.query,
+      onQueryChange: (e) => this.setState({ query: e.target.value, page: 1 }),
+      pageOrders,
+      noResults: filtered.length === 0,
+      resultCountLabel: `${filtered.length} pesanan ditemukan`,
+      hasPages: filtered.length > this.pageSize,
+      page,
+      totalPages,
+      pageNumbers,
+      isFirstPage,
+      isLastPage,
+      prevColor: isFirstPage ? '#ccc' : '#111',
+      nextColor: isLastPage ? '#ccc' : '#111',
+      onPrevPage: () => this.setState({ page: Math.max(1, page - 1) }),
+      onNextPage: () => this.setState({ page: Math.min(totalPages, page + 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

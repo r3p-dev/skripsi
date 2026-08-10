@@ -7,8 +7,12 @@
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
 import type AddressTransformer from '#transformers/address_transformer'
-import type UserTransformer from '#transformers/user_transformer'
 import type CatalogueTransformer from '#transformers/catalogue_transformer'
+import type ItemTransformer from '#transformers/item_transformer'
+import type OperationalAreaTransformer from '#transformers/operational_area_transformer'
+import type OrderItemTransformer from '#transformers/order_item_transformer'
+import type OrderTransformer from '#transformers/order_transformer'
+import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
 export namespace Data {
@@ -16,13 +20,29 @@ export namespace Data {
   export namespace Address {
     export type Variants = InferVariants<AddressTransformer>
   }
-  export type User = InferData<UserTransformer>
-  export namespace User {
-    export type Variants = InferVariants<UserTransformer>
-  }
   export type Catalogue = InferData<CatalogueTransformer>
   export namespace Catalogue {
     export type Variants = InferVariants<CatalogueTransformer>
+  }
+  export type Item = InferData<ItemTransformer>
+  export namespace Item {
+    export type Variants = InferVariants<ItemTransformer>
+  }
+  export type OperationalArea = InferData<OperationalAreaTransformer>
+  export namespace OperationalArea {
+    export type Variants = InferVariants<OperationalAreaTransformer>
+  }
+  export type OrderItem = InferData<OrderItemTransformer>
+  export namespace OrderItem {
+    export type Variants = InferVariants<OrderItemTransformer>
+  }
+  export type Order = InferData<OrderTransformer>
+  export namespace Order {
+    export type Variants = InferVariants<OrderTransformer>
+  }
+  export type User = InferData<UserTransformer>
+  export namespace User {
+    export type Variants = InferVariants<UserTransformer>
   }
   export type SharedProps = InferSharedProps<InertiaMiddleware>
 }

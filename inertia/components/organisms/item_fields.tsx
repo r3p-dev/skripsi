@@ -3,16 +3,17 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import type { Data } from '@/generated/data'
-import { ItemType, ServiceCategory } from '@/enums/service_enum'
+import { CatalogueCategory } from '@/enums/catalogue_enum'
+import { ItemType } from '@/enums/item_enum'
 import { formatRupiah } from '@/lib/format'
 import { IconTrash } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 
 const itemTypeByCategory: Record<string, string> = {
-  [ServiceCategory.SHOE_WASH]: ItemType.SHOE,
-  [ServiceCategory.SHOE_REPAIR]: ItemType.SHOE,
-  [ServiceCategory.BAG_WASH]: ItemType.BAG,
-  [ServiceCategory.HELMET_WASH]: ItemType.HELMET,
+  [CatalogueCategory.SHOE_WASH]: ItemType.SHOE,
+  [CatalogueCategory.SHOE_REPAIR]: ItemType.SHOE,
+  [CatalogueCategory.BAG_WASH]: ItemType.BAG,
+  [CatalogueCategory.HELMET_WASH]: ItemType.HELMET,
 }
 
 export type ItemDefaults = {
@@ -63,9 +64,11 @@ function ItemFields({
   defaults?: ItemDefaults
   onServiceChange: (serviceId: string) => void
 }) {
-  const mainServices = services.filter((service) => service.category !== ServiceCategory.ADDITIONAL)
+  const mainServices = services.filter(
+    (service) => service.category !== CatalogueCategory.ADDITIONAL
+  )
   const additionalServices = services.filter(
-    (service) => service.category === ServiceCategory.ADDITIONAL
+    (service) => service.category === CatalogueCategory.ADDITIONAL
   )
   const selectedService = services.find((service) => String(service.id) === serviceId)
   const itemType = selectedService ? (itemTypeByCategory[selectedService.category] ?? '') : ''
@@ -76,72 +79,72 @@ function ItemFields({
 
       <div className="grid grid-cols-2 gap-3">
         <Field>
-          <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Merek</FieldLabel>
+          <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Merek</FieldLabel>
           <Input
             name={`items[${index}][brand]`}
             defaultValue={defaults?.brand}
             required
-            className="h-11 rounded-xl"
+            className="h-11 rounded-none"
           />
         </Field>
         <Field>
-          <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Model</FieldLabel>
+          <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Model</FieldLabel>
           <Input
             name={`items[${index}][model]`}
             defaultValue={defaults?.model}
             required
-            className="h-11 rounded-xl"
+            className="h-11 rounded-none"
           />
         </Field>
         <Field>
-          <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Bahan</FieldLabel>
+          <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Bahan</FieldLabel>
           <Input
             name={`items[${index}][material]`}
             defaultValue={defaults?.material}
             required
-            className="h-11 rounded-xl"
+            className="h-11 rounded-none"
           />
         </Field>
         <Field>
-          <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
+          <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
             Ukuran
           </FieldLabel>
           <Input
             name={`items[${index}][size]`}
             defaultValue={defaults?.size}
             required
-            className="h-11 rounded-xl"
+            className="h-11 rounded-none"
           />
         </Field>
       </div>
 
       <Field>
-        <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Kondisi</FieldLabel>
+        <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Kondisi</FieldLabel>
         <Input
           name={`items[${index}][condition]`}
           defaultValue={defaults?.condition}
           required
-          className="h-11 rounded-xl"
+          className="h-11 rounded-none"
         />
       </Field>
 
       <Field>
-        <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Catatan</FieldLabel>
+        <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Catatan</FieldLabel>
         <Textarea
           name={`items[${index}][note]`}
           defaultValue={defaults?.note}
-          className="rounded-xl"
+          className="rounded-none"
         />
       </Field>
 
       <Field>
-        <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">Layanan</FieldLabel>
+        <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">Layanan</FieldLabel>
         <select
           name={`items[${index}][service]`}
           value={serviceId}
           onChange={(event) => onServiceChange(event.target.value)}
           required
-          className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus-visible:border-black focus-visible:outline-none"
+          className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
         >
           <option value="">Pilih layanan</option>
           {mainServices.map((service) => (
@@ -154,21 +157,21 @@ function ItemFields({
 
       {additionalServices.length > 0 && (
         <Field>
-          <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
+          <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
             Layanan Tambahan
           </FieldLabel>
-          <div className="space-y-2 rounded-xl border border-gray-300 bg-white p-3">
+          <div className="space-y-2 rounded-none border border-rule-field bg-white p-3">
             {additionalServices.map((service) => (
               <label
                 key={service.id}
-                className="flex min-h-11 items-center gap-3 text-sm text-gray-700"
+                className="flex min-h-11 items-center gap-3 text-sm text-ink-body"
               >
                 <input
                   type="checkbox"
                   name={`items[${index}][additionalServices][]`}
                   value={service.id}
                   defaultChecked={defaults?.additionalServiceIds.includes(service.id)}
-                  className="size-5 shrink-0 rounded border-gray-300"
+                  className="size-5 shrink-0 rounded border-rule-field"
                 />
                 {service.name} - {formatRupiah(service.price)}
               </label>
@@ -196,9 +199,9 @@ export function ItemCard({
   onRemove: () => void
 }) {
   return (
-    <Card className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+    <Card className="rounded-none border border-rule bg-paper-tint p-5">
       <div className="flex items-center justify-between">
-        <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
+        <p className="text-xs tracking-widest text-ink-soft uppercase font-medium">
           Barang {index + 1}
         </p>
         {canRemove && (
@@ -206,7 +209,7 @@ export function ItemCard({
             type="button"
             onClick={onRemove}
             aria-label={`Hapus barang ${index + 1}`}
-            className="-my-2 flex size-11 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
+            className="-my-2 flex size-11 items-center justify-center rounded-full text-ink-subtle hover:bg-paper-tint"
           >
             <IconTrash className="size-4" />
           </button>

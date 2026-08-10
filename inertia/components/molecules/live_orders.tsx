@@ -1,7 +1,6 @@
+import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { OrderStatusLabel } from '@/enums/order_status_enum'
-import { OrderTypeLabel } from '@/enums/order_type_enum'
 import { neutralBadgeStyle, orderStatusStyles } from '@/lib/constants'
 import { formatRupiah } from '@/lib/format'
 import { Transmit } from '@adonisjs/transmit-client'
@@ -51,35 +50,35 @@ export function LiveOrders() {
   }, [])
 
   return (
-    <Card className="rounded-2xl border border-gray-200 bg-white">
+    <Card className="rounded-none border border-rule bg-white">
       <CardHeader className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium tracking-widest text-gray-600 uppercase">
+        <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
           Aktivitas Langsung
         </p>
-        <span className="flex items-center gap-1.5 text-xs text-gray-500">
+        <span className="flex items-center gap-1.5 text-xs text-ink-subtle">
           <IconAntennaBars5 className="size-4" />
           Terhubung
         </span>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-500">
+          <p className="py-6 text-center text-sm text-ink-subtle">
             Belum ada aktivitas sejak halaman dibuka
           </p>
         ) : (
-          <ul className="flex flex-col divide-y divide-gray-200">
+          <ul className="flex flex-col divide-y divide-rule">
             {events.map((entry, index) => (
               <li key={`${entry.orderNumber}-${index}`} className="flex flex-col gap-1 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold text-black">{entry.orderNumber}</span>
+                  <span className="text-sm font-semibold text-ink">{entry.orderNumber}</span>
                   <Badge className={EVENT_STYLE[entry.event]}>{EVENT_LABEL[entry.event]}</Badge>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-xs">
-                  <span className="text-gray-600">
+                  <span className="text-ink-soft">
                     {entry.customerName} ·{' '}
                     {OrderTypeLabel[entry.type as keyof typeof OrderTypeLabel]}
                   </span>
-                  <span className="text-gray-700">
+                  <span className="text-ink-body">
                     {entry.totalPrice === null ? '—' : formatRupiah(entry.totalPrice)}
                   </span>
                 </div>

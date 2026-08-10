@@ -1,6 +1,6 @@
-import { Link } from '@adonisjs/inertia/react'
+import { BackLink, Eyebrow, Lede, PageTitle, Shell } from '@/components/atoms/editorial'
 import { Head } from '@inertiajs/react'
-import { type PropsWithChildren } from 'react'
+import { type PropsWithChildren, type ReactNode } from 'react'
 
 export default function AuthLayout({
   children,
@@ -8,38 +8,52 @@ export default function AuthLayout({
   description,
   metaTitle,
   metaDescription,
+  audience,
+  eyebrow,
 }: PropsWithChildren<{
   title: string
   description: string
   metaTitle: string
   metaDescription: string
+  audience?: string
+  eyebrow?: ReactNode
 }>) {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
+    <div className="min-h-dvh bg-white">
       <Head>
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
       </Head>
 
-      <div className="px-6 py-5">
-        <Link route="home" className="flex items-center gap-3">
-          <img src="/images/logo.jpg" alt="UmimaClean" className="size-14" />
-          <div>
-            <h1 className="mb-0.5 text-2xl font-bold tracking-tight text-black">UmimaClean</h1>
-            <p className="text-xs tracking-widest text-gray-600 uppercase">Layanan Cuci Sepatu</p>
+      <Shell className="flex flex-col tablet:max-w-[680px] desktop:max-w-[760px]">
+        <header className="gutter flex justify-between pt-6">
+          <BackLink route="home">← Kembali</BackLink>
+          {audience && (
+            <span className="text-micro tracking-[0.14em] text-ink-faint uppercase">
+              {audience}
+            </span>
+          )}
+        </header>
+
+        <main className="flex-1">
+          <div className="gutter flex flex-col items-center pt-8 pb-10 text-center">
+            <img
+              src="/images/logo_full.jpg"
+              alt="ümima"
+              className="mb-7 w-[130px] object-contain"
+            />
+            {eyebrow && <Eyebrow className="mb-4">{eyebrow}</Eyebrow>}
+            <PageTitle className="mb-2">{title}</PageTitle>
+            <Lede className="max-w-[260px]">{description}</Lede>
           </div>
-        </Link>
-      </div>
 
-      <div className="flex flex-1 flex-col px-6 pb-page">
-        <div className="mb-8 space-y-2">
-          <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Akun</p>
-          <h2 className="text-3xl font-bold tracking-tight text-black">{title}</h2>
-          <p className="text-sm leading-relaxed text-gray-700 pt-1">{description}</p>
-        </div>
+          <div className="gutter">{children}</div>
+        </main>
 
-        {children}
-      </div>
+        <footer className="pt-10 pb-12 text-center">
+          <div className="text-meta leading-[1.6] text-ink-subtle">Bandung, Jawa Barat</div>
+        </footer>
+      </Shell>
     </div>
   )
 }

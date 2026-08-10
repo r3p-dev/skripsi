@@ -1,27 +1,35 @@
-import CustomerLayout from '@/components/layouts/customer_layout'
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import { Button, buttonVariants } from '@/components/ui/button'
+  BackLink,
+  Eyebrow,
+  Lede,
+  PageTitle,
+  SolidButton,
+  StickyBar,
+  UnderlineInput,
+} from '@/components/atoms/editorial'
+import CustomerLayout from '@/components/layouts/customer_layout'
 import { Calendar } from '@/components/ui/calendar'
-import { Card, CardAction, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { ItemType, ItemTypeLabel } from '@/enums/item_enum'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
-import { ServiceCategoryLabel, ServiceType } from '@/enums/service_enum'
-import { formatRupiah } from '@/lib/format'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconChevronRight, IconMapPin, IconPencil, IconTag } from '@tabler/icons-react'
 import { id } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
 
 type PageProps = InertiaProps<{
   address: Data.Address | null
-  services: Data.Service[]
 }>
+
+const ITEM_TYPES = [ItemType.SHOE, ItemType.BAG, ItemType.HELMET] as const
+
+const SIZE_PLACEHOLDER: Record<string, string> = {
+  [ItemType.SHOE]: 'cth: 42',
+  [ItemType.BAG]: 'cth: Medium',
+  [ItemType.HELMET]: 'cth: L',
+}
+
+type Quantities = Record<string, number>
 
 function toLocalDateString(date: Date) {
   const year = date.getFullYear()
@@ -31,7 +39,46 @@ function toLocalDateString(date: Date) {
   return `${year}-${month}-${day}`
 }
 
-export default function Create({ address, services }: PageProps) {
+function Stepper({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (next: number) => void
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-rule py-3.5 last:border-b-0">
+      <span className="text-lead leading-[1.4] text-ink">{label}</span>
+      <div role="group" aria-label={`Jumlah ${label}`} className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, value - 1))}
+          aria-label={`Kurangi jumlah ${label}`}
+          className="flex size-8 items-center justify-center rounded-full border border-rule-field text-ink disabled:opacity-40"
+          disabled={value === 0}
+        >
+          −
+        </button>
+        <span aria-live="polite" className="min-w-4 text-center text-lead font-semibold text-ink">
+          {value}
+        </span>
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          aria-label={`Tambah jumlah ${label}`}
+          className="flex size-8 items-center justify-center rounded-full border border-rule-field text-ink"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function Create({ address }: PageProps) {
+  const [quantities, setQuantities] = useState<Quantities>({})
   const [pickupDate, setPickupDate] = useState<Date | undefined>(undefined)
 
   const earliestPickup = useMemo(() => {
@@ -42,154 +89,198 @@ export default function Create({ address, services }: PageProps) {
     return tomorrow
   }, [])
 
-  const priceListByCategory = Object.groupBy(services, (service) => service.category)
+  const slots = useMemo(
+    () =>
+      ITEM_TYPES.flatMap((type) =>
+        Array.from({ length: quantities[type] ?? 0 }, (_, index) => ({
+          key: `${type}-${index}`,
+          type,
+          title: `${ItemTypeLabel[type]} #${index + 1}`,
+        }))
+      ),
+    [quantities]
+  )
+
+  if (!address) {
+    return (
+      <CustomerLayout title="Pesan Layanan" description="Atur penjemputan barang Anda" wide>
+        <header className="gutter pt-6">
+          <BackLink route="home">← Kembali</BackLink>
+        </header>
+        <main className="gutter flex-1 py-16 text-center pb-nav">
+          <div className="mb-5 text-body leading-[1.6] text-ink-subtle">
+            Tambahkan alamat penjemputan terlebih dahulu sebelum membuat pesanan.
+          </div>
+          <Link route="customer.address.create" className="block">
+            <SolidButton render={<span />}>Tambah Alamat</SolidButton>
+          </Link>
+        </main>
+      </CustomerLayout>
+    )
+  }
 
   return (
-    <CustomerLayout title="Buat Pesanan" description="Jadwalkan penjemputan sepatu Anda">
-      <div className="px-6 py-5">
-        <p className="text-xs tracking-[0.3em] text-gray-600 uppercase font-medium">Pesanan</p>
-        <h1 className="text-3xl font-bold tracking-tight text-black">Buat Pesanan</h1>
-      </div>
+    <CustomerLayout title="Pesan Layanan" description="Atur penjemputan barang Anda" wide>
+      <header className="gutter pt-6">
+        <BackLink route="home">← Kembali</BackLink>
+      </header>
 
-      <div className="flex-1 px-6 pb-nav">
-        {!address ? (
-          <Card className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-black/10">
-              <IconMapPin className="size-7 text-black" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-base font-semibold text-black">Alamat belum tersedia</p>
-              <p className="text-sm text-gray-600">
-                Tambahkan alamat penjemputan terlebih dahulu sebelum membuat pesanan
-              </p>
-            </div>
-            <Link
-              route="customer.address.create"
-              className={buttonVariants({
-                className:
-                  'h-11 rounded-xl bg-black px-6 text-sm font-semibold tracking-wide text-white hover:bg-black/90 active:scale-95',
-              })}
-            >
-              Tambah Alamat
-            </Link>
-          </Card>
-        ) : (
-          <>
-            <p className="mb-6 text-sm leading-relaxed text-gray-700">
-              Pilih tanggal penjemputan dan tim kami akan menjemput sepatu Anda langsung dari alamat
-              terdaftar
-            </p>
+      <main className="flex-1 pb-nav">
+        <div className="gutter pt-7 pb-2">
+          <PageTitle className="mb-1.5">Pesan Layanan</PageTitle>
+          <Lede>Atur penjemputan barang Anda.</Lede>
+        </div>
 
-            <Card className="mb-6 rounded-2xl border border-gray-200 bg-gray-50">
-              <CardHeader>
-                <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
-                  Alamat Penjemputan
-                </p>
-                <CardAction>
+        <Form action="/orders" method="post" id="order-form">
+          {({ errors, processing }) => (
+            <>
+              <section className="gutter pt-6">
+                <Eyebrow className="mb-4">Jumlah &amp; Jenis Barang</Eyebrow>
+                {ITEM_TYPES.map((type) => (
+                  <Stepper
+                    key={type}
+                    label={ItemTypeLabel[type]}
+                    value={quantities[type] ?? 0}
+                    onChange={(next) => setQuantities((prev) => ({ ...prev, [type]: next }))}
+                  />
+                ))}
+              </section>
+
+              <section className="gutter pt-8">
+                <Eyebrow className="mb-4">Detail Barang</Eyebrow>
+
+                {slots.length === 0 ? (
+                  <div className="text-small leading-[1.6] text-ink-subtle">
+                    Pilih jumlah barang di atas untuk menambahkan detail.
+                  </div>
+                ) : (
+                  slots.map((slot, index) => (
+                    <div key={slot.key} className="mb-4 border border-rule-strong p-5">
+                      <div className="mb-4 text-small leading-[1.4] font-semibold tracking-[0.06em] text-ink uppercase">
+                        {slot.title}
+                      </div>
+
+                      <input type="hidden" name={`items[${index}][type]`} value={slot.type} />
+
+                      <Field className="mb-3.5">
+                        <FieldLabel htmlFor={`${slot.key}-brand`} className="field-label mb-2">
+                          Merk
+                        </FieldLabel>
+                        <UnderlineInput
+                          id={`${slot.key}-brand`}
+                          name={`items[${index}][brand]`}
+                          placeholder="cth: Nike"
+                          className="py-2 text-sm"
+                        />
+                      </Field>
+
+                      <Field className="mb-3.5">
+                        <FieldLabel htmlFor={`${slot.key}-model`} className="field-label mb-2">
+                          Model
+                        </FieldLabel>
+                        <UnderlineInput
+                          id={`${slot.key}-model`}
+                          name={`items[${index}][model]`}
+                          placeholder="cth: Air Force 1"
+                          className="py-2 text-sm"
+                        />
+                      </Field>
+
+                      <div className="flex gap-4">
+                        <Field className="flex-1">
+                          <FieldLabel htmlFor={`${slot.key}-material`} className="field-label mb-2">
+                            Bahan
+                          </FieldLabel>
+                          <UnderlineInput
+                            id={`${slot.key}-material`}
+                            name={`items[${index}][material]`}
+                            placeholder="cth: Kulit"
+                            className="py-2 text-sm"
+                          />
+                        </Field>
+                        <Field className="flex-1">
+                          <FieldLabel htmlFor={`${slot.key}-size`} className="field-label mb-2">
+                            Ukuran
+                          </FieldLabel>
+                          <UnderlineInput
+                            id={`${slot.key}-size`}
+                            name={`items[${index}][size]`}
+                            placeholder={SIZE_PLACEHOLDER[slot.type]}
+                            className="py-2 text-sm"
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </section>
+
+              <section className="gutter pt-8">
+                <Eyebrow className="mb-4">Tanggal Penjemputan</Eyebrow>
+                <div className="border border-rule-strong p-5 tablet:mx-auto tablet:max-w-[460px]">
+                  <Calendar
+                    mode="single"
+                    locale={id}
+                    selected={pickupDate}
+                    onSelect={setPickupDate}
+                    disabled={{ before: earliestPickup }}
+                    className="w-full p-0"
+                  />
+                </div>
+                <input
+                  type="hidden"
+                  name="pickupDate"
+                  value={pickupDate ? toLocalDateString(pickupDate) : ''}
+                />
+                <div className="mt-3.5 text-small leading-[1.6] text-ink-soft">
+                  Tanggal dipilih:{' '}
+                  <span className="font-semibold text-ink">
+                    {pickupDate
+                      ? pickupDate.toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : 'Belum dipilih'}
+                  </span>
+                </div>
+                <FieldError>{errors.pickupDate}</FieldError>
+              </section>
+
+              <section className="gutter pt-8">
+                <Eyebrow className="mb-4">Alamat Penjemputan</Eyebrow>
+                <div className="flex items-center justify-between gap-3 border border-rule-strong px-5 py-[18px]">
+                  <div>
+                    <div className="mb-1 text-body leading-[1.4] font-semibold text-ink">
+                      {address.name}
+                    </div>
+                    <div className="text-small leading-[1.5] text-ink-soft">{address.street}</div>
+                  </div>
                   <Link
                     route="customer.address.create"
-                    aria-label="Ubah alamat"
-                    className="flex items-center gap-1 text-xs font-medium text-gray-600 underline underline-offset-4"
+                    className="ml-3 text-meta whitespace-nowrap text-ink-soft hover:text-ink"
                   >
-                    <IconPencil className="size-3.5" />
                     Ubah
                   </Link>
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <p className="text-base font-medium text-black">{address.name}</p>
-                <p className="text-sm text-gray-600">{address.phone}</p>
-                <p className="mt-1 text-sm leading-relaxed text-gray-700">{address.street}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="mb-6 rounded-2xl border border-gray-200 bg-gray-50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <IconTag className="size-4 text-black" />
-                  <p className="text-xs tracking-widest text-gray-600 uppercase font-medium">
-                    Daftar Harga
-                  </p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Accordion>
-                  {Object.entries(priceListByCategory).map(([category, items]) => (
-                    <AccordionItem key={category} value={category} className="border-gray-200">
-                      <AccordionTrigger className="text-sm font-semibold text-black">
-                        {ServiceCategoryLabel[category as keyof typeof ServiceCategoryLabel] ??
-                          category}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-3">
-                          {items?.map((item) => (
-                            <div key={item.name} className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-medium text-black">{item.name}</p>
-                                <p className="text-xs leading-relaxed text-gray-600">
-                                  {item.description}
-                                </p>
-                              </div>
-                              <p className="shrink-0 text-sm font-semibold whitespace-nowrap text-black">
-                                {item.type === ServiceType.START_FROM && (
-                                  <span className="mr-1 text-xs font-normal text-gray-500">
-                                    mulai
-                                  </span>
-                                )}
-                                {formatRupiah(item.price)}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
+              </section>
 
-            <Form route="customer.order.store" className="space-y-5">
-              {({ errors, processing }) => (
-                <>
-                  <input type="hidden" name="addressId" value={address.id} />
-                  <input
-                    type="hidden"
-                    name="pickupDate"
-                    value={pickupDate ? toLocalDateString(pickupDate) : ''}
-                    readOnly
-                  />
-
-                  <Field data-invalid={errors.pickupDate ? 'true' : undefined}>
-                    <FieldLabel className="text-xs tracking-widest text-gray-700 uppercase">
-                      Tanggal Penjemputan
-                    </FieldLabel>
-                    <div className="flex justify-center rounded-2xl border border-gray-300 bg-gray-50 py-2">
-                      <Calendar
-                        mode="single"
-                        locale={id}
-                        selected={pickupDate}
-                        onSelect={setPickupDate}
-                        disabled={{ before: earliestPickup }}
-                        className="[--cell-size:--spacing(10)]"
-                      />
-                    </div>
-                    <FieldError>{errors.pickupDate}</FieldError>
-                  </Field>
-
-                  <Button
-                    type="submit"
-                    disabled={processing || !pickupDate}
-                    className="h-12 w-full rounded-xl bg-black text-lg font-semibold tracking-wide text-white transition-all duration-300 hover:bg-black/90 active:scale-95"
-                  >
-                    Jadwalkan Penjemputan
-                    <IconChevronRight className="size-5" />
-                  </Button>
-                </>
+              {errors.form && (
+                <p className="gutter pt-4 text-small text-destructive">{errors.form}</p>
               )}
-            </Form>
-          </>
-        )}
-      </div>
+
+              <StickyBar className="tablet:max-w-[720px] desktop:max-w-[800px]">
+                <SolidButton
+                  type="submit"
+                  disabled={processing || slots.length === 0 || !pickupDate}
+                >
+                  Konfirmasi Pesanan
+                </SolidButton>
+              </StickyBar>
+            </>
+          )}
+        </Form>
+      </main>
     </CustomerLayout>
   )
 }

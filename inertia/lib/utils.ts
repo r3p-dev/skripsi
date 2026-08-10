@@ -18,12 +18,3 @@ function internationalise(phone: string) {
 
   return digits.startsWith('0') ? `62${digits.slice(1)}` : digits
 }
-
-export function formatRupiah(value: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
