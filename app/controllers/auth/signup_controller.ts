@@ -2,6 +2,7 @@ import AuthService from '#services/auth_service'
 import { signupValidator } from '#validators/auth_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
+import { LoginRedirect, Role } from '#enums/role_enum'
 import { DateTime } from 'luxon'
 
 @inject()
@@ -21,6 +22,6 @@ export default class SignupController {
     session.put('authenticated_at', DateTime.now().toISO())
 
     session.flash('success', 'Akun berhasil dibuat. Selamat datang!')
-    return response.redirect().toRoute('customer.orders.create')
+    return response.redirect().toRoute(LoginRedirect[Role.CUSTOMER])
   }
 }

@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
 import {
@@ -7,6 +8,7 @@ import {
   OutlineButton,
   PageTitle,
   UnderlineInput,
+  underlineField,
 } from '@/components/atoms/editorial'
 import { EditActions, ProfileRow, ReadOnlyRow } from '@/components/molecules/profile_row'
 import CustomerLayout from '@/components/layouts/customer_layout'
@@ -37,7 +39,7 @@ export default function Show({ user, address }: PageProps) {
         <BackLink route="home">← Kembali</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Profil Saya</PageTitle>
           <Lede>Kelola informasi akun Anda.</Lede>
@@ -60,6 +62,7 @@ export default function Show({ user, address }: PageProps) {
                         name="name"
                         type="text"
                         autoComplete="name"
+                        key={user.name}
                         defaultValue={user.name}
                         autoFocus
                         aria-invalid={!!errors.name}
@@ -89,10 +92,11 @@ export default function Show({ user, address }: PageProps) {
                         id="phone"
                         name="phone"
                         autoComplete="tel"
+                        key={user.phone}
                         defaultValue={user.phone}
                         autoFocus
                         aria-invalid={!!errors.phone}
-                        className="underline-field h-auto border-b-ink py-1.5 focus-visible:border-ink focus-visible:ring-0"
+                        className={cn(underlineField, 'border-b-ink py-1.5')}
                       />
                       <FieldError>{errors.phone}</FieldError>
                       <p className="text-meta text-ink-subtle">
@@ -127,7 +131,7 @@ export default function Show({ user, address }: PageProps) {
                         autoComplete="current-password"
                         autoFocus
                         aria-invalid={!!errors.currentPassword}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.currentPassword}</FieldError>
                     </Field>
@@ -141,7 +145,7 @@ export default function Show({ user, address }: PageProps) {
                         name="password"
                         autoComplete="new-password"
                         aria-invalid={!!errors.password}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.password}</FieldError>
                     </Field>
@@ -155,7 +159,7 @@ export default function Show({ user, address }: PageProps) {
                         name="passwordConfirmation"
                         autoComplete="new-password"
                         aria-invalid={!!errors.passwordConfirmation}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.passwordConfirmation}</FieldError>
                     </Field>
@@ -180,12 +184,12 @@ export default function Show({ user, address }: PageProps) {
 
         <section className="gutter pt-8">
           <Eyebrow className="mb-4">Alamat</Eyebrow>
-          <div className="flex items-center justify-between gap-3 border border-rule-strong px-5 py-[18px]">
+          <div className="flex items-center justify-between gap-3 border border-rule-strong px-5 py-4.5">
             <div>
               <div className="mb-1 text-body leading-[1.4] font-semibold text-ink">
                 Alamat Penjemputan
               </div>
-              <div className="text-small leading-[1.5] text-ink-soft">
+              <div className="text-small leading-normal text-ink-soft">
                 {address?.street ?? 'Belum ada alamat'}
               </div>
             </div>
@@ -199,16 +203,6 @@ export default function Show({ user, address }: PageProps) {
           </div>
         </section>
 
-        <section className="gutter pt-8">
-          <Eyebrow className="mb-4">Pesanan</Eyebrow>
-          <a
-            href="/orders"
-            className="flex items-center justify-between border border-rule-strong px-5 py-[18px] text-body leading-[1.4] text-ink"
-          >
-            Riwayat Pesanan<span className="text-ink-subtle">→</span>
-          </a>
-        </section>
-
         <div className="gutter pt-10 pb-12">
           <Form route="session.destroy">
             {({ processing }) => (
@@ -218,7 +212,7 @@ export default function Show({ user, address }: PageProps) {
             )}
           </Form>
         </div>
-      </main>
+      </div>
     </CustomerLayout>
   )
 }

@@ -54,16 +54,18 @@ export default class AddressService {
     }
   }
 
-  async findFirstWithinOperationalArea<T extends { latitude: number; longitude: number }>(
+  async filterWithinOperationalArea<T extends { latitude: number; longitude: number }>(
     candidates: T[]
-  ): Promise<T | null> {
+  ): Promise<T[]> {
+    const inside: T[] = []
+
     for (const candidate of candidates) {
       if (await this.#isWithinOperationalArea(candidate.longitude, candidate.latitude)) {
-        return candidate
+        inside.push(candidate)
       }
     }
 
-    return null
+    return inside
   }
 
   async replaceActiveAddress(user: User, data: AddressData): Promise<Address> {

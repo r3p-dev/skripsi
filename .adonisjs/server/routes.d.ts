@@ -26,10 +26,13 @@ export type ScannedRoutes = {
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.phone.update': { paramsTuple?: []; params?: {} }
     'customer.password.update': { paramsTuple?: []; params?: {} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.address.nearby': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
     'customer.address.store': { paramsTuple?: []; params?: {} }
-    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
@@ -51,9 +54,12 @@ export type ScannedRoutes = {
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.phone.update': { paramsTuple?: []; params?: {} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.address.nearby': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
-    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
@@ -71,9 +77,12 @@ export type ScannedRoutes = {
     'password_reset.edit': { paramsTuple?: []; params?: {} }
     'customer.profile.show': { paramsTuple?: []; params?: {} }
     'customer.phone.update': { paramsTuple?: []; params?: {} }
+    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.address.nearby': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
-    'customer.address.geocode': { paramsTuple?: []; params?: {} }
+    'customer.orders.index': { paramsTuple?: []; params?: {} }
+    'customer.orders.create': { paramsTuple?: []; params?: {} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }

@@ -1,6 +1,6 @@
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
-import { SolidButton } from '@/components/atoms/editorial'
+import { SolidButton, underlineField } from '@/components/atoms/editorial'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -29,7 +29,7 @@ export default function InternalLogin() {
                 autoComplete="tel"
                 placeholder="08xx-xxxx-xxxx"
                 aria-invalid={!!errors.phone}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.phone}</FieldError>
             </Field>
@@ -44,7 +44,7 @@ export default function InternalLogin() {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 aria-invalid={!!errors.password}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.password}</FieldError>
             </Field>

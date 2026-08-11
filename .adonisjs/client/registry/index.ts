@@ -138,6 +138,18 @@ const routes = {
     tokens: [{"old":"/password","type":0,"val":"password","end":""}],
     types: placeholder as Registry['customer.password.update']['types'],
   },
+  'customer.address.geocode': {
+    methods: ["GET","HEAD"],
+    pattern: '/address/geocode',
+    tokens: [{"old":"/address/geocode","type":0,"val":"address","end":""},{"old":"/address/geocode","type":0,"val":"geocode","end":""}],
+    types: placeholder as Registry['customer.address.geocode']['types'],
+  },
+  'customer.address.nearby': {
+    methods: ["GET","HEAD"],
+    pattern: '/address/nearby',
+    tokens: [{"old":"/address/nearby","type":0,"val":"address","end":""},{"old":"/address/nearby","type":0,"val":"nearby","end":""}],
+    types: placeholder as Registry['customer.address.nearby']['types'],
+  },
   'customer.address.show': {
     methods: ["GET","HEAD"],
     pattern: '/address',
@@ -156,11 +168,17 @@ const routes = {
     tokens: [{"old":"/address","type":0,"val":"address","end":""}],
     types: placeholder as Registry['customer.address.store']['types'],
   },
-  'customer.address.geocode': {
+  'customer.orders.index': {
     methods: ["GET","HEAD"],
-    pattern: '/address/geocode',
-    tokens: [{"old":"/address/geocode","type":0,"val":"address","end":""},{"old":"/address/geocode","type":0,"val":"geocode","end":""}],
-    types: placeholder as Registry['customer.address.geocode']['types'],
+    pattern: '/orders',
+    tokens: [{"old":"/orders","type":0,"val":"orders","end":""}],
+    types: placeholder as Registry['customer.orders.index']['types'],
+  },
+  'customer.orders.create': {
+    methods: ["GET","HEAD"],
+    pattern: '/orders/create',
+    tokens: [{"old":"/orders/create","type":0,"val":"orders","end":""},{"old":"/orders/create","type":0,"val":"create","end":""}],
+    types: placeholder as Registry['customer.orders.create']['types'],
   },
   'staff.profile.show': {
     methods: ["GET","HEAD"],

@@ -7,13 +7,13 @@ import { usePage } from '@inertiajs/react'
 
 const NAV_ITEMS = [
   {
-    route: 'customer.order.create',
+    route: 'customer.orders.create',
     match: ['customer/order/create'],
     label: 'Pesan',
     icon: IconCalendarPlus,
   },
   {
-    route: 'customer.order.index',
+    route: 'customer.orders.index',
     match: ['customer/order/index', 'customer/order/show', 'customer/order/receipt'],
     label: 'Pesanan',
     icon: IconReceipt2,
@@ -38,9 +38,7 @@ export default function CustomerLayout({
 }>) {
   const { component } = usePage()
 
-  const width = wide
-    ? 'tablet:max-w-[720px] desktop:max-w-[800px]'
-    : 'tablet:max-w-[680px] desktop:max-w-[760px]'
+  const width = wide ? 'tablet:max-w-180 desktop:max-w-200' : 'tablet:max-w-170 desktop:max-w-190'
 
   return (
     <div className="bg-paper">
@@ -51,7 +49,7 @@ export default function CustomerLayout({
 
       <div
         className={cn(
-          'mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-white text-ink',
+          'mx-auto flex min-h-dvh w-full max-w-107.5 flex-col bg-white text-ink',
           width,
           !wide &&
             'tablet:mt-14 tablet:mb-28 tablet:min-h-0 tablet:rounded-md tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]'
@@ -62,7 +60,7 @@ export default function CustomerLayout({
 
       <nav
         className={cn(
-          'fixed inset-x-0 bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t border-rule-strong bg-white pb-safe',
+          'fixed inset-x-0 bottom-0 left-1/2 z-50 w-full max-w-107.5 -translate-x-1/2 border-t border-rule-strong bg-white pb-safe',
           width
         )}
       >

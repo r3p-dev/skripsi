@@ -271,6 +271,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/password_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'customer.address.geocode': {
+    methods: ["GET","HEAD"]
+    pattern: '/address/geocode'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/geocode_validator').geocodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'customer.address.nearby': {
+    methods: ["GET","HEAD"]
+    pattern: '/address/nearby'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/geocode_validator').nearbyValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['nearby']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['nearby']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'customer.address.show': {
     methods: ["GET","HEAD"]
     pattern: '/address'
@@ -307,16 +331,28 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/address_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'customer.address.geocode': {
+  'customer.orders.index': {
     methods: ["GET","HEAD"]
-    pattern: '/address/geocode'
+    pattern: '/orders'
     types: {
       body: {}
       paramsTuple: []
       params: {}
-      query: ExtractQueryForGet<InferInput<(typeof import('#validators/geocode_validator').geocodeValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/geocode_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['index']>>>
+    }
+  }
+  'customer.orders.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/orders/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['create']>>>
     }
   }
   'staff.profile.show': {

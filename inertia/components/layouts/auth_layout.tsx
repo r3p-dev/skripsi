@@ -25,7 +25,7 @@ export default function AuthLayout({
         <meta name="description" content={metaDescription} />
       </Head>
 
-      <Shell className="flex flex-col tablet:max-w-[680px] desktop:max-w-[760px]">
+      <Shell className="flex flex-col tablet:max-w-170 desktop:max-w-190">
         <header className="gutter flex justify-between pt-6">
           <BackLink route="home">← Kembali</BackLink>
           {audience && (
@@ -35,20 +35,16 @@ export default function AuthLayout({
           )}
         </header>
 
-        <main className="flex-1">
+        <div className="flex-1">
           <div className="gutter flex flex-col items-center pt-8 pb-10 text-center">
-            <img
-              src="/images/logo_full.jpg"
-              alt="ümima"
-              className="mb-7 w-[130px] object-contain"
-            />
+            <img src="/images/logo_full.jpg" alt="ümima" className="mb-7 w-32.5 object-contain" />
             {eyebrow && <Eyebrow className="mb-4">{eyebrow}</Eyebrow>}
             <PageTitle className="mb-2">{title}</PageTitle>
-            <Lede className="max-w-[260px]">{description}</Lede>
+            <Lede className="max-w-65">{description}</Lede>
           </div>
 
           <div className="gutter">{children}</div>
-        </main>
+        </div>
 
         <footer className="pt-10 pb-12 text-center">
           <div className="text-meta leading-[1.6] text-ink-subtle">Bandung, Jawa Barat</div>

@@ -13,7 +13,7 @@ export const RoleLabel = {
 export type Role = (typeof Role)[keyof typeof Role]
 
 export const LoginRedirect = {
-  [Role.CUSTOMER]: 'customer.orders.create',
+  [Role.CUSTOMER]: 'customer.profile.show',
   [Role.STAFF]: 'staff.profile.show',
   [Role.ADMIN]: 'admin.profile.show',
 } as const

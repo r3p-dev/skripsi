@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 export function ProfileRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="border-b border-rule py-4">
-      <div className="mb-2 text-eyebrow tracking-[0.1em] text-ink-subtle uppercase">{label}</div>
+      <div className="mb-2 text-eyebrow tracking-widest text-ink-subtle uppercase">{label}</div>
       {children}
     </div>
   )
@@ -59,7 +59,7 @@ export function EditActions({
 export function StatRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-center justify-between border-b border-rule py-4">
-      <span className="text-body leading-[1.5] text-ink-body">{label}</span>
+      <span className="text-body leading-normal text-ink-body">{label}</span>
       <span className="text-body font-semibold text-ink">{value}</span>
     </div>
   )

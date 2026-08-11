@@ -1,5 +1,5 @@
 import { PhoneInput } from '@/components/atoms/phone_input'
-import { SolidButton } from '@/components/atoms/editorial'
+import { SolidButton, underlineField } from '@/components/atoms/editorial'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -24,7 +24,7 @@ export default function ForgotPassword() {
                 name="phone"
                 autoComplete="tel"
                 aria-invalid={!!errors.phone}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.phone}</FieldError>
             </Field>

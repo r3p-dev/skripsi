@@ -1,6 +1,14 @@
+import { cn } from '@/lib/utils'
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
-import { BackLink, Eyebrow, Lede, OutlineButton, PageTitle } from '@/components/atoms/editorial'
+import {
+  BackLink,
+  Eyebrow,
+  Lede,
+  OutlineButton,
+  PageTitle,
+  underlineField,
+} from '@/components/atoms/editorial'
 import StaffLayout from '@/components/layouts/staff_layout'
 import { EditActions, ProfileRow, ReadOnlyRow } from '@/components/molecules/profile_row'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -27,7 +35,7 @@ export default function Show({ user }: PageProps) {
         <BackLink route="home">← Kembali</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Profil Saya</PageTitle>
           <Lede>Kelola informasi akun Anda.</Lede>
@@ -53,10 +61,11 @@ export default function Show({ user }: PageProps) {
                         id="phone"
                         name="phone"
                         autoComplete="tel"
+                        key={user.phone}
                         defaultValue={user.phone}
                         autoFocus
                         aria-invalid={!!errors.phone}
-                        className="underline-field h-auto border-b-ink py-1.5 focus-visible:border-ink focus-visible:ring-0"
+                        className={cn(underlineField, 'border-b-ink py-1.5')}
                       />
                       <FieldError>{errors.phone}</FieldError>
                       <p className="text-meta text-ink-subtle">
@@ -91,7 +100,7 @@ export default function Show({ user }: PageProps) {
                         autoComplete="current-password"
                         autoFocus
                         aria-invalid={!!errors.currentPassword}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.currentPassword}</FieldError>
                     </Field>
@@ -105,7 +114,7 @@ export default function Show({ user }: PageProps) {
                         name="password"
                         autoComplete="new-password"
                         aria-invalid={!!errors.password}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.password}</FieldError>
                     </Field>
@@ -119,7 +128,7 @@ export default function Show({ user }: PageProps) {
                         name="passwordConfirmation"
                         autoComplete="new-password"
                         aria-invalid={!!errors.passwordConfirmation}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.passwordConfirmation}</FieldError>
                     </Field>
@@ -151,7 +160,7 @@ export default function Show({ user }: PageProps) {
             )}
           </Form>
         </div>
-      </main>
+      </div>
     </StaffLayout>
   )
 }

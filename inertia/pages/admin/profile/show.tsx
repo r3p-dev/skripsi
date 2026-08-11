@@ -1,7 +1,8 @@
+import { cn } from '@/lib/utils'
 import AdminLayout from '@/components/layouts/admin_layout'
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
-import { Eyebrow, OutlineButton } from '@/components/atoms/editorial'
+import { Eyebrow, OutlineButton, underlineField } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
 import { EditActions, ProfileRow, ReadOnlyRow } from '@/components/molecules/profile_row'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -47,10 +48,11 @@ export default function Show({ user }: PageProps) {
                         id="phone"
                         name="phone"
                         autoComplete="tel"
+                        key={user.phone}
                         defaultValue={user.phone}
                         autoFocus
                         aria-invalid={!!errors.phone}
-                        className="underline-field h-auto border-b-ink py-1.5 focus-visible:border-ink focus-visible:ring-0"
+                        className={cn(underlineField, 'border-b-ink py-1.5')}
                       />
                       <FieldError>{errors.phone}</FieldError>
                       <p className="text-meta text-ink-subtle">
@@ -85,7 +87,7 @@ export default function Show({ user }: PageProps) {
                         autoComplete="current-password"
                         autoFocus
                         aria-invalid={!!errors.currentPassword}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.currentPassword}</FieldError>
                     </Field>
@@ -99,7 +101,7 @@ export default function Show({ user }: PageProps) {
                         name="password"
                         autoComplete="new-password"
                         aria-invalid={!!errors.password}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.password}</FieldError>
                     </Field>
@@ -113,7 +115,7 @@ export default function Show({ user }: PageProps) {
                         name="passwordConfirmation"
                         autoComplete="new-password"
                         aria-invalid={!!errors.passwordConfirmation}
-                        className="underline-field h-auto focus-visible:border-ink focus-visible:ring-0"
+                        className={underlineField}
                       />
                       <FieldError>{errors.passwordConfirmation}</FieldError>
                     </Field>

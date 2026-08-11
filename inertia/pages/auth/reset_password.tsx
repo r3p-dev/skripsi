@@ -1,5 +1,5 @@
 import { PasswordInput } from '@/components/atoms/password_input'
-import { SolidButton } from '@/components/atoms/editorial'
+import { SolidButton, underlineField } from '@/components/atoms/editorial'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Form } from '@adonisjs/inertia/react'
@@ -24,7 +24,7 @@ export default function ResetPassword() {
                 name="password"
                 autoComplete="new-password"
                 aria-invalid={!!errors.password}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.password}</FieldError>
             </Field>
@@ -38,7 +38,7 @@ export default function ResetPassword() {
                 name="passwordConfirmation"
                 autoComplete="new-password"
                 aria-invalid={!!errors.passwordConfirmation}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.passwordConfirmation}</FieldError>
             </Field>

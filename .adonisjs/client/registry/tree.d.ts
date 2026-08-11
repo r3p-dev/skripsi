@@ -44,10 +44,15 @@ export interface ApiDefinition {
       update: typeof routes['customer.password.update']
     }
     address: {
+      geocode: typeof routes['customer.address.geocode']
+      nearby: typeof routes['customer.address.nearby']
       show: typeof routes['customer.address.show']
       create: typeof routes['customer.address.create']
       store: typeof routes['customer.address.store']
-      geocode: typeof routes['customer.address.geocode']
+    }
+    orders: {
+      index: typeof routes['customer.orders.index']
+      create: typeof routes['customer.orders.create']
     }
   }
   staff: {

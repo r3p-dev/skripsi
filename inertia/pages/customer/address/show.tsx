@@ -16,7 +16,7 @@ export default function Show({ address }: PageProps) {
         <BackLink route="customer.profile.show">← Kembali</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         <div className="gutter pt-7 pb-6">
           <PageTitle className="mb-1.5">Alamat</PageTitle>
           <Lede>Anda hanya dapat menyimpan satu alamat utama.</Lede>
@@ -35,10 +35,12 @@ export default function Show({ address }: PageProps) {
                 <div className="mb-0.5 text-body leading-[1.4] font-semibold text-ink">
                   {address.name}
                 </div>
-                <div className="mb-3 text-small leading-[1.5] text-ink-subtle">{address.phone}</div>
+                <div className="mb-3 text-small leading-normal text-ink-subtle">
+                  {address.phone}
+                </div>
                 <div className="text-body leading-[1.6] text-[#444]">{address.street}</div>
                 {address.note && (
-                  <div className="mt-3 text-small leading-[1.5] text-ink-subtle">
+                  <div className="mt-3 text-small leading-normal text-ink-subtle">
                     {address.note}
                   </div>
                 )}
@@ -59,7 +61,7 @@ export default function Show({ address }: PageProps) {
             </Link>
           </div>
         )}
-      </main>
+      </div>
     </CustomerLayout>
   )
 }

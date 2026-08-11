@@ -19,6 +19,7 @@ export const controllers = {
   customer: {
     Address: () => import('#controllers/customer/address_controller'),
     Geocode: () => import('#controllers/customer/geocode_controller'),
+    Order: () => import('#controllers/customer/order_controller'),
     Password: () => import('#controllers/customer/password_controller'),
     Phone: () => import('#controllers/customer/phone_controller'),
     Profile: () => import('#controllers/customer/profile_controller'),

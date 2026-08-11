@@ -27,6 +27,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   OSRM_ENABLED: Env.schema.boolean.optional(),
   OSRM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
   OSRM_PROFILE: Env.schema.string.optional(),
+
+  OVERPASS_URL: Env.schema.string.optional({ format: 'url', tld: false }),
   OSRM_TIMEOUT_MS: Env.schema.number.optional(),
   OSRM_MAX_TABLE_SIZE: Env.schema.number.optional(),
 })

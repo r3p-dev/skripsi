@@ -1,6 +1,6 @@
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
-import { OutlineButton, SolidButton } from '@/components/atoms/editorial'
+import { OutlineButton, SolidButton, underlineField } from '@/components/atoms/editorial'
 import AuthLayout from '@/components/layouts/auth_layout'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -28,7 +28,7 @@ export default function Login() {
                 autoComplete="tel"
                 placeholder="08xx-xxxx-xxxx"
                 aria-invalid={!!errors.phone}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.phone}</FieldError>
             </Field>
@@ -43,7 +43,7 @@ export default function Login() {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 aria-invalid={!!errors.password}
-                className="underline-field h-auto placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0"
+                className={underlineField}
               />
               <FieldError>{errors.password}</FieldError>
             </Field>
@@ -77,7 +77,7 @@ export default function Login() {
 
       <div className="mb-6 flex items-center gap-3.5">
         <div className="h-px flex-1 bg-rule-strong" />
-        <span className="text-eyebrow tracking-[0.1em] text-ink-subtle uppercase">atau</span>
+        <span className="text-eyebrow tracking-widest text-ink-subtle uppercase">atau</span>
         <div className="h-px flex-1 bg-rule-strong" />
       </div>
 

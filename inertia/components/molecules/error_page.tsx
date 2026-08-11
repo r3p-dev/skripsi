@@ -24,15 +24,15 @@ export default function ErrorPage({
         <meta name="description" content={metaDescription} />
       </Head>
 
-      <Shell className="flex flex-col tablet:max-w-[680px] desktop:max-w-[760px]">
+      <Shell className="flex flex-col tablet:max-w-170 desktop:max-w-190">
         <div className="gutter flex flex-1 flex-col items-center justify-center py-20 text-center">
-          <img src="/images/logo_full.jpg" alt="ümima" className="mb-9 w-[110px] object-contain" />
+          <img src="/images/logo_full.jpg" alt="ümima" className="mb-9 w-27.5 object-contain" />
 
           <Eyebrow className="mb-4">{eyebrow}</Eyebrow>
           <PageTitle className="mb-3">{title}</PageTitle>
-          <Lede className="mb-10 max-w-[320px]">{description}</Lede>
+          <Lede className="mb-10 max-w-65">{description}</Lede>
 
-          <div className="flex w-full max-w-[320px] flex-col gap-3">{children}</div>
+          <div className="flex w-full max-w-65 flex-col gap-3">{children}</div>
         </div>
       </Shell>
     </div>

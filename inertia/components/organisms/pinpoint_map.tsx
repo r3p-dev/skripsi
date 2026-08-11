@@ -112,7 +112,7 @@ export default function PinpointMap({
       <input type="hidden" name="longitude" value={value.lng} />
 
       <div
-        className="relative"
+        className="relative isolate"
         style={{
           height: 400,
           width: '100%',

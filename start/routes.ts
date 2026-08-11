@@ -106,14 +106,21 @@ router
 
       router.put('password', [controllers.customer.Password, 'update'])
 
-      router.get('address', [controllers.customer.Address, 'show'])
-      router.get('address/create', [controllers.customer.Address, 'create'])
-      router.post('address', [controllers.customer.Address, 'store'])
-
       router
         .get('address/geocode', [controllers.customer.Geocode, 'show'])
         .as('address.geocode')
         .use(geocodeLimiter)
+
+      router
+        .get('address/nearby', [controllers.customer.Geocode, 'nearby'])
+        .as('address.nearby')
+        .use(geocodeLimiter)
+
+      router.get('address', [controllers.customer.Address, 'show']).as('address.show')
+      router.get('address/create', [controllers.customer.Address, 'create']).as('address.create')
+      router.post('address', [controllers.customer.Address, 'store']).as('address.store')
+
+      router.resource('orders', controllers.customer.Order).only(['index', 'create'])
     })
   })
   .use([middleware.auth(), middleware.role(Role.CUSTOMER)])

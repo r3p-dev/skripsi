@@ -39,20 +39,16 @@ export default function Home({ catalogues }: PageProps) {
 
   return (
     <div className="bg-paper">
-      <Shell className="relative pb-nav tablet:max-w-[760px] desktop:max-w-[1040px]">
-        <main>
+      <Shell className="relative pb-nav tablet:max-w-190 desktop:max-w-260">
+        <div>
           <div className="flex flex-col tablet:grid tablet:grid-cols-2 tablet:items-center tablet:gap-12 tablet:gutter tablet:py-14">
             <div className="gutter flex flex-col items-center pt-6 pb-12 text-center tablet:order-2 tablet:items-start tablet:px-0 tablet:py-0 tablet:text-left">
-              <img
-                src="/images/logo_full.jpg"
-                alt="ümima"
-                className="mb-7 w-[150px] object-contain"
-              />
+              <img src="/images/logo_full.jpg" alt="ümima" className="mb-7 w-37.5 object-contain" />
               <Eyebrow className="mb-7">Perawatan Sepatu Profesional</Eyebrow>
-              <h1 className="m-0 mb-2 max-w-[280px] text-lead leading-[1.6] font-normal text-ink-strong">
+              <h1 className="m-0 mb-2 max-w-70 text-lead leading-[1.6] font-normal text-ink-strong">
                 Bersihkan, rawat, dan kembalikan sepatu, tas, serta helm Anda seperti baru.
               </h1>
-              <div className="mb-8 text-meta leading-[1.5] text-ink-subtle">
+              <div className="mb-8 text-meta leading-normal text-ink-subtle">
                 Berbasis di Bandung, Jawa Barat
               </div>
               <a
@@ -100,9 +96,9 @@ export default function Home({ catalogues }: PageProps) {
               {steps.map((step, index) => (
                 <div
                   key={step.title}
-                  className="flex gap-[18px] border-b border-rule-inverse py-[18px] last:border-b-0"
+                  className="flex gap-4.5 border-b border-rule-inverse py-4.5 last:border-b-0"
                 >
-                  <div className="w-[22px] flex-none text-small leading-[1.6] text-[#9a9a9a]">
+                  <div className="w-5.5 flex-none text-small leading-[1.6] text-[#9a9a9a]">
                     {index + 1}
                   </div>
                   <div className="text-body leading-[1.6] text-[#eee]">{step.description}</div>
@@ -116,7 +112,7 @@ export default function Home({ catalogues }: PageProps) {
             <div className="mb-7 text-body leading-[1.6] text-ink-soft">
               Geser untuk melihat perbedaannya.
             </div>
-            <div className="mx-auto tablet:max-w-[440px]">
+            <div className="mx-auto tablet:max-w-110">
               <ImageSlider beforeImage="/images/logo.jpg" afterImage="/images/logo_full.jpg" />
             </div>
           </section>
@@ -162,8 +158,8 @@ export default function Home({ catalogues }: PageProps) {
                   key={ritual.name}
                   className="flex justify-between border-b border-rule py-4 last:border-b-0"
                 >
-                  <span className="text-body leading-[1.5] text-ink-body">{ritual.name}</span>
-                  <span className="text-small leading-[1.5] text-ink-subtle">{ritual.detail}</span>
+                  <span className="text-body leading-normal text-ink-body">{ritual.name}</span>
+                  <span className="text-small leading-normal text-ink-subtle">{ritual.detail}</span>
                 </div>
               ))}
             </div>
@@ -232,13 +228,13 @@ export default function Home({ catalogues }: PageProps) {
               ))}
             </Accordion>
           </section>
-        </main>
+        </div>
 
         <footer className="gutter pt-10 pb-8 text-center">
           <img
             src="/images/logo_full.jpg"
             alt="ümima"
-            className="mx-auto mb-4 w-[110px] object-contain"
+            className="mx-auto mb-4 w-27.5 object-contain"
           />
           <div className="text-meta leading-[1.6] text-ink-subtle">Bandung, Jawa Barat</div>
           <div className="mb-4 text-meta leading-[1.6] text-ink-subtle">
@@ -249,7 +245,7 @@ export default function Home({ catalogues }: PageProps) {
           </BackLink>
         </footer>
 
-        <StickyBar className="tablet:max-w-[760px] desktop:max-w-[1040px]">
+        <StickyBar className="tablet:max-w-190 desktop:max-w-260">
           <a
             href="#pricing"
             className="flex flex-1 justify-center bg-ink px-4 py-4 text-small font-medium tracking-[0.08em] text-white uppercase"

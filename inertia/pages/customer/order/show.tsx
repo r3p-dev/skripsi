@@ -25,7 +25,7 @@ export default function Show({ order, items, address }: PageProps) {
         <BackLink route="customer.profile.show">← Riwayat Pesanan</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         {order ? (
           <>
             <div className="gutter flex items-start justify-between gap-3 pt-7 pb-2">
@@ -51,16 +51,16 @@ export default function Show({ order, items, address }: PageProps) {
                   <div className="text-body leading-[1.4] font-semibold text-ink">
                     Barang #{index + 1}: {item.typeLabel} — {item.brand} {item.model}
                   </div>
-                  <div className="mt-0.5 mb-3 text-small leading-[1.5] text-ink-subtle">
+                  <div className="mt-0.5 mb-3 text-small leading-normal text-ink-subtle">
                     Bahan: {item.material ?? '—'} · Ukuran: {item.size}
                   </div>
 
                   {(item.services ?? []).map((service) => (
                     <div key={service.id} className="flex justify-between gap-3 py-1.5">
-                      <span className="text-small leading-[1.5] text-ink-body">
+                      <span className="text-small leading-normal text-ink-body">
                         — {service.name}
                       </span>
-                      <span className="text-small leading-[1.5] whitespace-nowrap text-ink-body">
+                      <span className="text-small leading-normal whitespace-nowrap text-ink-body">
                         {service.priceLabel}
                       </span>
                     </div>
@@ -105,7 +105,7 @@ export default function Show({ order, items, address }: PageProps) {
             </a>
           </div>
         )}
-      </main>
+      </div>
     </CustomerLayout>
   )
 }

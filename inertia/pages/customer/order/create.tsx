@@ -107,14 +107,14 @@ export default function Create({ address }: PageProps) {
         <header className="gutter pt-6">
           <BackLink route="home">← Kembali</BackLink>
         </header>
-        <main className="gutter flex-1 py-16 text-center pb-nav">
+        <div className="gutter flex-1 py-16 text-center pb-nav">
           <div className="mb-5 text-body leading-[1.6] text-ink-subtle">
             Tambahkan alamat penjemputan terlebih dahulu sebelum membuat pesanan.
           </div>
           <Link route="customer.address.create" className="block">
             <SolidButton render={<span />}>Tambah Alamat</SolidButton>
           </Link>
-        </main>
+        </div>
       </CustomerLayout>
     )
   }
@@ -125,7 +125,7 @@ export default function Create({ address }: PageProps) {
         <BackLink route="home">← Kembali</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Pesan Layanan</PageTitle>
           <Lede>Atur penjemputan barang Anda.</Lede>
@@ -217,7 +217,7 @@ export default function Create({ address }: PageProps) {
 
               <section className="gutter pt-8">
                 <Eyebrow className="mb-4">Tanggal Penjemputan</Eyebrow>
-                <div className="border border-rule-strong p-5 tablet:mx-auto tablet:max-w-[460px]">
+                <div className="border border-rule-strong p-5 tablet:mx-auto tablet:max-w-115">
                   <Calendar
                     mode="single"
                     locale={id}
@@ -249,12 +249,12 @@ export default function Create({ address }: PageProps) {
 
               <section className="gutter pt-8">
                 <Eyebrow className="mb-4">Alamat Penjemputan</Eyebrow>
-                <div className="flex items-center justify-between gap-3 border border-rule-strong px-5 py-[18px]">
+                <div className="flex items-center justify-between gap-3 border border-rule-strong px-5 py-4.5">
                   <div>
                     <div className="mb-1 text-body leading-[1.4] font-semibold text-ink">
                       {address.name}
                     </div>
-                    <div className="text-small leading-[1.5] text-ink-soft">{address.street}</div>
+                    <div className="text-small leading-normal text-ink-soft">{address.street}</div>
                   </div>
                   <Link
                     route="customer.address.create"
@@ -269,7 +269,7 @@ export default function Create({ address }: PageProps) {
                 <p className="gutter pt-4 text-small text-destructive">{errors.form}</p>
               )}
 
-              <StickyBar className="tablet:max-w-[720px] desktop:max-w-[800px]">
+              <StickyBar className="tablet:max-w-180 desktop:max-w-200">
                 <SolidButton
                   type="submit"
                   disabled={processing || slots.length === 0 || !pickupDate}
@@ -280,7 +280,7 @@ export default function Create({ address }: PageProps) {
             </>
           )}
         </Form>
-      </main>
+      </div>
     </CustomerLayout>
   )
 }

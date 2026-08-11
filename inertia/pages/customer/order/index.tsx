@@ -11,15 +11,12 @@ import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { useMemo, useState } from 'react'
 
-type OrderRow = Data.Order & {
-  itemSummary: string
-}
-
 type PageProps = InertiaProps<{
-  orders: OrderRow[]
+  orders: Data.Order[]
+  summaries: Record<string, string>
 }>
 
-export default function Index({ orders }: PageProps) {
+export default function Index({ orders, summaries }: PageProps) {
   const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
@@ -33,9 +30,9 @@ export default function Index({ orders }: PageProps) {
       (order) =>
         order.orderNumber.toLowerCase().includes(needle) ||
         order.statusLabel.toLowerCase().includes(needle) ||
-        order.itemSummary.toLowerCase().includes(needle)
+        (summaries[order.id] ?? '').toLowerCase().includes(needle)
     )
-  }, [orders, query])
+  }, [orders, query, summaries])
 
   return (
     <CustomerLayout title="Riwayat Pesanan" description="Riwayat pesanan UmimaClean Anda">
@@ -43,7 +40,7 @@ export default function Index({ orders }: PageProps) {
         <BackLink route="customer.profile.show">← Kembali</BackLink>
       </header>
 
-      <main className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Riwayat Pesanan</PageTitle>
           <Lede>Cari dan lihat detail pesanan Anda.</Lede>
@@ -70,13 +67,13 @@ export default function Index({ orders }: PageProps) {
         <div className="gutter pt-5">
           {filtered.map((order) => (
             <div key={order.id} className="mb-4 border border-rule-strong">
-              <div className="flex items-start justify-between gap-3 px-5 py-[18px]">
+              <div className="flex items-start justify-between gap-3 px-5 py-4.5">
                 <div>
                   <div className="text-body leading-[1.4] font-semibold text-ink">
                     {order.orderNumber}
                   </div>
-                  <div className="mt-0.5 text-meta leading-[1.5] text-ink-subtle">
-                    {order.createdAt} · {order.itemSummary}
+                  <div className="mt-0.5 text-meta leading-normal text-ink-subtle">
+                    {order.createdAt} · {summaries[order.id] ?? 'Tanpa barang'}
                   </div>
                 </div>
                 <StatusBadge emphasis={order.isCompleted}>{order.statusLabel}</StatusBadge>
@@ -96,7 +93,7 @@ export default function Index({ orders }: PageProps) {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </CustomerLayout>
   )
 }

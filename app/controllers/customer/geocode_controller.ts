@@ -1,6 +1,7 @@
 import AddressService from '#services/address_service'
 import GeocodingService from '#services/geocoding_service'
-import { geocodeValidator } from '#validators/geocode_validator'
+import NearbyService from '#services/nearby_service'
+import { geocodeValidator, nearbyValidator } from '#validators/geocode_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 
@@ -8,6 +9,7 @@ import { inject } from '@adonisjs/core'
 export default class GeocodeController {
   constructor(
     protected geocodingService: GeocodingService,
+    protected nearbyService: NearbyService,
     protected addressService: AddressService
   ) {}
 
@@ -21,18 +23,32 @@ export default class GeocodeController {
       const candidates = await this.geocodingService.search(query, bounds)
 
       if (candidates.length === 0) {
-        return response.json({ result: null, reason: 'not_found' })
+        return response.json({ results: [], reason: 'not_found' })
       }
 
-      const match = await this.addressService.findFirstWithinOperationalArea(candidates)
+      const results = await this.addressService.filterWithinOperationalArea(candidates)
 
-      if (!match) {
-        return response.json({ result: null, reason: 'outside_area' })
+      if (results.length === 0) {
+        return response.json({ results: [], reason: 'outside_area' })
       }
 
-      return response.json({ result: match, reason: null })
+      return response.json({ results, reason: null })
     } catch {
-      return response.serviceUnavailable({ result: null, reason: 'unavailable' })
+      return response.serviceUnavailable({ results: [], reason: 'unavailable' })
+    }
+  }
+
+  async nearby({ request, response }: HttpContext) {
+    const { latitude, longitude } = await request.validateUsing(nearbyValidator, {
+      data: request.qs(),
+    })
+
+    try {
+      const places = await this.nearbyService.search(latitude, longitude)
+
+      return response.json({ places })
+    } catch {
+      return response.serviceUnavailable({ places: [] })
     }
   }
 }

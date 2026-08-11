@@ -171,18 +171,6 @@
   color: var(--color-ink-muted);
 }
 
-@utility underline-field {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid var(--color-rule-field);
-  border-radius: 0;
-  background: transparent;
-  padding: 10px 0;
-  font-size: 15px;
-  color: var(--color-ink);
-  outline: none;
-}
-
 @utility scroll-shadow-x {
   background:
     linear-gradient(to right, var(--color-card) 30%, transparent) left center / 2rem 100% no-repeat

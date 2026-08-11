@@ -129,11 +129,11 @@ export default function AdminLayout({
         )}
       </div>
 
-      <main className="tablet:pl-64">
+      <div className="tablet:pl-64">
         <div className="mx-auto w-full max-w-6xl bg-white px-5 py-6 tablet:px-8 tablet:py-8">
           {children}
         </div>
-      </main>
+      </div>
     </div>
   )
 }
