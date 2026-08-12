@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn, hasRoute } from '@/lib/utils'
 import { Link } from '@adonisjs/inertia/react'
 import { Head } from '@inertiajs/react'
 import { IconClipboardList, IconUser } from '@tabler/icons-react'
@@ -31,6 +31,7 @@ export default function StaffLayout({
   description: string
 }>) {
   const { component } = usePage()
+  const navItems = NAV_ITEMS.filter((item) => hasRoute(item.route))
 
   return (
     <div className="min-h-dvh bg-paper">
@@ -50,6 +51,7 @@ export default function StaffLayout({
       </div>
 
       <nav
+        hidden={navItems.length === 0}
         className={cn(
           'fixed inset-x-0 bottom-0 left-1/2 z-50 w-full max-w-107.5 -translate-x-1/2 border-t border-rule-strong bg-white pb-safe',
           SHELL_WIDTH,
@@ -57,7 +59,7 @@ export default function StaffLayout({
         )}
       >
         <div className="mx-auto flex items-stretch justify-around px-4 py-1.5">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = (item.match as readonly string[]).includes(component)
 
             return (

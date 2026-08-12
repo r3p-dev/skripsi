@@ -13,8 +13,6 @@ import {
   resetPasswordLimiter,
 } from '#start/limiter'
 
-router.get('/', [controllers.Home, 'index']).as('home')
-
 router
   .get('robots.txt', ({ response }) => {
     return response
@@ -71,6 +69,8 @@ transmit.authorize<{ orderNumber: string }>('orders/:orderNumber', async (ctx, {
   return order?.userId === user.id
 })
 
+router.get('/', [controllers.Home, 'index']).as('home').use(middleware.guest())
+
 router.post('transaction/callback', [controllers.webhooks.Transaction, 'update'])
 
 router
@@ -78,6 +78,7 @@ router
     router.get('signup', [controllers.auth.Signup, 'create'])
     router.post('signup', [controllers.auth.Signup, 'store']).use(signupLimiter)
 
+    router.get('internal/login', [controllers.auth.Session, 'createInternal'])
     router.get('login', [controllers.auth.Session, 'create'])
     router.post('login', [controllers.auth.Session, 'store']).use(loginLimiter)
 

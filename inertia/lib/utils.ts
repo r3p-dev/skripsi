@@ -18,3 +18,19 @@ function internationalise(phone: string) {
 
   return digits.startsWith('0') ? `62${digits.slice(1)}` : digits
 }
+
+export function toDateInput(value: string | null | undefined): string {
+  const date = toDate(value)
+
+  return date ? date.toISOString().slice(0, 10) : ''
+}
+
+function toDate(value: string | null | undefined): Date | null {
+  if (!value) {
+    return null
+  }
+
+  const date = new Date(value)
+
+  return Number.isNaN(date.getTime()) ? null : date
+}

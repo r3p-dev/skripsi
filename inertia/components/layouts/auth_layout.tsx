@@ -53,7 +53,7 @@ export default function AuthLayout({
       <Shell
         className={[
           'flex flex-col',
-          'tablet:my-14 tablet:min-h-[auto] tablet:max-w-205 tablet:rounded-[6px] tablet:border tablet:border-rule tablet:px-[clamp(0px,4vw,40px)] tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]',
+          'tablet:my-14 tablet:min-h-auto tablet:max-w-205 tablet:rounded-[6px] tablet:border tablet:border-rule tablet:px-[clamp(0px,4vw,40px)] tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]',
           'desktop:m-0 desktop:min-h-dvh desktop:max-w-135 desktop:flex-none desktop:justify-center desktop:rounded-none desktop:border-0 desktop:px-0 desktop:shadow-none',
         ].join(' ')}
       >

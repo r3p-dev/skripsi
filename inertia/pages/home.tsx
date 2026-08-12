@@ -303,7 +303,7 @@ export default function Home({ catalogues }: PageProps) {
           <div className="mt-4 mb-4 text-meta leading-[1.6] text-ink-subtle">
             © 2026 Umima. Semua hak dilindungi.
           </div>
-          <BackLink route="session.create" className="text-eyebrow text-ink-faint">
+          <BackLink route="session.create_internal" className="text-eyebrow text-ink-faint">
             Login Staf &amp; Admin
           </BackLink>
         </footer>

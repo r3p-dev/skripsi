@@ -91,8 +91,6 @@ export function UnderlineTextarea({ className, ...props }: ComponentProps<typeof
   return <Textarea className={cn(underlineField, 'resize-none', className)} {...props} />
 }
 
-// Monochrome status vocabulary: weight, not hue, carries the meaning.
-// solid = terminal/settled · outline = active/in-flight · muted = inert/parked.
 export type BadgeTone = 'solid' | 'outline' | 'muted'
 
 const badgeTones: Record<BadgeTone, string> = {
@@ -130,12 +128,6 @@ export function StickyBar({ className, ...props }: ComponentProps<'div'>) {
     />
   )
 }
-
-/* ------------------------------------------------------------------ *
- * Console surfaces — shared by the admin and staff screens.
- * Same ink/paper vocabulary as the marketing and customer pages:
- * hairline rules instead of shadows, square corners, fluid type.
- * ------------------------------------------------------------------ */
 
 export function SectionLabel({ className, ...props }: ComponentProps<'p'>) {
   return (
@@ -191,7 +183,6 @@ export function EmptyState({ className, ...props }: ComponentProps<'p'>) {
   )
 }
 
-/** Boxed field — the console counterpart to `underlineField`. */
 export const boxField =
   'h-11 w-full rounded-none border border-rule-field bg-white px-3.5 text-small text-ink shadow-none placeholder:text-ink-faint focus-visible:border-ink focus-visible:ring-0 focus-visible:outline-none'
 
@@ -234,7 +225,6 @@ export function Toolbar({ className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-/** Compact square action, sized to stay tappable on touch screens. */
 export function IconAction({
   destructive = false,
   className,

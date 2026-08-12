@@ -12,7 +12,6 @@ import {
 } from '@tabler/icons-react'
 import { type ReactNode } from 'react'
 
-/** Shared chrome for the staff task screens (trip, inspection, offline order). */
 export function TaskHeader({
   eyebrow,
   title,

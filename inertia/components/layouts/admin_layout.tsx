@@ -1,3 +1,4 @@
+import { hasRoute } from '@/lib/utils'
 import { Link } from '@adonisjs/inertia/react'
 import { Head, usePage } from '@inertiajs/react'
 import {
@@ -69,7 +70,9 @@ export default function AdminLayout({
   const { component } = usePage()
   const [isNavOpen, setIsNavOpen] = useState(false)
 
-  const links = NAV_ITEMS.map((item) => {
+  const navItems = NAV_ITEMS.filter((item) => hasRoute(item.route))
+
+  const links = navItems.map((item) => {
     const isActive = (item.match as readonly string[]).includes(component)
 
     return (
@@ -113,18 +116,20 @@ export default function AdminLayout({
             </p>
             <p className="text-body leading-[1.4] font-semibold text-ink">Admin</p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsNavOpen((open) => !open)}
-            aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
-            aria-expanded={isNavOpen}
-            className="flex size-11 shrink-0 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-ink/5"
-          >
-            {isNavOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
-          </button>
+          {navItems.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsNavOpen((open) => !open)}
+              aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
+              aria-expanded={isNavOpen}
+              className="flex size-11 shrink-0 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-ink/5"
+            >
+              {isNavOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
+            </button>
+          )}
         </header>
 
-        {isNavOpen && (
+        {isNavOpen && navItems.length > 0 && (
           <nav className="flex max-h-[calc(100dvh-4.5rem)] flex-col gap-1 overflow-y-auto border-b border-rule bg-white px-4 py-3">
             {links}
           </nav>

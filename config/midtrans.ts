@@ -25,7 +25,7 @@ export interface MidtransNotification {
 }
 
 export const core = new midtransClient.CoreApi({
-  isProduction: false, // Set to true in production
+  isProduction: false,
   serverKey: env.get('MIDTRANS_SERVER_KEY').release(),
 })
 

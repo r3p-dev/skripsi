@@ -26,9 +26,6 @@ export const steps = [
   },
 ]
 
-// The console screens share the monochrome badge vocabulary used on the
-// customer pages: `solid` reads as settled, `outline` as in-flight, and
-// `muted` as parked. Weight replaces hue so the ink/paper palette holds.
 export const orderStatusTones: Record<string, BadgeTone> = {
   [OrderStatus.PICKUP_SCHEDULED]: 'muted',
   [OrderStatus.IN_PICKUP]: 'outline',
@@ -95,7 +92,7 @@ export const rituals = [
 ]
 
 export const contact = {
-  operationalHours: '09.00 – 20.00',
+  operationalHours: '09.00 - 20.00',
   phone: '0851-5790-0974',
   googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=umima+clean+bandung',
 }
@@ -116,7 +113,7 @@ export const faqs = [
   {
     question: 'Berapa lama proses pencuciannya?',
     answer:
-      'Tergantung jenis sepatu dan treatment yang dibutuhkan. Rata-rata 2–4 hari kerja, tetapi bisa lebih cepat untuk layanan one day service.',
+      'Tergantung jenis sepatu dan treatment yang dibutuhkan. Rata-rata 2-4 hari kerja, tetapi bisa lebih cepat untuk layanan one day service.',
   },
   {
     question: 'Apakah bisa cuci sepatu yang berbahan suede atau kulit?',

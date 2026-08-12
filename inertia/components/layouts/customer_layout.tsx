@@ -38,8 +38,6 @@ export default function CustomerLayout({
 }>) {
   const { component } = usePage()
 
-  // The order flow keeps a flush, full-height shell so its sticky bar stays anchored;
-  // the reading pages float as a card once there is room for it.
   const shell = wide
     ? 'tablet:max-w-180 tablet:border-x tablet:border-rule'
     : 'tablet:my-14 tablet:min-h-[auto] tablet:max-w-170 tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]'

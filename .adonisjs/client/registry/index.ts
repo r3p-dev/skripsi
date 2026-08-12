@@ -12,12 +12,6 @@ const routes = {
     tokens: [{"old":"/uploads/*","type":0,"val":"uploads","end":""},{"old":"/uploads/*","type":2,"val":"*","end":""}],
     types: placeholder as Registry['drive.fs.serve']['types'],
   },
-  'home': {
-    methods: ["GET","HEAD"],
-    pattern: '/',
-    tokens: [{"old":"/","type":0,"val":"/","end":""}],
-    types: placeholder as Registry['home']['types'],
-  },
   'robots': {
     methods: ["GET","HEAD"],
     pattern: '/robots.txt',
@@ -48,6 +42,12 @@ const routes = {
     tokens: [{"old":"/__transmit/unsubscribe","type":0,"val":"__transmit","end":""},{"old":"/__transmit/unsubscribe","type":0,"val":"unsubscribe","end":""}],
     types: placeholder as Registry['unsubscribe']['types'],
   },
+  'home': {
+    methods: ["GET","HEAD"],
+    pattern: '/',
+    tokens: [{"old":"/","type":0,"val":"/","end":""}],
+    types: placeholder as Registry['home']['types'],
+  },
   'transaction.update': {
     methods: ["POST"],
     pattern: '/transaction/callback',
@@ -65,6 +65,12 @@ const routes = {
     pattern: '/signup',
     tokens: [{"old":"/signup","type":0,"val":"signup","end":""}],
     types: placeholder as Registry['signup.store']['types'],
+  },
+  'session.create_internal': {
+    methods: ["GET","HEAD"],
+    pattern: '/internal/login',
+    tokens: [{"old":"/internal/login","type":0,"val":"internal","end":""},{"old":"/internal/login","type":0,"val":"login","end":""}],
+    types: placeholder as Registry['session.create_internal']['types'],
   },
   'session.create': {
     methods: ["GET","HEAD"],

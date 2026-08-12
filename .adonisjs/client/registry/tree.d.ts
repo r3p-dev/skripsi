@@ -7,12 +7,12 @@ export interface ApiDefinition {
       serve: typeof routes['drive.fs.serve']
     }
   }
-  home: typeof routes['home']
   robots: typeof routes['robots']
   sitemap: typeof routes['sitemap']
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']
+  home: typeof routes['home']
   transaction: {
     update: typeof routes['transaction.update']
   }
@@ -21,6 +21,7 @@ export interface ApiDefinition {
     store: typeof routes['signup.store']
   }
   session: {
+    createInternal: typeof routes['session.create_internal']
     create: typeof routes['session.create']
     store: typeof routes['session.store']
     destroy: typeof routes['session.destroy']

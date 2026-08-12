@@ -144,7 +144,7 @@ export default function Payment({
         <meta name="description" content="Pembayaran pesanan UmimaClean Anda" />
       </Head>
 
-      <Shell className="flex flex-col tablet:my-14 tablet:min-h-[auto] tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]">
+      <Shell className="flex flex-col tablet:my-14 tablet:min-h-auto tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]">
         <header className="gutter flex items-center gap-3 pt-6">
           <BackLink
             backRoute={backRoute}

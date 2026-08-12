@@ -19,18 +19,6 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'home': {
-    methods: ["GET","HEAD"]
-    pattern: '/'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-    }
-  }
   'robots': {
     methods: ["GET","HEAD"]
     pattern: '/robots.txt'
@@ -91,6 +79,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'home': {
+    methods: ["GET","HEAD"]
+    pattern: '/'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+    }
+  }
   'transaction.update': {
     methods: ["POST"]
     pattern: '/transaction/callback'
@@ -125,6 +125,18 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/auth_validator').signupValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/signup_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/signup_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'session.create_internal': {
+    methods: ["GET","HEAD"]
+    pattern: '/internal/login'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['createInternal']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth/session_controller').default['createInternal']>>>
     }
   }
   'session.create': {

@@ -5,6 +5,7 @@ import { type ReactElement, useEffect } from 'react'
 
 export default function Layout({ children }: { children: ReactElement<Data.SharedProps> }) {
   const { url } = usePage()
+
   useEffect(() => {
     toast.dismiss()
   }, [url])
@@ -13,6 +14,7 @@ export default function Layout({ children }: { children: ReactElement<Data.Share
     if (children.props.flash.error) {
       toast.error(children.props.flash.error)
     }
+
     if (children.props.flash.success) {
       toast.success(children.props.flash.success)
     }

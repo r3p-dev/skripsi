@@ -5,15 +5,16 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'drive.fs.serve': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
-    'home': { paramsTuple?: []; params?: {} }
     'robots': { paramsTuple?: []; params?: {} }
     'sitemap': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'transaction.update': { paramsTuple?: []; params?: {} }
     'signup.create': { paramsTuple?: []; params?: {} }
     'signup.store': { paramsTuple?: []; params?: {} }
+    'session.create_internal': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
@@ -44,11 +45,12 @@ export type ScannedRoutes = {
   }
   GET: {
     'drive.fs.serve': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
-    'home': { paramsTuple?: []; params?: {} }
     'robots': { paramsTuple?: []; params?: {} }
     'sitemap': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'signup.create': { paramsTuple?: []; params?: {} }
+    'session.create_internal': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }
@@ -67,11 +69,12 @@ export type ScannedRoutes = {
   }
   HEAD: {
     'drive.fs.serve': { paramsTuple: [...ParamValue[]]; params: {'*': ParamValue[]} }
-    'home': { paramsTuple?: []; params?: {} }
     'robots': { paramsTuple?: []; params?: {} }
     'sitemap': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'signup.create': { paramsTuple?: []; params?: {} }
+    'session.create_internal': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'password_reset.create': { paramsTuple?: []; params?: {} }
     'password_reset.edit': { paramsTuple?: []; params?: {} }

@@ -9,7 +9,6 @@ import {
   type BadgeTone,
 } from '@/components/atoms/editorial'
 import { neutralTone, orderStatusTones } from '@/lib/constants'
-import { formatRupiah } from '@/lib/format'
 import { Transmit } from '@adonisjs/transmit-client'
 import { IconAntennaBars5 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
@@ -90,7 +89,7 @@ export function LiveOrders() {
                     {OrderTypeLabel[entry.type as keyof typeof OrderTypeLabel]}
                   </span>
                   <span className="text-ink-body">
-                    {entry.totalPrice === null ? '—' : formatRupiah(entry.totalPrice)}
+                    {entry.totalPrice === null ? '—' : entry.totalPrice}
                   </span>
                 </div>
                 <StatusBadge tone={orderStatusTones[entry.status] ?? neutralTone} className="w-fit">

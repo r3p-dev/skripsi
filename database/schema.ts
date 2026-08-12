@@ -13,7 +13,19 @@ import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
 import { Role } from '#enums/role_enum'
 
 export class AddressSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'isActive', 'latitude', 'longitude', 'name', 'note', 'phone', 'street', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'isActive',
+    'latitude',
+    'longitude',
+    'name',
+    'note',
+    'phone',
+    'street',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = AddressSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -40,7 +52,16 @@ export class AddressSchema extends BaseModel {
 }
 
 export class CatalogueSchema extends BaseModel {
-  static $columns = ['category', 'createdAt', 'description', 'id', 'name', 'price', 'type', 'updatedAt'] as const
+  static $columns = [
+    'category',
+    'createdAt',
+    'description',
+    'id',
+    'name',
+    'price',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = CatalogueSchema.$columns
   @column()
   declare category: CatalogueCategory
@@ -61,7 +82,18 @@ export class CatalogueSchema extends BaseModel {
 }
 
 export class ItemSchema extends BaseModel {
-  static $columns = ['brand', 'createdAt', 'id', 'material', 'model', 'note', 'orderId', 'size', 'type', 'updatedAt'] as const
+  static $columns = [
+    'brand',
+    'createdAt',
+    'id',
+    'material',
+    'model',
+    'note',
+    'orderId',
+    'size',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = ItemSchema.$columns
   @column()
   declare brand: string
@@ -101,7 +133,18 @@ export class OperationalAreaSchema extends BaseModel {
 }
 
 export class OrderItemSchema extends BaseModel {
-  static $columns = ['catalogueId', 'condition', 'createdAt', 'id', 'itemId', 'name', 'orderId', 'price', 'subtotal', 'updatedAt'] as const
+  static $columns = [
+    'catalogueId',
+    'condition',
+    'createdAt',
+    'id',
+    'itemId',
+    'name',
+    'orderId',
+    'price',
+    'subtotal',
+    'updatedAt',
+  ] as const
   $columns = OrderItemSchema.$columns
   @column()
   declare catalogueId: number
@@ -126,7 +169,20 @@ export class OrderItemSchema extends BaseModel {
 }
 
 export class OrderSchema extends BaseModel {
-  static $columns = ['addressId', 'createdAt', 'customerName', 'customerPhone', 'id', 'orderNumber', 'pickupDate', 'status', 'totalPrice', 'type', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'addressId',
+    'createdAt',
+    'customerName',
+    'customerPhone',
+    'id',
+    'orderNumber',
+    'pickupDate',
+    'status',
+    'totalPrice',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = OrderSchema.$columns
   @column()
   declare addressId: number | null
@@ -198,7 +254,18 @@ export class SpatialRefSySchema extends BaseModel {
 }
 
 export class TransactionSchema extends BaseModel {
-  static $columns = ['cashReceived', 'createdAt', 'id', 'midtransOrderId', 'midtransTransactionId', 'orderId', 'paymentMethod', 'qrCode', 'status', 'updatedAt'] as const
+  static $columns = [
+    'cashReceived',
+    'createdAt',
+    'id',
+    'midtransOrderId',
+    'midtransTransactionId',
+    'orderId',
+    'paymentMethod',
+    'qrCode',
+    'status',
+    'updatedAt',
+  ] as const
   $columns = TransactionSchema.$columns
   @column()
   declare cashReceived: string | null
@@ -223,7 +290,17 @@ export class TransactionSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'isActive', 'name', 'password', 'passwordChangedAt', 'phone', 'role', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'isActive',
+    'name',
+    'password',
+    'passwordChangedAt',
+    'phone',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

@@ -11,16 +11,6 @@ import { cn } from '@/lib/utils'
 import { IconChevronDown } from '@tabler/icons-react'
 import { Fragment, useId, useState, type ReactNode } from 'react'
 
-/**
- * How a column behaves in the compact record shown below the tablet
- * breakpoint. The full table is only rendered once there is room for it.
- *
- * primary  — the headline, always visible
- * trailing — right-hand companion to the headline (status, total)
- * meta     — subdued line under the headline
- * actions  — full-width row at the foot of the expanded record
- * detail   — default; a label/value pair inside the expanded record
- */
 type ColumnRole = 'primary' | 'trailing' | 'meta' | 'actions' | 'detail'
 
 export type Column<T> = {
@@ -29,7 +19,6 @@ export type Column<T> = {
   cell: (row: T) => ReactNode
   align?: 'right'
   role?: ColumnRole
-  /** Extra classes for the desktop table cell. */
   cellClassName?: string
 }
 
@@ -116,10 +105,6 @@ function DataRecord<T>({ row, columns }: { row: T; columns: Column<T>[] }) {
   )
 }
 
-/**
- * One column definition drives both renderings: a real table from the tablet
- * breakpoint up, and tap-to-expand records on phones.
- */
 export function DataTable<T>({
   columns,
   rows,
@@ -157,6 +142,7 @@ export function DataTable<T>({
               ))}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {rows.map((row) => (
               <TableRow key={getKey(row)}>
