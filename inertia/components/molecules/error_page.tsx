@@ -26,7 +26,7 @@ export default function ErrorPage({
 
       <Shell className="flex flex-col tablet:max-w-170 desktop:max-w-190">
         <div className="gutter flex flex-1 flex-col items-center justify-center py-20 text-center">
-          <img src="/images/logo_full.jpg" alt="ümima" className="mb-9 w-27.5 object-contain" />
+          <img src="/images/logo_full.jpg" alt="Umima" className="mb-9 w-27.5 object-contain" />
 
           <Eyebrow className="mb-4">{eyebrow}</Eyebrow>
           <PageTitle className="mb-3">{title}</PageTitle>

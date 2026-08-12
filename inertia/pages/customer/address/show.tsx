@@ -16,7 +16,7 @@ export default function Show({ address }: PageProps) {
         <BackLink route="customer.profile.show">← Kembali</BackLink>
       </header>
 
-      <div className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav desktop:pb-page">
         <div className="gutter pt-7 pb-6">
           <PageTitle className="mb-1.5">Alamat</PageTitle>
           <Lede>Anda hanya dapat menyimpan satu alamat utama.</Lede>

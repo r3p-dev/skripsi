@@ -1,4 +1,13 @@
 import AdminLayout from '@/components/layouts/admin_layout'
+import {
+  BoxSelect,
+  BoxTextarea,
+  Notice,
+  SearchField,
+  SolidButton,
+  StatusBadge,
+} from '@/components/atoms/editorial'
+import { DataTable, type Column } from '@/components/molecules/data_table'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { Pagination } from '@/components/molecules/pagination'
@@ -12,33 +21,175 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert_dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { neutralBadgeStyle, transactionStatusStyles } from '@/lib/constants'
+import { neutralTone, transactionStatusTones } from '@/lib/constants'
 import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
 import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconAlertTriangle, IconSearch } from '@tabler/icons-react'
+import { IconAlertTriangle } from '@tabler/icons-react'
+
+type OrderRow = Data.Order.Variants['toListItem']
+
+type Option = { value: string; label: string }
 
 type PageProps = InertiaProps<{
-  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
+  orders: { data: OrderRow[]; metadata: Metadata }
   filters: Filters
-  paymentMethodOptions: { value: string; label: string }[]
+  paymentMethodOptions: Option[]
 }>
+
+function buildColumns(paymentMethodOptions: Option[]): Column<OrderRow>[] {
+  return [
+    {
+      key: 'orderNumber',
+      header: 'Nomor',
+      role: 'primary',
+      cell: (order) => (
+        <Link
+          route="admin.order.show"
+          routeParams={{ number: order.orderNumber }}
+          className="font-semibold text-ink underline underline-offset-4"
+        >
+          {order.orderNumber}
+        </Link>
+      ),
+    },
+    {
+      key: 'customer',
+      header: 'Pelanggan',
+      role: 'meta',
+      cell: (order) => (
+        <span className="text-ink-body">
+          {order.customerName}
+          <span className="text-ink-subtle"> · {order.customerPhone}</span>
+        </span>
+      ),
+    },
+    {
+      key: 'totalPrice',
+      header: 'Total',
+      align: 'right',
+      role: 'trailing',
+      cell: (order) => (
+        <span className="text-body font-semibold text-ink tablet:text-small">
+          {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+        </span>
+      ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Menunggu Sejak',
+      cellClassName: 'text-ink-soft',
+      cell: (order) => formatShortDate(order.createdAt),
+    },
+    {
+      key: 'transaction',
+      header: 'Transaksi Terakhir',
+      cell: (order) => {
+        const latest = order.transactions?.[0]
+
+        if (!latest) {
+          return <span className="text-meta text-ink-subtle">Belum pernah ditagih</span>
+        }
+
+        return (
+          <span className="flex flex-wrap items-center justify-end gap-1.5 tablet:flex-col tablet:items-start">
+            <StatusBadge tone={transactionStatusTones[latest.status] ?? neutralTone}>
+              {TransactionStatusLabel[latest.status as keyof typeof TransactionStatusLabel]}
+            </StatusBadge>
+            <span className="text-meta text-ink-subtle">
+              {PaymentMethodLabel[latest.paymentMethod as keyof typeof PaymentMethodLabel]}
+            </span>
+          </span>
+        )
+      },
+    },
+    {
+      key: 'actions',
+      header: 'Aksi',
+      align: 'right',
+      role: 'actions',
+      cell: (order) => (
+        <AlertDialog>
+          <AlertDialogTrigger
+            aria-label={`Konfirmasi pembayaran ${order.orderNumber}`}
+            className="flex min-h-11 w-full items-center justify-center bg-ink px-4 text-meta font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90 tablet:w-auto"
+          >
+            Konfirmasi
+          </AlertDialogTrigger>
+
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi pembayaran manual?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Pesanan {order.orderNumber} akan ditandai lunas dan langsung masuk pencucian.
+                Tindakan ini tidak dapat dibatalkan.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <Form route="admin.reconciliation.update" routeParams={{ number: order.orderNumber }}>
+              {({ errors, processing }) => (
+                <div className="flex flex-col gap-4">
+                  <Field data-invalid={errors.paymentMethod ? 'true' : undefined}>
+                    <FieldLabel htmlFor={`method-${order.id}`} className="field-label mb-2">
+                      Metode Pembayaran
+                    </FieldLabel>
+                    <BoxSelect
+                      id={`method-${order.id}`}
+                      name="paymentMethod"
+                      required
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Pilih metode
+                      </option>
+                      {paymentMethodOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </BoxSelect>
+                    <FieldError>{errors.paymentMethod}</FieldError>
+                  </Field>
+
+                  <Field data-invalid={errors.note ? 'true' : undefined}>
+                    <FieldLabel htmlFor={`note-${order.id}`} className="field-label mb-2">
+                      Alasan
+                    </FieldLabel>
+                    <BoxTextarea
+                      id={`note-${order.id}`}
+                      name="note"
+                      required
+                      placeholder="Contoh: bukti transfer diterima, callback Midtrans tidak masuk"
+                      aria-invalid={!!errors.note}
+                    />
+                    <FieldError>{errors.note}</FieldError>
+                  </Field>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="h-11 rounded-none border-rule-field text-meta font-medium text-ink">
+                      Batal
+                    </AlertDialogCancel>
+                    <Button
+                      type="submit"
+                      disabled={processing}
+                      className="h-11 rounded-none bg-ink text-meta font-medium tracking-[0.08em] text-white uppercase hover:bg-ink/90"
+                    >
+                      Tandai Lunas
+                    </Button>
+                  </AlertDialogFooter>
+                </div>
+              )}
+            </Form>
+          </AlertDialogContent>
+        </AlertDialog>
+      ),
+    },
+  ]
+}
 
 export default function Index({ orders, filters, paymentMethodOptions }: PageProps) {
   return (
@@ -50,191 +201,38 @@ export default function Index({ orders, filters, paymentMethodOptions }: PagePro
         action={<ExportButton />}
       />
 
-      <div className="mb-6 flex items-start gap-2 rounded-none border border-amber-200 bg-amber-50 px-4 py-3">
-        <IconAlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-700" />
-        <p className="text-sm text-amber-800">
+      <Notice className="mb-5">
+        <IconAlertTriangle className="mt-0.5 size-4 shrink-0 text-ink" />
+        <span>
           Konfirmasi manual memaksa pesanan lanjut ke pencucian tanpa konfirmasi Midtrans. Pastikan
           uangnya benar-benar sudah diterima — setiap konfirmasi dicatat atas nama Anda.
-        </p>
-      </div>
+        </span>
+      </Notice>
 
-      <Form route="admin.reconciliation.index" className="mb-6">
+      <Form route="admin.reconciliation.index" className="mb-5">
         {() => (
-          <div className="relative max-w-md">
-            <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" />
-            <Input
-              type="text"
+          <div className="flex flex-col gap-2.5 tablet:flex-row tablet:items-center">
+            <SearchField
               name="search"
               aria-label="Cari pesanan tertahan"
               defaultValue={filters.search}
               placeholder="Cari nomor pesanan atau nama..."
-              className="h-11 rounded-none border-rule-field bg-paper-tint pl-10 focus-visible:border-ink focus-visible:ring-black/10"
+              wrapperClassName="tablet:min-w-64 tablet:max-w-md tablet:flex-1"
             />
+
+            <SolidButton type="submit" className="py-3 tablet:w-auto tablet:px-8">
+              Cari
+            </SolidButton>
           </div>
         )}
       </Form>
 
-      <Card className="rounded-none border border-rule bg-white">
-        <CardContent>
-          {orders.data.length === 0 ? (
-            <p className="py-12 text-center text-sm text-ink-subtle">
-              Tidak ada pesanan yang menunggu pelunasan
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nomor</TableHead>
-                  <TableHead>Pelanggan</TableHead>
-                  <TableHead>Menunggu Sejak</TableHead>
-                  <TableHead>Transaksi Terakhir</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.data.map((order) => {
-                  const latest = order.transactions?.[0]
-
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-semibold">
-                        <Link
-                          route="admin.order.show"
-                          routeParams={{ number: order.orderNumber }}
-                          className="underline"
-                        >
-                          {order.orderNumber}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-ink">{order.customerName}</p>
-                        <p className="text-xs text-ink-subtle">{order.customerPhone}</p>
-                      </TableCell>
-                      <TableCell className="text-ink-soft">
-                        {formatShortDate(order.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        {latest ? (
-                          <div className="flex flex-col gap-1">
-                            <Badge
-                              className={
-                                transactionStatusStyles[latest.status] ?? neutralBadgeStyle
-                              }
-                            >
-                              {
-                                TransactionStatusLabel[
-                                  latest.status as keyof typeof TransactionStatusLabel
-                                ]
-                              }
-                            </Badge>
-                            <span className="text-xs text-ink-subtle">
-                              {
-                                PaymentMethodLabel[
-                                  latest.paymentMethod as keyof typeof PaymentMethodLabel
-                                ]
-                              }
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-ink-subtle">Belum pernah ditagih</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            aria-label={`Konfirmasi pembayaran ${order.orderNumber}`}
-                            className="rounded-none bg-ink px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink/90 active:scale-95"
-                          >
-                            Konfirmasi
-                          </AlertDialogTrigger>
-
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Konfirmasi pembayaran manual?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Pesanan {order.orderNumber} akan ditandai lunas dan langsung masuk
-                                pencucian. Tindakan ini tidak dapat dibatalkan.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-
-                            <Form
-                              route="admin.reconciliation.update"
-                              routeParams={{ number: order.orderNumber }}
-                            >
-                              {({ errors, processing }) => (
-                                <div className="space-y-3">
-                                  <Field data-invalid={errors.paymentMethod ? 'true' : undefined}>
-                                    <FieldLabel
-                                      htmlFor={`method-${order.id}`}
-                                      className="text-xs tracking-widest text-ink-body uppercase"
-                                    >
-                                      Metode Pembayaran
-                                    </FieldLabel>
-                                    <select
-                                      id={`method-${order.id}`}
-                                      name="paymentMethod"
-                                      required
-                                      defaultValue=""
-                                      className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
-                                    >
-                                      <option value="" disabled>
-                                        Pilih metode
-                                      </option>
-                                      {paymentMethodOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                          {option.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    <FieldError>{errors.paymentMethod}</FieldError>
-                                  </Field>
-
-                                  <Field data-invalid={errors.note ? 'true' : undefined}>
-                                    <FieldLabel
-                                      htmlFor={`note-${order.id}`}
-                                      className="text-xs tracking-widest text-ink-body uppercase"
-                                    >
-                                      Alasan
-                                    </FieldLabel>
-                                    <Textarea
-                                      id={`note-${order.id}`}
-                                      name="note"
-                                      required
-                                      placeholder="Contoh: bukti transfer diterima, callback Midtrans tidak masuk"
-                                      aria-invalid={!!errors.note}
-                                      className="rounded-none bg-white"
-                                    />
-                                    <FieldError>{errors.note}</FieldError>
-                                  </Field>
-
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                    <Button
-                                      type="submit"
-                                      disabled={processing}
-                                      className="bg-ink text-white hover:bg-ink/90"
-                                    >
-                                      Tandai Lunas
-                                    </Button>
-                                  </AlertDialogFooter>
-                                </div>
-                              )}
-                            </Form>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <DataTable
+        columns={buildColumns(paymentMethodOptions)}
+        rows={orders.data}
+        getKey={(order) => order.id}
+        empty="Tidak ada pesanan yang menunggu pelunasan"
+      />
 
       <Pagination metadata={orders.metadata} />
     </AdminLayout>

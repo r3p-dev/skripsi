@@ -6,6 +6,7 @@ import {
   UnderlineInput,
 } from '@/components/atoms/editorial'
 import CustomerLayout from '@/components/layouts/customer_layout'
+import { cn } from '@/lib/utils'
 import { Field, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
@@ -16,8 +17,14 @@ type PageProps = InertiaProps<{
   summaries: Record<string, string>
 }>
 
+const PAGE_SIZE = 10
+
+const pagerButton =
+  'flex size-9 items-center justify-center rounded-full border border-rule-field text-ink disabled:text-ink-faint'
+
 export default function Index({ orders, summaries }: PageProps) {
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -34,13 +41,17 @@ export default function Index({ orders, summaries }: PageProps) {
     )
   }, [orders, query, summaries])
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
   return (
     <CustomerLayout title="Riwayat Pesanan" description="Riwayat pesanan UmimaClean Anda">
       <header className="gutter pt-6">
         <BackLink route="customer.profile.show">← Kembali</BackLink>
       </header>
 
-      <div className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav desktop:pb-page">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Riwayat Pesanan</PageTitle>
           <Lede>Cari dan lihat detail pesanan Anda.</Lede>
@@ -55,7 +66,10 @@ export default function Index({ orders, summaries }: PageProps) {
               id="order-search"
               type="text"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value)
+                setPage(1)
+              }}
               placeholder="No. pesanan, status, atau merk barang"
             />
           </Field>
@@ -65,7 +79,7 @@ export default function Index({ orders, summaries }: PageProps) {
         </div>
 
         <div className="gutter pt-5">
-          {filtered.map((order) => (
+          {visible.map((order) => (
             <div key={order.id} className="mb-4 border border-rule-strong">
               <div className="flex items-start justify-between gap-3 px-5 py-4.5">
                 <div>
@@ -93,6 +107,55 @@ export default function Index({ orders, summaries }: PageProps) {
             </div>
           )}
         </div>
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Navigasi halaman pesanan"
+            className="gutter flex flex-wrap items-center justify-center gap-2 pt-2 pb-10"
+          >
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage <= 1}
+              aria-label="Halaman sebelumnya"
+              className={pagerButton}
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => {
+              const isCurrent = number === currentPage
+
+              return (
+                <button
+                  key={number}
+                  type="button"
+                  onClick={() => setPage(number)}
+                  aria-label={`Halaman ${number}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={cn(
+                    'flex size-9 items-center justify-center rounded-full border text-small',
+                    isCurrent
+                      ? 'border-ink bg-ink font-semibold text-white'
+                      : 'border-rule-field text-ink'
+                  )}
+                >
+                  {number}
+                </button>
+              )
+            })}
+
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage >= totalPages}
+              aria-label="Halaman berikutnya"
+              className={pagerButton}
+            >
+              ›
+            </button>
+          </nav>
+        )}
       </div>
     </CustomerLayout>
   )

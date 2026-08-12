@@ -1,19 +1,28 @@
 import { PhoneInput } from '@/components/atoms/phone_input'
 import StaffLayout from '@/components/layouts/staff_layout'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import {
+  BoxInput,
+  BoxSelect,
+  BoxTextarea,
+  OutlineButton,
+  Panel,
+  SectionLabel,
+  SolidButton,
+  boxField,
+} from '@/components/atoms/editorial'
+import { TaskHeader } from '@/components/molecules/staff_task'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { ItemCard, useItemRows } from '@/components/organisms/item_fields'
 import { CustomerLookup, type FoundCustomer } from '@/components/organisms/customer_lookup'
+import { cn } from '@/lib/utils'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { PaymentMethod, PaymentMethodLabel } from '@/enums/transaction_enum'
 import { CatalogueCategory } from '@/enums/catalogue_enum'
 import { formatRupiah } from '@/lib/format'
-import { Form, Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft, IconInfoCircle } from '@tabler/icons-react'
+import { Form } from '@adonisjs/inertia/react'
+import { IconInfoCircle } from '@tabler/icons-react'
 import { useState } from 'react'
 
 type PageProps = InertiaProps<{
@@ -44,105 +53,87 @@ export default function Create({ services }: PageProps) {
 
   return (
     <StaffLayout title="Pesanan Offline" description="Buat pesanan offline di tempat">
-      <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="staff.trip.index"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
-        <div>
-          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">
-            Pesanan Offline
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Pesanan Baru</h1>
-        </div>
-      </div>
+      <TaskHeader eyebrow="Pesanan Offline" title="Pesanan Baru" showBack />
 
-      <div className="flex-1 space-y-4 px-6 pb-nav">
-        <Form route="staff.order.store" className="space-y-4">
+      <div className="gutter flex flex-1 flex-col pb-nav">
+        <Form route="staff.order.store" className="flex flex-col gap-3">
           {({ errors, processing }) => (
             <>
               <input type="hidden" name="totalItems" value={items.length} />
 
-              <Card className="rounded-none border border-rule bg-paper-tint p-5">
-                <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-                  Pelanggan
-                </p>
+              <Panel tone="tint">
+                <div className="border-b border-rule px-5 py-3.5">
+                  <SectionLabel>Pelanggan</SectionLabel>
+                </div>
 
-                <CustomerLookup
-                  selected={customer}
-                  onSelect={setCustomer}
-                  onClear={() => {
-                    setCustomer(null)
-                    setDelivery(false)
-                  }}
-                />
-
-                {customer && <input type="hidden" name="customerId" value={customer.id} />}
-
-                <Field data-invalid={errors.name ? 'true' : undefined}>
-                  <FieldLabel
-                    htmlFor="name"
-                    className="text-xs tracking-widest text-ink-body uppercase"
-                  >
-                    Nama Pelanggan
-                  </FieldLabel>
-                  <Input
-                    id="name"
-                    name="name"
-                    key={customer?.id ?? 'manual'}
-                    defaultValue={customer?.name ?? ''}
-                    required
-                    aria-invalid={!!errors.name}
-                    className="h-11 rounded-none bg-white"
+                <div className="flex flex-col gap-5 px-5 py-4">
+                  <CustomerLookup
+                    selected={customer}
+                    onSelect={setCustomer}
+                    onClear={() => {
+                      setCustomer(null)
+                      setDelivery(false)
+                    }}
                   />
-                  <FieldError>{errors.name}</FieldError>
-                </Field>
 
-                <Field data-invalid={errors.phone ? 'true' : undefined}>
-                  <FieldLabel
-                    htmlFor="phone"
-                    className="text-xs tracking-widest text-ink-body uppercase"
-                  >
-                    Nomor Telepon
-                  </FieldLabel>
-                  <PhoneInput
-                    id="phone"
-                    name="phone"
-                    key={customer?.id ?? 'manual-phone'}
-                    defaultValue={customer?.phone ?? ''}
-                    required
-                    aria-invalid={!!errors.phone}
-                    className="h-11 rounded-none bg-white"
-                  />
-                  <FieldError>{errors.phone}</FieldError>
-                </Field>
+                  {customer && <input type="hidden" name="customerId" value={customer.id} />}
 
-                <Field data-invalid={errors.delivery ? 'true' : undefined}>
-                  <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-ink-body">
-                    <input
-                      type="checkbox"
-                      name="delivery"
-                      value="true"
-                      checked={delivery}
-                      disabled={!customer}
-                      onChange={(event) => setDelivery(event.target.checked)}
-                      className="mt-0.5 size-5 shrink-0 rounded border-rule-field disabled:opacity-40"
+                  <Field data-invalid={errors.name ? 'true' : undefined}>
+                    <FieldLabel htmlFor="name" className="field-label mb-2">
+                      Nama Pelanggan
+                    </FieldLabel>
+                    <BoxInput
+                      id="name"
+                      name="name"
+                      key={customer?.id ?? 'manual'}
+                      defaultValue={customer?.name ?? ''}
+                      required
+                      aria-invalid={!!errors.name}
                     />
-                    <span>
-                      Antar kembali ke alamat pelanggan
-                      {!customer && (
-                        <span className="block text-xs text-ink-subtle">
-                          Pilih akun pelanggan terlebih dahulu — pengantaran memerlukan alamat yang
-                          tersimpan di akun.
-                        </span>
-                      )}
-                    </span>
-                  </label>
-                  <FieldError>{errors.delivery}</FieldError>
-                </Field>
-              </Card>
+                    <FieldError>{errors.name}</FieldError>
+                  </Field>
+
+                  <Field data-invalid={errors.phone ? 'true' : undefined}>
+                    <FieldLabel htmlFor="phone" className="field-label mb-2">
+                      Nomor Telepon
+                    </FieldLabel>
+                    <PhoneInput
+                      id="phone"
+                      name="phone"
+                      key={customer?.id ?? 'manual-phone'}
+                      defaultValue={customer?.phone ?? ''}
+                      required
+                      aria-invalid={!!errors.phone}
+                      className={boxField}
+                    />
+                    <FieldError>{errors.phone}</FieldError>
+                  </Field>
+
+                  <Field data-invalid={errors.delivery ? 'true' : undefined}>
+                    <label className="flex min-h-11 items-start gap-3 py-1 text-small leading-normal text-ink-body">
+                      <input
+                        type="checkbox"
+                        name="delivery"
+                        value="true"
+                        checked={delivery}
+                        disabled={!customer}
+                        onChange={(event) => setDelivery(event.target.checked)}
+                        className="mt-0.5 size-4.5 shrink-0 rounded-xs border-rule-field accent-ink disabled:opacity-40"
+                      />
+                      <span>
+                        Antar kembali ke alamat pelanggan
+                        {!customer && (
+                          <span className="mt-0.5 block text-meta text-ink-subtle">
+                            Pilih akun pelanggan terlebih dahulu — pengantaran memerlukan alamat
+                            yang tersimpan di akun.
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                    <FieldError>{errors.delivery}</FieldError>
+                  </Field>
+                </div>
+              </Panel>
 
               {items.map((item, index) => (
                 <ItemCard
@@ -156,21 +147,13 @@ export default function Create({ services }: PageProps) {
                 />
               ))}
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addItem}
-                className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
-              >
+              <OutlineButton type="button" onClick={addItem} className="py-3 text-meta">
                 Tambah Barang
-              </Button>
+              </OutlineButton>
 
-              <Card className="rounded-none border border-rule bg-paper-tint p-5">
+              <Panel tone="tint" className="flex flex-col gap-5 px-5 py-5">
                 <Field data-invalid={errors.photo ? 'true' : undefined}>
-                  <FieldLabel
-                    htmlFor="photo"
-                    className="text-xs tracking-widest text-ink-body uppercase"
-                  >
+                  <FieldLabel htmlFor="photo" className="field-label mb-2">
                     Foto Kondisi Barang
                   </FieldLabel>
                   <Input
@@ -181,28 +164,28 @@ export default function Create({ services }: PageProps) {
                     capture="environment"
                     required
                     aria-invalid={!!errors.photo}
-                    className="h-12 rounded-none border-rule-field bg-white px-3 focus-visible:border-ink focus-visible:ring-black/10"
+                    className={cn(boxField, 'h-12 py-2.5')}
                   />
                   <FieldError>{errors.photo}</FieldError>
                 </Field>
 
                 <Field>
-                  <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
+                  <FieldLabel htmlFor="note" className="field-label mb-2">
                     Catatan
                   </FieldLabel>
-                  <Textarea name="note" className="rounded-none bg-white" />
+                  <BoxTextarea id="note" name="note" />
                 </Field>
 
                 <Field data-invalid={errors.paymentMethod ? 'true' : undefined}>
-                  <FieldLabel className="text-xs tracking-widest text-ink-body uppercase">
+                  <FieldLabel htmlFor="paymentMethod" className="field-label mb-2">
                     Metode Pembayaran
                   </FieldLabel>
-                  <select
+                  <BoxSelect
+                    id="paymentMethod"
                     name="paymentMethod"
                     required
                     value={paymentMethod}
                     onChange={(event) => setPaymentMethod(event.target.value)}
-                    className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
                   >
                     <option value="" disabled>
                       Pilih metode pembayaran
@@ -212,19 +195,16 @@ export default function Create({ services }: PageProps) {
                         {method.label}
                       </option>
                     ))}
-                  </select>
+                  </BoxSelect>
                   <FieldError>{errors.paymentMethod}</FieldError>
                 </Field>
 
                 {isCash && (
                   <Field data-invalid={errors.cashReceived ? 'true' : undefined}>
-                    <FieldLabel
-                      htmlFor="cashReceived"
-                      className="text-xs tracking-widest text-ink-body uppercase"
-                    >
+                    <FieldLabel htmlFor="cashReceived" className="field-label mb-2">
                       Uang Diterima
                     </FieldLabel>
-                    <Input
+                    <BoxInput
                       id="cashReceived"
                       name="cashReceived"
                       type="number"
@@ -234,50 +214,47 @@ export default function Create({ services }: PageProps) {
                       value={cashReceived}
                       onChange={(event) => setCashReceived(event.target.value)}
                       aria-invalid={!!errors.cashReceived}
-                      className="h-11 rounded-none bg-white"
                     />
                     <FieldError>{errors.cashReceived}</FieldError>
 
-                    <div className="space-y-1 rounded-none border border-rule-field bg-white p-3 text-sm">
-                      <div className="flex items-center justify-between">
+                    <div className="mt-2.5 border border-rule-field bg-white px-4 py-3">
+                      <div className="flex items-center justify-between gap-3 text-small leading-normal">
                         <span className="text-ink-soft">Perkiraan total</span>
                         <span className="font-semibold text-ink">{formatRupiah(runningTotal)}</span>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-rule pt-1.5 text-small leading-normal">
                         <span className="text-ink-soft">Kembalian</span>
                         <span
-                          className={`font-bold ${
-                            change !== null && change < 0 ? 'text-destructive' : 'text-ink'
-                          }`}
+                          className={
+                            change !== null && change < 0
+                              ? 'font-bold text-destructive'
+                              : 'font-bold text-ink'
+                          }
                         >
                           {change === null ? '-' : formatRupiah(change)}
                         </span>
                       </div>
                       {change !== null && change < 0 && (
-                        <p className="flex items-start gap-1 text-xs text-destructive">
-                          <IconInfoCircle className="mt-0.5 size-3 shrink-0" />
+                        <p className="m-0 mt-2 flex items-start gap-1.5 text-meta leading-normal text-destructive">
+                          <IconInfoCircle className="mt-0.5 size-3.5 shrink-0" />
                           Uang yang diterima masih kurang dari total pesanan.
                         </p>
                       )}
                       {services.some(
                         (service) => service.category === CatalogueCategory.ADDITIONAL
                       ) && (
-                        <p className="text-xs text-ink-subtle">
+                        <p className="m-0 mt-2 text-meta leading-normal text-ink-subtle">
                           Belum termasuk layanan tambahan — total akhir ada di struk.
                         </p>
                       )}
                     </div>
                   </Field>
                 )}
-              </Card>
+              </Panel>
 
-              <Button
-                type="submit"
-                disabled={processing}
-                className="h-12 w-full rounded-none bg-ink text-base font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
-              >
+              <SolidButton type="submit" disabled={processing}>
                 Buat Pesanan
-              </Button>
+              </SolidButton>
             </>
           )}
         </Form>

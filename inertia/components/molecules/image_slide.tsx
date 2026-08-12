@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import {
   useEffect,
   useRef,
@@ -9,9 +10,10 @@ import {
 interface Props {
   beforeImage: string
   afterImage: string
+  className?: string
 }
 
-export default function ImageSlider({ beforeImage, afterImage }: Props) {
+export default function ImageSlider({ beforeImage, afterImage, className }: Props) {
   const [sliderPosition, setSliderPosition] = useState<number>(50)
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -90,7 +92,10 @@ export default function ImageSlider({ beforeImage, afterImage }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-none select-none"
+      className={cn(
+        'relative aspect-4/3 w-full touch-pan-y cursor-ew-resize overflow-hidden rounded-none select-none',
+        className
+      )}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       onKeyDown={handleKeyDown}

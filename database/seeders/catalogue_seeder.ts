@@ -157,7 +157,7 @@ const CATALOGUES = [
     name: 'One Day Service',
     description: 'Pencucian sepatu dalam satu hari',
     price: '10000',
-    category: CatalogueCategory.ADDITIONAL,
+    category: CatalogueCategory.SHOE_WASH,
     type: CatalogueType.ADDITIONAL,
   },
 ]

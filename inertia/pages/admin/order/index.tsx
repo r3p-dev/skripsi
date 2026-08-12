@@ -1,35 +1,86 @@
 import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
+import { BoxSelect, SearchField, SolidButton, StatusBadge } from '@/components/atoms/editorial'
+import { DataTable, type Column } from '@/components/molecules/data_table'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { Pagination } from '@/components/molecules/pagination'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
+import { neutralTone, orderStatusTones, orderTypeTones } from '@/lib/constants'
 import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconSearch } from '@tabler/icons-react'
 
 type Option = { value: string; label: string }
 
+type OrderRow = Data.Order.Variants['toListItem']
+
 type PageProps = InertiaProps<{
-  orders: { data: Data.Order.Variants['toListItem'][]; metadata: Metadata }
+  orders: { data: OrderRow[]; metadata: Metadata }
   filters: { search: string; page: number; status: string; type: string }
   statusOptions: Option[]
   typeOptions: Option[]
 }>
+
+const columns: Column<OrderRow>[] = [
+  {
+    key: 'orderNumber',
+    header: 'Nomor',
+    role: 'primary',
+    cell: (order) => (
+      <Link
+        route="admin.order.show"
+        routeParams={{ number: order.orderNumber }}
+        className="font-semibold text-ink underline underline-offset-4"
+      >
+        {order.orderNumber}
+      </Link>
+    ),
+  },
+  {
+    key: 'customer',
+    header: 'Pelanggan',
+    role: 'meta',
+    cell: (order) => (
+      <span className="text-ink-body">
+        {order.customerName}
+        <span className="text-ink-subtle"> · {order.customerPhone}</span>
+      </span>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    role: 'trailing',
+    cell: (order) => (
+      <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
+        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+      </StatusBadge>
+    ),
+  },
+  {
+    key: 'type',
+    header: 'Tipe',
+    cell: (order) => (
+      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>
+        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
+      </StatusBadge>
+    ),
+  },
+  {
+    key: 'createdAt',
+    header: 'Dibuat',
+    cellClassName: 'text-ink-soft',
+    cell: (order) => formatShortDate(order.createdAt),
+  },
+  {
+    key: 'totalPrice',
+    header: 'Total',
+    align: 'right',
+    cellClassName: 'font-semibold text-ink',
+    cell: (order) => (order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)),
+  },
+]
 
 export default function Index({ orders, filters, statusOptions, typeOptions }: PageProps) {
   return (
@@ -41,26 +92,22 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
         action={<ExportButton />}
       />
 
-      <Form route="admin.order.index" className="mb-6">
+      <Form route="admin.order.index" className="mb-5">
         {() => (
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative min-w-56 flex-1">
-              <IconSearch className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" />
-              <Input
-                type="text"
-                name="search"
-                aria-label="Cari pesanan"
-                defaultValue={filters.search}
-                placeholder="Cari nomor, nama, atau telepon..."
-                className="h-11 rounded-none border-rule-field bg-paper-tint pl-10 focus-visible:border-ink focus-visible:ring-black/10"
-              />
-            </div>
+          <div className="flex flex-col gap-2.5 tablet:flex-row tablet:flex-wrap tablet:items-center">
+            <SearchField
+              name="search"
+              aria-label="Cari pesanan"
+              defaultValue={filters.search}
+              placeholder="Cari nomor, nama, atau telepon..."
+              wrapperClassName="tablet:min-w-64 tablet:flex-1"
+            />
 
-            <select
+            <BoxSelect
               name="status"
               aria-label="Status"
               defaultValue={filters.status}
-              className="h-11 rounded-none border border-rule-field bg-paper-tint px-3 text-sm text-ink"
+              className="tablet:w-auto"
             >
               <option value="">Semua Status</option>
               {statusOptions.map((option) => (
@@ -68,13 +115,13 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
                   {option.label}
                 </option>
               ))}
-            </select>
+            </BoxSelect>
 
-            <select
+            <BoxSelect
               name="type"
               aria-label="Tipe"
               defaultValue={filters.type}
-              className="h-11 rounded-none border border-rule-field bg-paper-tint px-3 text-sm text-ink"
+              className="tablet:w-auto"
             >
               <option value="">Semua Tipe</option>
               {typeOptions.map((option) => (
@@ -82,75 +129,21 @@ export default function Index({ orders, filters, statusOptions, typeOptions }: P
                   {option.label}
                 </option>
               ))}
-            </select>
+            </BoxSelect>
 
-            <Button
-              type="submit"
-              className="h-11 rounded-none bg-ink px-6 text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" className="py-3 tablet:w-auto tablet:px-8">
               Terapkan
-            </Button>
+            </SolidButton>
           </div>
         )}
       </Form>
 
-      <Card className="rounded-none border border-rule bg-white">
-        <CardContent>
-          {orders.data.length === 0 ? (
-            <p className="py-12 text-center text-sm text-ink-subtle">
-              Tidak ada pesanan yang cocok dengan filter ini
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nomor</TableHead>
-                  <TableHead>Pelanggan</TableHead>
-                  <TableHead>Tipe</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Dibuat</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.data.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-semibold">
-                      <Link
-                        route="admin.order.show"
-                        routeParams={{ number: order.orderNumber }}
-                        className="underline"
-                      >
-                        {order.orderNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-ink">{order.customerName}</p>
-                      <p className="text-xs text-ink-subtle">{order.customerPhone}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
-                        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
-                        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-ink-soft">
-                      {formatShortDate(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <DataTable
+        columns={columns}
+        rows={orders.data}
+        getKey={(order) => order.id}
+        empty="Tidak ada pesanan yang cocok dengan filter ini"
+      />
 
       <Pagination metadata={orders.metadata} />
     </AdminLayout>

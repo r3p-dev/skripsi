@@ -25,7 +25,7 @@ export default function Show({ order, items, address }: PageProps) {
         <BackLink route="customer.profile.show">← Riwayat Pesanan</BackLink>
       </header>
 
-      <div className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav desktop:pb-page">
         {order ? (
           <>
             <div className="gutter flex items-start justify-between gap-3 pt-7 pb-2">

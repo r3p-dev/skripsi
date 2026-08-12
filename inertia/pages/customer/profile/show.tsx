@@ -39,7 +39,7 @@ export default function Show({ user, address }: PageProps) {
         <BackLink route="home">← Kembali</BackLink>
       </header>
 
-      <div className="flex-1 pb-nav">
+      <div className="flex-1 pb-nav desktop:pb-page">
         <div className="gutter pt-7 pb-2">
           <PageTitle className="mb-1.5">Profil Saya</PageTitle>
           <Lede>Kelola informasi akun Anda.</Lede>
@@ -201,6 +201,17 @@ export default function Show({ user, address }: PageProps) {
               Kelola →
             </Link>
           </div>
+        </section>
+
+        <section className="gutter pt-8">
+          <Eyebrow className="mb-4">Pesanan</Eyebrow>
+          <Link
+            route="customer.orders.index"
+            className="flex items-center justify-between border border-rule-strong px-5 py-4.5 text-body leading-[1.4] text-ink"
+          >
+            Riwayat Pesanan
+            <span className="text-ink-subtle">→</span>
+          </Link>
         </section>
 
         <div className="gutter pt-10 pb-12">

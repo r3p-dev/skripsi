@@ -1,11 +1,10 @@
 import StaffLayout from '@/components/layouts/staff_layout'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { OutlineButton, Panel, SectionLabel, SolidButton } from '@/components/atoms/editorial'
+import { TaskHeader } from '@/components/molecules/staff_task'
 import { ItemCard, useItemRows, type ItemRow } from '@/components/organisms/item_fields'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { IconArrowLeft } from '@tabler/icons-react'
 import { ActionName } from '@/enums/order_action_enum'
 import { CatalogueCategory } from '@/enums/catalogue_enum'
 
@@ -65,55 +64,39 @@ export default function Edit({ order, services }: PageProps) {
       title={`Ubah Barang - ${order.orderNumber}`}
       description="Perbaiki data barang sebelum pelanggan melunasi"
     >
-      <div className="flex items-center gap-3 px-6 py-5">
-        <Link
-          route="staff.trip.index"
-          aria-label="Kembali ke antrean"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </Link>
-        <div>
-          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">
-            Ubah Barang
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{order.orderNumber}</h1>
-        </div>
-      </div>
+      <TaskHeader eyebrow="Ubah Barang" title={order.orderNumber} showBack />
 
-      <div className="flex-1 space-y-4 px-6 pb-nav">
-        <Card className="rounded-none border border-rule bg-paper-tint p-5">
-          <p className="text-sm leading-relaxed text-ink-body">
+      <div className="gutter flex flex-1 flex-col gap-3 pb-nav">
+        <Panel tone="tint" className="px-5 py-4">
+          <p className="m-0 text-small leading-[1.6] text-ink-body">
             Perbaiki merek, model, atau layanan yang salah sebelum pelanggan melunasi. Setelah
             dilunasi, data barang tidak dapat diubah lagi.
           </p>
-          <div className="flex items-center justify-between text-sm">
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-rule pt-3 text-small leading-normal">
             <span className="text-ink-soft">Total saat ini</span>
             <span className="font-semibold text-ink">{order.totalPrice ?? '-'}</span>
           </div>
-        </Card>
+        </Panel>
 
         {inspectionPhoto && (
-          <Card className="rounded-none border border-rule bg-paper-tint">
-            <CardHeader>
-              <p className="text-xs tracking-widest text-ink-soft uppercase font-medium">
-                Foto Inspeksi
-              </p>
-            </CardHeader>
-            <CardContent>
+          <Panel tone="tint">
+            <div className="border-b border-rule px-5 py-3.5">
+              <SectionLabel>Foto Inspeksi</SectionLabel>
+            </div>
+            <div className="px-5 py-4">
               <img
                 src={inspectionPhoto}
                 alt="Foto inspeksi"
-                className="aspect-video w-full rounded-none border border-rule object-cover"
+                className="aspect-video w-full border border-rule object-cover"
               />
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         )}
 
         <Form
           route="staff.order.update"
           routeParams={{ number: order.orderNumber }}
-          className="space-y-4"
+          className="flex flex-col gap-3"
         >
           {({ processing }) => (
             <>
@@ -129,35 +112,19 @@ export default function Edit({ order, services }: PageProps) {
                 />
               ))}
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addItem}
-                className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
-              >
+              <OutlineButton type="button" onClick={addItem} className="py-3 text-meta">
                 Tambah Barang
-              </Button>
+              </OutlineButton>
 
-              <Button
-                type="submit"
-                disabled={processing}
-                className="h-12 w-full rounded-none bg-ink text-base font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
-              >
+              <SolidButton type="submit" disabled={processing}>
                 Simpan Barang
-              </Button>
+              </SolidButton>
             </>
           )}
         </Form>
 
-        <Link
-          route="staff.trip.index"
-          className={buttonVariants({
-            variant: 'outline',
-            className:
-              'h-12 w-full rounded-none text-base font-semibold tracking-wide text-ink active:scale-95',
-          })}
-        >
-          Sudah Benar
+        <Link route="staff.trip.index" className="block">
+          <OutlineButton render={<span />}>Sudah Benar</OutlineButton>
         </Link>
       </div>
     </StaffLayout>

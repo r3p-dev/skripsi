@@ -1,7 +1,7 @@
 import AdminLayout from '@/components/layouts/admin_layout'
+import { Notice, SolidButton } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
 import { ServiceFields, type Option } from '@/components/organisms/service_fields'
-import { Button, buttonVariants } from '@/components/ui/button'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -24,10 +24,7 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
         action={
           <Link
             route="admin.service.index"
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'rounded-none border-rule-field',
-            })}
+            className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
             Kembali
@@ -36,19 +33,19 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
       />
 
       {isInUse && (
-        <div className="mb-4 flex max-w-2xl items-start gap-2 rounded-none border border-amber-200 bg-amber-50 px-4 py-3">
-          <IconInfoCircle className="mt-0.5 size-4 shrink-0 text-amber-700" />
-          <p className="text-sm text-amber-800">
+        <Notice className="mb-4 max-w-2xl">
+          <IconInfoCircle className="mt-0.5 size-4 shrink-0 text-ink" />
+          <span>
             Layanan ini sudah dipakai pada pesanan. Perubahan harga hanya berlaku untuk pesanan baru
             — pesanan lama tetap memakai harga saat diinspeksi.
-          </p>
-        </div>
+          </span>
+        </Notice>
       )}
 
       <Form
         route="admin.service.update"
         routeParams={{ id: service.id }}
-        className="max-w-2xl space-y-4"
+        className="flex max-w-2xl flex-col gap-4"
       >
         {({ errors, processing }) => (
           <>
@@ -65,13 +62,9 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
               typeOptions={typeOptions}
             />
 
-            <Button
-              type="submit"
-              disabled={processing}
-              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" disabled={processing}>
               Simpan Perubahan
-            </Button>
+            </SolidButton>
           </>
         )}
       </Form>

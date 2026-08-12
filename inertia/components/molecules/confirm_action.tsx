@@ -53,7 +53,7 @@ export function ConfirmFooter({
 }) {
   return (
     <AlertDialogFooter>
-      <AlertDialogCancel className="h-11 rounded-none text-sm font-semibold">
+      <AlertDialogCancel className="h-11 rounded-none border-rule-field text-meta font-medium tracking-[0.04em] text-ink">
         Batal
       </AlertDialogCancel>
       <Button
@@ -62,8 +62,8 @@ export function ConfirmFooter({
         disabled={processing}
         className={
           destructive
-            ? 'h-11 rounded-none bg-destructive text-sm font-semibold text-white hover:bg-destructive/90'
-            : 'h-11 rounded-none bg-ink text-sm font-semibold tracking-wide text-white hover:bg-ink/90'
+            ? 'h-11 rounded-none bg-destructive text-meta font-medium tracking-[0.08em] text-white uppercase hover:bg-destructive/90'
+            : 'h-11 rounded-none bg-ink text-meta font-medium tracking-[0.08em] text-white uppercase hover:bg-ink/90'
         }
       >
         {label}

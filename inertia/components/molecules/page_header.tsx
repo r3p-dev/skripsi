@@ -1,3 +1,4 @@
+import { Eyebrow, Lede, PageTitle } from '@/components/atoms/editorial'
 import { type ReactNode } from 'react'
 
 export function PageHeader({
@@ -12,15 +13,13 @@ export function PageHeader({
   action?: ReactNode
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-6 flex flex-col gap-4 border-b border-rule pb-5 tablet:flex-row tablet:items-end tablet:justify-between">
       <div className="min-w-0">
-        <p className="eyebrow">{eyebrow}</p>
-        <h1 className="text-title leading-[1.4] font-semibold text-balance text-ink">{title}</h1>
-        {description && (
-          <p className="mt-1.5 text-small leading-[1.6] text-ink-muted">{description}</p>
-        )}
+        <Eyebrow className="mb-1.5">{eyebrow}</Eyebrow>
+        <PageTitle className="text-balance">{title}</PageTitle>
+        {description && <Lede className="mt-1.5">{description}</Lede>}
       </div>
-      {action}
+      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
     </div>
   )
 }

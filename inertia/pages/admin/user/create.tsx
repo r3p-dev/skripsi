@@ -1,11 +1,9 @@
 import AdminLayout from '@/components/layouts/admin_layout'
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
+import { BoxInput, BoxSelect, Panel, SolidButton, boxField } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
@@ -24,10 +22,7 @@ export default function Create({ roleOptions }: PageProps) {
         action={
           <Link
             route="admin.user.index"
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'rounded-none border-rule-field',
-            })}
+            className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
             Kembali
@@ -35,33 +30,26 @@ export default function Create({ roleOptions }: PageProps) {
         }
       />
 
-      <Form route="admin.user.store" className="max-w-2xl space-y-4">
+      <Form route="admin.user.store" className="flex max-w-2xl flex-col gap-4">
         {({ errors, processing }) => (
           <>
-            <Card className="rounded-none border border-rule bg-paper-tint p-5">
+            <Panel tone="tint" className="flex flex-col gap-5 px-5 py-5">
               <Field data-invalid={errors.name ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="name"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="name" className="field-label mb-2">
                   Nama Lengkap
                 </FieldLabel>
-                <Input
+                <BoxInput
                   id="name"
                   name="name"
                   autoComplete="name"
                   required
                   aria-invalid={!!errors.name}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.name}</FieldError>
               </Field>
 
               <Field data-invalid={errors.phone ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="phone"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="phone" className="field-label mb-2">
                   Nomor Telepon
                 </FieldLabel>
                 <PhoneInput
@@ -69,28 +57,19 @@ export default function Create({ roleOptions }: PageProps) {
                   name="phone"
                   autoComplete="tel"
                   aria-invalid={!!errors.phone}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.phone}</FieldError>
-                <p className="text-xs text-ink-subtle">
+                <p className="mt-1.5 text-meta leading-normal text-ink-subtle">
                   Nomor ini dipakai untuk masuk, jadi harus belum terdaftar.
                 </p>
               </Field>
 
               <Field data-invalid={errors.role ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="role"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="role" className="field-label mb-2">
                   Peran
                 </FieldLabel>
-                <select
-                  id="role"
-                  name="role"
-                  required
-                  defaultValue=""
-                  className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none"
-                >
+                <BoxSelect id="role" name="role" required defaultValue="">
                   <option value="" disabled>
                     Pilih peran
                   </option>
@@ -99,15 +78,12 @@ export default function Create({ roleOptions }: PageProps) {
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </BoxSelect>
                 <FieldError>{errors.role}</FieldError>
               </Field>
 
               <Field data-invalid={errors.password ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="password"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="password" className="field-label mb-2">
                   Kata Sandi
                 </FieldLabel>
                 <PasswordInput
@@ -115,16 +91,13 @@ export default function Create({ roleOptions }: PageProps) {
                   name="password"
                   autoComplete="new-password"
                   aria-invalid={!!errors.password}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.password}</FieldError>
               </Field>
 
               <Field data-invalid={errors.passwordConfirmation ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="passwordConfirmation"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="passwordConfirmation" className="field-label mb-2">
                   Konfirmasi Kata Sandi
                 </FieldLabel>
                 <PasswordInput
@@ -132,19 +105,15 @@ export default function Create({ roleOptions }: PageProps) {
                   name="passwordConfirmation"
                   autoComplete="new-password"
                   aria-invalid={!!errors.passwordConfirmation}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.passwordConfirmation}</FieldError>
               </Field>
-            </Card>
+            </Panel>
 
-            <Button
-              type="submit"
-              disabled={processing}
-              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" disabled={processing}>
               Buat Akun
-            </Button>
+            </SolidButton>
           </>
         )}
       </Form>

@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card'
+import { Panel, SectionLabel } from '@/components/atoms/editorial'
 import { type Icon } from '@tabler/icons-react'
 
 export function StatCard({
@@ -13,13 +13,13 @@ export function StatCard({
   icon: Icon
 }) {
   return (
-    <Card className="gap-2 rounded-none border border-rule bg-paper-tint p-5">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">{label}</p>
-        <IconComponent className="size-5 shrink-0 text-ink-faint" />
+    <Panel tone="tint" className="px-5 py-4.5">
+      <div className="flex items-start justify-between gap-3">
+        <SectionLabel>{label}</SectionLabel>
+        <IconComponent className="size-4.5 shrink-0 text-ink-faint" />
       </div>
-      <p className="text-2xl font-bold tracking-tight text-ink">{value}</p>
-      {hint && <p className="text-xs text-ink-subtle">{hint}</p>}
-    </Card>
+      <p className="mt-2 mb-0 text-title leading-[1.2] font-semibold text-ink">{value}</p>
+      {hint && <p className="mt-1 mb-0 text-meta leading-normal text-ink-subtle">{hint}</p>}
+    </Panel>
   )
 }

@@ -33,7 +33,7 @@ export default function StaffLayout({
   const { component } = usePage()
 
   return (
-    <div className="bg-paper">
+    <div className="min-h-dvh bg-paper">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -43,7 +43,7 @@ export default function StaffLayout({
         className={cn(
           'mx-auto flex min-h-dvh w-full max-w-107.5 flex-col bg-white text-ink',
           SHELL_WIDTH,
-          'tablet:mt-14 tablet:mb-28 tablet:min-h-0 tablet:rounded-md tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]'
+          'tablet:border-x tablet:border-rule'
         )}
       >
         {children}
@@ -52,7 +52,8 @@ export default function StaffLayout({
       <nav
         className={cn(
           'fixed inset-x-0 bottom-0 left-1/2 z-50 w-full max-w-107.5 -translate-x-1/2 border-t border-rule-strong bg-white pb-safe',
-          SHELL_WIDTH
+          SHELL_WIDTH,
+          'tablet:border-x tablet:border-rule'
         )}
       >
         <div className="mx-auto flex items-stretch justify-around px-4 py-1.5">

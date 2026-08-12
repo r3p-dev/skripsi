@@ -1,11 +1,16 @@
 import AdminLayout from '@/components/layouts/admin_layout'
 import { PasswordInput } from '@/components/atoms/password_input'
 import { PhoneInput } from '@/components/atoms/phone_input'
+import {
+  BoxInput,
+  BoxSelect,
+  Panel,
+  SectionLabel,
+  SolidButton,
+  boxField,
+} from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -27,10 +32,7 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
         action={
           <Link
             route="admin.user.index"
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'rounded-none border-rule-field',
-            })}
+            className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
             Kembali
@@ -41,35 +43,28 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
       <Form
         route="admin.user.update"
         routeParams={{ id: account.id }}
-        className="max-w-2xl space-y-4"
+        className="flex max-w-2xl flex-col gap-4"
       >
         {({ errors, processing }) => (
           <>
-            <Card className="rounded-none border border-rule bg-paper-tint p-5">
+            <Panel tone="tint" className="flex flex-col gap-5 px-5 py-5">
               <Field data-invalid={errors.name ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="name"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="name" className="field-label mb-2">
                   Nama Lengkap
                 </FieldLabel>
-                <Input
+                <BoxInput
                   id="name"
                   name="name"
                   defaultValue={account.name}
                   autoComplete="name"
                   required
                   aria-invalid={!!errors.name}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
                 />
                 <FieldError>{errors.name}</FieldError>
               </Field>
 
               <Field data-invalid={errors.phone ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="phone"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="phone" className="field-label mb-2">
                   Nomor Telepon
                 </FieldLabel>
                 <PhoneInput
@@ -78,40 +73,36 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                   defaultValue={account.phone}
                   autoComplete="tel"
                   aria-invalid={!!errors.phone}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.phone}</FieldError>
-                <p className="text-xs text-ink-subtle">
+                <p className="mt-1.5 text-meta leading-normal text-ink-subtle">
                   Diubah langsung tanpa verifikasi WhatsApp — gunakan hanya untuk memperbaiki
                   kesalahan pengetikan.
                 </p>
               </Field>
 
               <Field data-invalid={errors.role ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="role"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="role" className="field-label mb-2">
                   Peran
                 </FieldLabel>
-                <select
+                <BoxSelect
                   id="role"
                   name="role"
                   required
                   disabled={isSelf}
                   defaultValue={account.role}
-                  className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none disabled:bg-paper-tint disabled:text-ink-subtle"
                 >
                   {roleOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </BoxSelect>
                 {isSelf && (
                   <>
                     <input type="hidden" name="role" value={account.role} />
-                    <p className="text-xs text-ink-subtle">
+                    <p className="mt-1.5 text-meta leading-normal text-ink-subtle">
                       Anda tidak dapat mengubah peran akun Anda sendiri.
                     </p>
                   </>
@@ -120,53 +111,46 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
               </Field>
 
               <Field data-invalid={errors.isActive ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="isActive"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="isActive" className="field-label mb-2">
                   Status Akun
                 </FieldLabel>
-                <select
+                <BoxSelect
                   id="isActive"
                   name="isActive"
                   required
                   disabled={isSelf}
                   defaultValue={account.isActive ? 'true' : 'false'}
-                  className="h-11 w-full rounded-none border border-rule-field bg-white px-3 text-sm focus-visible:border-ink focus-visible:outline-none disabled:bg-paper-tint disabled:text-ink-subtle"
                 >
                   <option value="true">Aktif</option>
                   <option value="false">Nonaktif — tidak dapat masuk</option>
-                </select>
+                </BoxSelect>
                 {isSelf ? (
                   <>
                     <input type="hidden" name="isActive" value="true" />
-                    <p className="text-xs text-ink-subtle">
+                    <p className="mt-1.5 text-meta leading-normal text-ink-subtle">
                       Anda tidak dapat menonaktifkan akun Anda sendiri.
                     </p>
                   </>
                 ) : (
-                  <p className="text-xs text-ink-subtle">
+                  <p className="mt-1.5 text-meta leading-normal text-ink-subtle">
                     Akun nonaktif tidak bisa masuk, tetapi seluruh riwayat pesanan dan tugasnya
                     tetap tersimpan.
                   </p>
                 )}
                 <FieldError>{errors.isActive}</FieldError>
               </Field>
-            </Card>
+            </Panel>
 
-            <Card className="rounded-none border border-rule bg-paper-tint p-5">
-              <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-                Ganti Kata Sandi
-              </p>
-              <p className="text-xs text-ink-subtle">
-                Kosongkan jika kata sandi tidak perlu diubah.
-              </p>
+            <Panel tone="tint" className="flex flex-col gap-5 px-5 py-5">
+              <div>
+                <SectionLabel>Ganti Kata Sandi</SectionLabel>
+                <p className="mt-1.5 mb-0 text-meta leading-normal text-ink-subtle">
+                  Kosongkan jika kata sandi tidak perlu diubah.
+                </p>
+              </div>
 
               <Field data-invalid={errors.password ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="password"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="password" className="field-label mb-2">
                   Kata Sandi Baru
                 </FieldLabel>
                 <PasswordInput
@@ -174,16 +158,13 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                   name="password"
                   autoComplete="new-password"
                   aria-invalid={!!errors.password}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.password}</FieldError>
               </Field>
 
               <Field data-invalid={errors.passwordConfirmation ? 'true' : undefined}>
-                <FieldLabel
-                  htmlFor="passwordConfirmation"
-                  className="text-xs tracking-widest text-ink-body uppercase"
-                >
+                <FieldLabel htmlFor="passwordConfirmation" className="field-label mb-2">
                   Konfirmasi Kata Sandi
                 </FieldLabel>
                 <PasswordInput
@@ -191,19 +172,15 @@ export default function Edit({ account, roleOptions, isSelf }: PageProps) {
                   name="passwordConfirmation"
                   autoComplete="new-password"
                   aria-invalid={!!errors.passwordConfirmation}
-                  className="h-11 rounded-none border-rule-field bg-white px-4 focus-visible:border-ink focus-visible:ring-black/10"
+                  className={boxField}
                 />
                 <FieldError>{errors.passwordConfirmation}</FieldError>
               </Field>
-            </Card>
+            </Panel>
 
-            <Button
-              type="submit"
-              disabled={processing}
-              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" disabled={processing}>
               Simpan Perubahan
-            </Button>
+            </SolidButton>
           </>
         )}
       </Form>

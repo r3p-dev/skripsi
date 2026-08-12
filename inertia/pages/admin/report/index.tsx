@@ -1,20 +1,18 @@
 import AdminLayout from '@/components/layouts/admin_layout'
+import {
+  BoxInput,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  SectionLabel,
+  SolidButton,
+} from '@/components/atoms/editorial'
+import { DataTable, type Column } from '@/components/molecules/data_table'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { StatCard } from '@/components/molecules/stat_card'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Field, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { formatRupiah } from '@/lib/format'
 import type { InertiaProps } from '@/types'
 import { Form } from '@adonisjs/inertia/react'
@@ -24,6 +22,14 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 type MoneyBreakdown = {
   value: string
   label: string
+  orders: number
+  revenue: number
+}
+
+type TopService = {
+  id: number
+  name: string
+  category: string
   orders: number
   revenue: number
 }
@@ -39,49 +45,73 @@ type PageProps = InertiaProps<{
     series: { date: string; label: string; total: number }[]
     byPaymentMethod: MoneyBreakdown[]
     byType: MoneyBreakdown[]
-    topServices: {
-      id: number
-      name: string
-      category: string
-      orders: number
-      revenue: number
-    }[]
+    topServices: TopService[]
   }
 }>
 
 const chartConfig = {
-  total: { label: 'Pendapatan', color: '#111827' },
+  total: { label: 'Pendapatan', color: 'var(--color-ink)' },
 } as const
 
-function BreakdownTable({ title, rows }: { title: string; rows: MoneyBreakdown[] }) {
+const breakdownColumns: Column<MoneyBreakdown>[] = [
+  { key: 'label', header: 'Nama', role: 'primary', cell: (row) => row.label },
+  {
+    key: 'revenue',
+    header: 'Pendapatan',
+    align: 'right',
+    role: 'trailing',
+    cell: (row) => (
+      <span className="text-body font-semibold text-ink tablet:text-small">
+        {formatRupiah(row.revenue)}
+      </span>
+    ),
+  },
+  {
+    key: 'orders',
+    header: 'Pesanan',
+    align: 'right',
+    role: 'meta',
+    cell: (row) => `${row.orders} pesanan`,
+  },
+]
+
+const topServiceColumns: Column<TopService>[] = [
+  { key: 'name', header: 'Layanan', role: 'primary', cell: (service) => service.name },
+  {
+    key: 'revenue',
+    header: 'Pendapatan',
+    align: 'right',
+    role: 'trailing',
+    cell: (service) => (
+      <span className="text-body font-semibold text-ink tablet:text-small">
+        {formatRupiah(service.revenue)}
+      </span>
+    ),
+  },
+  {
+    key: 'orders',
+    header: 'Terjual',
+    align: 'right',
+    role: 'meta',
+    cell: (service) => `${service.orders} terjual`,
+  },
+]
+
+function BreakdownPanel({ title, rows }: { title: string; rows: MoneyBreakdown[] }) {
   return (
-    <Card className="rounded-none border border-rule bg-white">
-      <CardHeader>
-        <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">{title}</p>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama</TableHead>
-              <TableHead className="text-right">Pesanan</TableHead>
-              <TableHead className="text-right">Pendapatan</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.value}>
-                <TableCell>{row.label}</TableCell>
-                <TableCell className="text-right">{row.orders}</TableCell>
-                <TableCell className="text-right font-semibold">
-                  {formatRupiah(row.revenue)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div>
+      <Panel className="border-b-0">
+        <PanelHeader>
+          <SectionLabel>{title}</SectionLabel>
+        </PanelHeader>
+      </Panel>
+      <DataTable
+        columns={breakdownColumns}
+        rows={rows}
+        getKey={(row) => row.value}
+        empty="Belum ada data pada rentang ini"
+      />
+    </div>
   )
 }
 
@@ -95,49 +125,31 @@ export default function Index({ report }: PageProps) {
         action={<ExportButton />}
       />
 
-      <Form route="admin.report.index" className="mb-6">
+      <Form route="admin.report.index" className="mb-5">
         {() => (
-          <div className="flex flex-wrap items-end gap-3">
-            <Field className="w-44">
-              <FieldLabel
-                htmlFor="from"
-                className="text-xs tracking-widest text-ink-body uppercase"
-              >
+          <div className="flex flex-col gap-2.5 tablet:flex-row tablet:items-end">
+            <Field className="tablet:w-44">
+              <FieldLabel htmlFor="from" className="field-label mb-2">
                 Dari
               </FieldLabel>
-              <Input
-                id="from"
-                name="from"
-                type="date"
-                defaultValue={report.from}
-                className="h-11 rounded-none border-rule-field bg-paper-tint px-4"
-              />
+              <BoxInput id="from" name="from" type="date" defaultValue={report.from} />
             </Field>
 
-            <Field className="w-44">
-              <FieldLabel htmlFor="to" className="text-xs tracking-widest text-ink-body uppercase">
+            <Field className="tablet:w-44">
+              <FieldLabel htmlFor="to" className="field-label mb-2">
                 Sampai
               </FieldLabel>
-              <Input
-                id="to"
-                name="to"
-                type="date"
-                defaultValue={report.to}
-                className="h-11 rounded-none border-rule-field bg-paper-tint px-4"
-              />
+              <BoxInput id="to" name="to" type="date" defaultValue={report.to} />
             </Field>
 
-            <Button
-              type="submit"
-              className="h-11 rounded-none bg-ink px-6 text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" className="py-3 tablet:w-auto tablet:px-8">
               Tampilkan
-            </Button>
+            </SolidButton>
           </div>
         )}
       </Form>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 tablet:grid-cols-3">
         <StatCard
           label="Total Pendapatan"
           value={formatRupiah(report.totalRevenue)}
@@ -151,13 +163,11 @@ export default function Index({ report }: PageProps) {
         />
       </div>
 
-      <Card className="mt-6 rounded-none border border-rule bg-white">
-        <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-            Pendapatan Harian
-          </p>
-        </CardHeader>
-        <CardContent>
+      <Panel className="mt-4">
+        <PanelHeader>
+          <SectionLabel>Pendapatan Harian</SectionLabel>
+        </PanelHeader>
+        <PanelBody>
           <ChartContainer config={chartConfig} className="h-64 w-full">
             <BarChart data={report.series} margin={{ left: 4, right: 4 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -166,52 +176,30 @@ export default function Index({ report }: PageProps) {
               <ChartTooltip
                 content={<ChartTooltipContent formatter={(value) => formatRupiah(Number(value))} />}
               />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+              <Bar dataKey="total" fill="var(--color-total)" />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <BreakdownTable title="Metode Pembayaran" rows={report.byPaymentMethod} />
-        <BreakdownTable title="Tipe Pesanan" rows={report.byType} />
+      <div className="mt-4 grid gap-3 desktop:grid-cols-2">
+        <BreakdownPanel title="Metode Pembayaran" rows={report.byPaymentMethod} />
+        <BreakdownPanel title="Tipe Pesanan" rows={report.byType} />
       </div>
 
-      <Card className="mt-6 rounded-none border border-rule bg-white">
-        <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-            Layanan Terlaris
-          </p>
-        </CardHeader>
-        <CardContent>
-          {report.topServices.length === 0 ? (
-            <p className="py-8 text-center text-sm text-ink-subtle">
-              Belum ada layanan terjual pada rentang ini
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Layanan</TableHead>
-                  <TableHead className="text-right">Terjual</TableHead>
-                  <TableHead className="text-right">Pendapatan</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {report.topServices.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="font-medium text-ink">{service.name}</TableCell>
-                    <TableCell className="text-right">{service.orders}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {formatRupiah(service.revenue)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="mt-4">
+        <Panel className="border-b-0">
+          <PanelHeader>
+            <SectionLabel>Layanan Terlaris</SectionLabel>
+          </PanelHeader>
+        </Panel>
+        <DataTable
+          columns={topServiceColumns}
+          rows={report.topServices}
+          getKey={(service) => service.id}
+          empty="Belum ada layanan terjual pada rentang ini"
+        />
+      </div>
     </AdminLayout>
   )
 }

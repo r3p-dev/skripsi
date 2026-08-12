@@ -1,18 +1,16 @@
 import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
-import { PageHeader } from '@/components/molecules/page_header'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { neutralBadgeStyle, orderStatusStyles, transactionStatusStyles } from '@/lib/constants'
+  EmptyState,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  SectionLabel,
+  StatusBadge,
+} from '@/components/atoms/editorial'
+import { DataTable, type Column } from '@/components/molecules/data_table'
+import { PageHeader } from '@/components/molecules/page_header'
+import { neutralTone, orderStatusTones, transactionStatusTones } from '@/lib/constants'
 import { ActionNameLabel } from '@/enums/order_action_enum'
 import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format'
@@ -21,22 +19,79 @@ import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
 
+type OrderDetail = Data.Order.Variants['toDetail']
+type OrderLine = NonNullable<OrderDetail['items']>[number]
+type OrderTransaction = NonNullable<OrderDetail['transactions']>[number]
+
 type PageProps = InertiaProps<{
-  order: Data.Order.Variants['toDetail']
+  order: OrderDetail
 }>
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="border-b border-rule py-3 last:border-0">
-      <p className="text-xs tracking-widest text-ink-subtle uppercase">{label}</p>
-      <p className="mt-1 text-sm font-medium text-ink">{value ?? '-'}</p>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-rule py-3 last:border-b-0">
+      <p className="m-0 text-micro tracking-[0.14em] text-ink-subtle uppercase">{label}</p>
+      <p className="m-0 text-small leading-normal font-medium text-ink">{value ?? '-'}</p>
     </div>
   )
 }
 
+const itemColumns: Column<OrderLine>[] = [
+  {
+    key: 'service',
+    header: 'Layanan',
+    role: 'primary',
+    cell: (line) => line.service?.name ?? line.name,
+  },
+  {
+    key: 'item',
+    header: 'Barang',
+    role: 'meta',
+    cell: (line) => (line.item ? `${line.item.brand} ${line.item.model}` : '-'),
+  },
+  {
+    key: 'subtotal',
+    header: 'Harga',
+    align: 'right',
+    role: 'trailing',
+    cell: (line) => (
+      <span className="text-body font-semibold text-ink tablet:text-small">
+        {formatRupiah(line.subtotal)}
+      </span>
+    ),
+  },
+]
+
+const transactionColumns: Column<OrderTransaction>[] = [
+  {
+    key: 'method',
+    header: 'Metode',
+    role: 'primary',
+    cell: (transaction) =>
+      PaymentMethodLabel[transaction.paymentMethod as keyof typeof PaymentMethodLabel],
+  },
+  {
+    key: 'createdAt',
+    header: 'Tanggal',
+    role: 'meta',
+    cell: (transaction) => formatDateTime(transaction.createdAt),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    role: 'trailing',
+    cell: (transaction) => (
+      <StatusBadge tone={transactionStatusTones[transaction.status] ?? neutralTone}>
+        {TransactionStatusLabel[transaction.status as keyof typeof TransactionStatusLabel]}
+      </StatusBadge>
+    ),
+  },
+]
+
 export default function Show({ order }: PageProps) {
   const items = order.items ?? []
   const actions = order.actions ?? []
+  const transactions = order.transactions ?? []
 
   return (
     <AdminLayout title={order.orderNumber} description="Detail pesanan UmimaClean">
@@ -47,10 +102,7 @@ export default function Show({ order }: PageProps) {
         action={
           <Link
             route="admin.order.index"
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'rounded-none border-rule-field',
-            })}
+            className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
             Kembali
@@ -58,15 +110,15 @@ export default function Show({ order }: PageProps) {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-none border border-rule bg-paper-tint">
-          <CardHeader className="flex items-center justify-between gap-3">
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">Ringkasan</p>
-            <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
+      <div className="grid gap-3 desktop:grid-cols-3">
+        <Panel tone="tint">
+          <PanelHeader>
+            <SectionLabel>Ringkasan</SectionLabel>
+            <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
               {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-            </Badge>
-          </CardHeader>
-          <CardContent className="flex flex-col">
+            </StatusBadge>
+          </PanelHeader>
+          <PanelBody className="py-1">
             <Detail label="Pelanggan" value={order.customerName} />
             <Detail label="Telepon" value={order.customerPhone} />
             <Detail label="Akun" value={order.user?.name ?? 'Tanpa akun (offline)'} />
@@ -77,149 +129,91 @@ export default function Show({ order }: PageProps) {
                 order.totalPrice === null ? 'Belum ada tagihan' : formatRupiah(order.totalPrice)
               }
             />
-          </CardContent>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card className="rounded-none border border-rule bg-paper-tint lg:col-span-2">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Alamat Penjemputan
-            </p>
-          </CardHeader>
-          <CardContent>
-            {order.address ? (
-              <div className="flex flex-col">
-                <Detail label="Penerima" value={order.address.name} />
-                <Detail label="Telepon" value={order.address.phone} />
-                <Detail label="Alamat" value={order.address.street} />
-                <Detail label="Catatan" value={order.address.note} />
-              </div>
-            ) : (
-              <p className="py-6 text-sm text-ink-subtle">
-                Pesanan offline — barang diantar langsung ke toko dan diambil di konter.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <Panel tone="tint" className="desktop:col-span-2">
+          <PanelHeader>
+            <SectionLabel>Alamat Penjemputan</SectionLabel>
+          </PanelHeader>
+          {order.address ? (
+            <PanelBody className="py-1">
+              <Detail label="Penerima" value={order.address.name} />
+              <Detail label="Telepon" value={order.address.phone} />
+              <Detail label="Alamat" value={order.address.street} />
+              <Detail label="Catatan" value={order.address.note} />
+            </PanelBody>
+          ) : (
+            <EmptyState>
+              Pesanan offline — barang diantar langsung ke toko dan diambil di konter.
+            </EmptyState>
+          )}
+        </Panel>
       </div>
 
-      <Card className="mt-4 rounded-none border border-rule bg-white">
-        <CardHeader>
-          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-            Rincian Barang
-          </p>
-        </CardHeader>
-        <CardContent>
-          {items.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ink-subtle">
-              Barang belum diinspeksi, sehingga belum ada rincian harga
-            </p>
+      <div className="mt-4">
+        <Panel className="border-b-0">
+          <PanelHeader>
+            <SectionLabel>Rincian Barang</SectionLabel>
+          </PanelHeader>
+        </Panel>
+        <DataTable
+          columns={itemColumns}
+          rows={items}
+          getKey={(line) => line.id}
+          empty="Barang belum diinspeksi, sehingga belum ada rincian harga"
+        />
+      </div>
+
+      <div className="mt-4 grid gap-3 desktop:grid-cols-2">
+        <div>
+          <Panel className="border-b-0">
+            <PanelHeader>
+              <SectionLabel>Transaksi</SectionLabel>
+            </PanelHeader>
+          </Panel>
+          <DataTable
+            columns={transactionColumns}
+            rows={transactions}
+            getKey={(transaction) => transaction.id}
+            empty="Belum ada transaksi"
+          />
+        </div>
+
+        <Panel>
+          <PanelHeader>
+            <SectionLabel>Riwayat Tindakan</SectionLabel>
+          </PanelHeader>
+          {actions.length === 0 ? (
+            <EmptyState>Belum ada tindakan</EmptyState>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Layanan</TableHead>
-                  <TableHead>Barang</TableHead>
-                  <TableHead className="text-right">Harga</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.service?.name ?? item.name}</TableCell>
-                    <TableCell className="text-ink-soft">
-                      {item.item ? `${item.item.brand} ${item.item.model}` : '-'}
-                    </TableCell>
-                    <TableCell className="text-right">{formatRupiah(item.subtotal)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card className="rounded-none border border-rule bg-white">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">Transaksi</p>
-          </CardHeader>
-          <CardContent>
-            {!order.transactions || order.transactions.length === 0 ? (
-              <p className="py-6 text-center text-sm text-ink-subtle">Belum ada transaksi</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Metode</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>
-                        {
-                          PaymentMethodLabel[
-                            transaction.paymentMethod as keyof typeof PaymentMethodLabel
-                          ]
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            transactionStatusStyles[transaction.status] ?? neutralBadgeStyle
-                          }
-                        >
-                          {
-                            TransactionStatusLabel[
-                              transaction.status as keyof typeof TransactionStatusLabel
-                            ]
-                          }
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-ink-soft">
-                        {formatDateTime(transaction.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-none border border-rule bg-white">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Riwayat Tindakan
-            </p>
-          </CardHeader>
-          <CardContent>
-            {actions.length === 0 ? (
-              <p className="py-6 text-center text-sm text-ink-subtle">Belum ada tindakan</p>
-            ) : (
-              <ul className="flex flex-col divide-y divide-rule">
+            <PanelBody className="py-0">
+              <ul className="m-0 flex list-none flex-col p-0">
                 {actions.map((action) => (
-                  <li key={action.id} className="py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium text-ink">
+                  <li key={action.id} className="border-b border-rule py-3.5 last:border-b-0">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                      <p className="m-0 text-small leading-normal font-medium text-ink">
                         {ActionNameLabel[action.name as keyof typeof ActionNameLabel] ??
                           action.name}
                       </p>
-                      <p className="text-xs text-ink-subtle">{formatDateTime(action.createdAt)}</p>
+                      <p className="m-0 text-meta text-ink-subtle">
+                        {formatDateTime(action.createdAt)}
+                      </p>
                     </div>
-                    <p className="text-xs text-ink-soft">
+                    <p className="m-0 mt-0.5 text-meta leading-normal text-ink-soft">
                       oleh {action.staff?.name ?? 'petugas tidak diketahui'}
                     </p>
-                    {action.note && <p className="mt-1 text-xs text-ink-soft">{action.note}</p>}
+                    {action.note && (
+                      <p className="m-0 mt-1 text-meta leading-normal text-ink-soft">
+                        {action.note}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
-            )}
-          </CardContent>
-        </Card>
+            </PanelBody>
+          )}
+        </Panel>
       </div>
     </AdminLayout>
   )

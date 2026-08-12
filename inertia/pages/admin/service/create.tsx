@@ -1,7 +1,7 @@
 import AdminLayout from '@/components/layouts/admin_layout'
+import { SolidButton } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
 import { ServiceFields, type Option } from '@/components/organisms/service_fields'
-import { Button, buttonVariants } from '@/components/ui/button'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
@@ -21,10 +21,7 @@ export default function Create({ categoryOptions, typeOptions }: PageProps) {
         action={
           <Link
             route="admin.service.index"
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'rounded-none border-rule-field',
-            })}
+            className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
             Kembali
@@ -32,7 +29,7 @@ export default function Create({ categoryOptions, typeOptions }: PageProps) {
         }
       />
 
-      <Form route="admin.service.store" className="max-w-2xl space-y-4">
+      <Form route="admin.service.store" className="flex max-w-2xl flex-col gap-4">
         {({ errors, processing }) => (
           <>
             <ServiceFields
@@ -41,13 +38,9 @@ export default function Create({ categoryOptions, typeOptions }: PageProps) {
               typeOptions={typeOptions}
             />
 
-            <Button
-              type="submit"
-              disabled={processing}
-              className="h-12 w-full rounded-none bg-ink text-base font-semibold text-white hover:bg-ink/90 active:scale-95"
-            >
+            <SolidButton type="submit" disabled={processing}>
               Simpan Layanan
-            </Button>
+            </SolidButton>
           </>
         )}
       </Form>

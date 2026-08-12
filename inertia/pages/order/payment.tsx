@@ -1,5 +1,12 @@
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Eyebrow,
+  OutlineButton,
+  PageTitle,
+  Panel,
+  SectionLabel,
+  Shell,
+  SolidButton,
+} from '@/components/atoms/editorial'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -131,136 +138,134 @@ export default function Payment({
   }, [isPending, order.orderNumber])
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-white">
+    <div className="min-h-dvh bg-paper">
       <Head>
         <title>{`Pembayaran ${order.orderNumber}`}</title>
         <meta name="description" content="Pembayaran pesanan UmimaClean Anda" />
       </Head>
 
-      <div className="flex items-center gap-3 px-6 py-5">
-        <BackLink
-          backRoute={backRoute}
-          orderNumber={order.orderNumber}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-rule-field text-ink transition-colors hover:bg-paper-tint active:scale-95"
-        >
-          <IconArrowLeft className="size-5" />
-        </BackLink>
-        <div>
-          <p className="text-xs tracking-[0.3em] text-ink-soft uppercase font-medium">Pembayaran</p>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{order.orderNumber}</h1>
-        </div>
-      </div>
-
-      <div className="flex-1 space-y-4 px-6 pb-page">
-        <div className="relative overflow-hidden rounded-none bg-ink px-6 py-8 text-center text-white">
-          <div
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-              backgroundSize: '32px 32px',
-            }}
-          />
-          <div className="relative space-y-1">
-            <p className="text-xs tracking-[0.3em] text-white/70 uppercase font-medium">
-              Total Tagihan
-            </p>
-            <p className="text-3xl font-bold tracking-tight">
-              {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
-            </p>
+      <Shell className="flex flex-col tablet:my-14 tablet:min-h-[auto] tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]">
+        <header className="gutter flex items-center gap-3 pt-6">
+          <BackLink
+            backRoute={backRoute}
+            orderNumber={order.orderNumber}
+            className="flex size-11 shrink-0 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-paper-tint"
+          >
+            <IconArrowLeft className="size-5" />
+          </BackLink>
+          <div className="min-w-0">
+            <Eyebrow className="mb-1">Pembayaran</Eyebrow>
+            <PageTitle className="truncate">{order.orderNumber}</PageTitle>
           </div>
-        </div>
+        </header>
 
-        {isPaid ? (
-          <Card className="flex flex-col items-center gap-3 rounded-none border border-rule bg-paper-tint px-6 py-10 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-ink/10">
-              <IconCircleCheck className="size-7 text-ink" />
+        <div className="gutter flex flex-1 flex-col gap-4 pt-7 pb-page">
+          <div className="relative overflow-hidden bg-ink px-6 py-8 text-center text-white">
+            <div
+              className="absolute inset-0 opacity-5"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                backgroundSize: '32px 32px',
+              }}
+            />
+            <div className="relative">
+              <p className="m-0 text-eyebrow leading-[1.4] tracking-[0.2em] text-white/70 uppercase">
+                Total Tagihan
+              </p>
+              <p className="m-0 mt-2 text-title leading-[1.2] font-bold">
+                {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+              </p>
             </div>
-            <div>
-              <p className="text-base font-semibold text-ink">Pembayaran Berhasil</p>
-              <p className="text-sm text-ink-soft">Pesanan Anda akan segera diproses</p>
-            </div>
-            <BackLink
-              backRoute={backRoute}
-              orderNumber={order.orderNumber}
-              className={buttonVariants({
-                className:
-                  'h-11 rounded-none bg-ink px-6 text-sm font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95',
-              })}
-            >
-              Kembali ke Pesanan
-            </BackLink>
-          </Card>
-        ) : isPending ? (
-          <>
-            <Card className="rounded-none border border-rule bg-paper-tint">
-              <CardHeader>
-                <p className="text-xs tracking-widest text-ink-soft uppercase font-medium">
-                  Scan QRIS untuk Membayar
+          </div>
+
+          {isPaid ? (
+            <Panel tone="tint" className="flex flex-col items-center gap-4 px-6 py-10 text-center">
+              <IconCircleCheck className="size-12 text-ink" />
+              <div>
+                <p className="m-0 text-lead leading-[1.4] font-semibold text-ink">
+                  Pembayaran Berhasil
                 </p>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4 pb-6">
-                {transaction.qrCode ? (
-                  <img
-                    src={transaction.qrCode}
-                    alt="Kode QRIS"
-                    className="aspect-square w-full max-w-65 rounded-none border border-rule object-contain"
-                  />
-                ) : (
-                  <div className="flex aspect-square w-full max-w-65 items-center justify-center rounded-none border border-dashed border-rule-field text-center text-sm text-ink-subtle">
-                    QR tidak tersedia
-                  </div>
-                )}
-                {transaction.qrCode && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => downloadQrCode(transaction.qrCode!, order.orderNumber)}
-                    className="h-11 w-full rounded-none text-sm font-semibold tracking-wide text-ink active:scale-95"
-                  >
-                    <IconDownload className="size-4" />
-                    Unduh Kode QR
-                  </Button>
-                )}
-
-                <div className="flex items-center gap-2 text-sm text-ink-soft">
-                  <IconClock className="size-4" />
-                  Menunggu pembayaran...
+                <p className="m-0 mt-1.5 text-small leading-[1.6] text-ink-soft">
+                  Pesanan Anda akan segera diproses
+                </p>
+              </div>
+              <BackLink
+                backRoute={backRoute}
+                orderNumber={order.orderNumber}
+                className="flex min-h-11 items-center justify-center bg-ink px-8 text-small font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
+              >
+                Kembali ke Pesanan
+              </BackLink>
+            </Panel>
+          ) : isPending ? (
+            <>
+              <Panel tone="tint">
+                <div className="border-b border-rule px-5 py-3.5">
+                  <SectionLabel>Scan QRIS untuk Membayar</SectionLabel>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex flex-col items-center gap-4 px-5 py-5">
+                  {transaction.qrCode ? (
+                    <img
+                      src={transaction.qrCode}
+                      alt="Kode QRIS"
+                      className="aspect-square w-full max-w-65 border border-rule bg-white object-contain"
+                    />
+                  ) : (
+                    <div className="flex aspect-square w-full max-w-65 items-center justify-center border border-dashed border-rule-field text-center text-small text-ink-subtle">
+                      QR tidak tersedia
+                    </div>
+                  )}
 
-            <p className="text-center text-xs leading-relaxed text-ink-subtle">
-              Buka aplikasi e-wallet atau mobile banking Anda, lalu pindai kode QR di atas. Halaman
-              ini akan otomatis diperbarui setelah pembayaran diterima.
-            </p>
-          </>
-        ) : (
-          <Card className="flex flex-col items-center gap-4 rounded-none border border-dashed border-rule-field bg-paper-tint px-6 py-16 text-center">
-            <div className="space-y-1">
-              <p className="text-base font-semibold text-ink">
-                {TransactionStatusLabel[
-                  transaction.status as keyof typeof TransactionStatusLabel
-                ] ?? 'Pembayaran Gagal'}
+                  {transaction.qrCode && (
+                    <OutlineButton
+                      type="button"
+                      onClick={() => downloadQrCode(transaction.qrCode!, order.orderNumber)}
+                      className="gap-2 bg-white py-3 text-meta"
+                    >
+                      <IconDownload className="size-4" />
+                      Unduh Kode QR
+                    </OutlineButton>
+                  )}
+
+                  <div className="flex items-center gap-2 text-small leading-normal text-ink-soft">
+                    <IconClock className="size-4" />
+                    Menunggu pembayaran...
+                  </div>
+                </div>
+              </Panel>
+
+              <p className="m-0 text-center text-meta leading-[1.6] text-ink-subtle">
+                Buka aplikasi e-wallet atau mobile banking Anda, lalu pindai kode QR di atas.
+                Halaman ini akan otomatis diperbarui setelah pembayaran diterima.
               </p>
-              <p className="text-sm text-ink-soft">
-                Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.
-              </p>
-            </div>
-            <RetryForm retryRoute={retryRoute} orderNumber={order.orderNumber}>
-              {({ processing }) => (
-                <Button
-                  type="submit"
-                  disabled={processing}
-                  className="h-11 rounded-none bg-ink px-6 text-sm font-semibold tracking-wide text-white hover:bg-ink/90 active:scale-95"
-                >
-                  <IconRefresh className="size-4" />
-                  Buat Pembayaran Baru
-                </Button>
-              )}
-            </RetryForm>
-          </Card>
-        )}
-      </div>
+            </>
+          ) : (
+            <Panel
+              tone="tint"
+              className="flex flex-col items-center gap-4 border-dashed px-6 py-16 text-center"
+            >
+              <div>
+                <p className="m-0 text-lead leading-[1.4] font-semibold text-ink">
+                  {TransactionStatusLabel[
+                    transaction.status as keyof typeof TransactionStatusLabel
+                  ] ?? 'Pembayaran Gagal'}
+                </p>
+                <p className="m-0 mt-1.5 text-small leading-[1.6] text-ink-soft">
+                  Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.
+                </p>
+              </div>
+              <RetryForm retryRoute={retryRoute} orderNumber={order.orderNumber}>
+                {({ processing }) => (
+                  <SolidButton type="submit" disabled={processing} className="gap-2">
+                    <IconRefresh className="size-4" />
+                    Buat Pembayaran Baru
+                  </SolidButton>
+                )}
+              </RetryForm>
+            </Panel>
+          )}
+        </div>
+      </Shell>
     </div>
   )
 }

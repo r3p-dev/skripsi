@@ -1,5 +1,4 @@
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { BoxInput, IconAction } from '@/components/atoms/editorial'
 import { IconSearch, IconUserCheck, IconX } from '@tabler/icons-react'
 import { useState } from 'react'
 
@@ -43,66 +42,64 @@ export function CustomerLookup({
 
   if (selected) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-none border border-green-200 bg-green-50 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <IconUserCheck className="size-4 shrink-0 text-green-700" />
+      <div className="flex items-center justify-between gap-3 border-l-2 border-ink bg-white px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <IconUserCheck className="size-4 shrink-0 text-ink" />
           <div>
-            <p className="text-sm font-semibold text-green-900">{selected.name}</p>
-            <p className="text-xs text-green-800">{selected.phone} · terhubung ke akun pelanggan</p>
+            <p className="m-0 text-small leading-normal font-semibold text-ink">{selected.name}</p>
+            <p className="m-0 text-meta leading-normal text-ink-soft">
+              {selected.phone} · terhubung ke akun pelanggan
+            </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onClear}
-          aria-label="Lepaskan akun pelanggan"
-          className="-my-2 flex size-11 shrink-0 items-center justify-center rounded-full text-green-800 transition-colors hover:bg-green-100"
-        >
+        <IconAction onClick={onClear} aria-label="Lepaskan akun pelanggan" className="-my-1">
           <IconX className="size-4" />
-        </button>
+        </IconAction>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2.5">
       <div className="flex gap-2">
-        <Input
+        <BoxInput
           type="search"
           value={term}
           onChange={(event) => setTerm(event.target.value)}
           placeholder="Cari nama atau nomor telepon pelanggan..."
           aria-label="Cari pelanggan terdaftar"
-          className="h-11 flex-1 rounded-none bg-white"
+          className="flex-1"
         />
-        <Button
+        <button
           type="button"
-          variant="outline"
           onClick={search}
           disabled={searching || term.trim().length < 3}
-          className="h-11 rounded-none px-4"
+          className="flex min-h-11 shrink-0 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <IconSearch className="size-4" />
           Cari
-        </Button>
+        </button>
       </div>
 
       {searched && results.length === 0 && (
-        <p className="text-xs text-ink-subtle">
+        <p className="m-0 text-meta leading-normal text-ink-subtle">
           Tidak ada akun yang cocok. Lanjutkan dengan mengisi data pelanggan secara manual.
         </p>
       )}
 
       {results.length > 0 && (
-        <ul className="divide-y divide-rule overflow-hidden rounded-none border border-rule-field bg-white">
+        <ul className="m-0 flex list-none flex-col border border-rule-field bg-white p-0">
           {results.map((customer) => (
-            <li key={customer.id}>
+            <li key={customer.id} className="border-b border-rule last:border-b-0">
               <button
                 type="button"
                 onClick={() => onSelect(customer)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-paper-tint"
+                className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-paper-tint"
               >
-                <span className="text-sm font-medium text-ink">{customer.name}</span>
-                <span className="text-xs text-ink-soft">{customer.phone}</span>
+                <span className="text-small leading-normal font-medium text-ink">
+                  {customer.name}
+                </span>
+                <span className="text-meta leading-normal text-ink-soft">{customer.phone}</span>
               </button>
             </li>
           ))}

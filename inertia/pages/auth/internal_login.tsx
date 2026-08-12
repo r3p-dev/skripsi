@@ -10,11 +10,16 @@ export default function InternalLogin() {
   return (
     <AuthLayout
       title="Masuk Staf & Admin"
-      description="Khusus untuk tim operasional dan admin ümima."
+      description="Khusus untuk tim operasional dan admin Umima."
       metaTitle="Masuk Staf & Admin"
       metaDescription="Portal internal UmimaClean untuk staf dan admin"
       audience="Internal"
       eyebrow="Portal Internal"
+      brand={{
+        eyebrow: 'Portal Internal',
+        title: 'Khusus tim operasional dan admin Umima.',
+        description: 'Kelola pesanan masuk, jadwal jemput, dan data pelanggan dari satu tempat.',
+      }}
     >
       <Form route="session.store">
         {({ errors, processing }) => (

@@ -1,21 +1,19 @@
 import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
+import {
+  Panel,
+  PanelBody,
+  PanelHeader,
+  SectionLabel,
+  StatusBadge,
+} from '@/components/atoms/editorial'
+import { DataTable, type Column } from '@/components/molecules/data_table'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { LiveOrders } from '@/components/molecules/live_orders'
 import { StatCard } from '@/components/molecules/stat_card'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { neutralBadgeStyle, orderStatusStyles, orderTypeStyles } from '@/lib/constants'
+import { neutralTone, orderStatusTones, orderTypeTones } from '@/lib/constants'
 import { formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
@@ -43,12 +41,61 @@ type PageProps = InertiaProps<{
 }>
 
 const revenueChartConfig = {
-  total: { label: 'Pendapatan', color: '#111827' },
+  total: { label: 'Pendapatan', color: 'var(--color-ink)' },
 } as const
 
 const pickupChartConfig = {
-  booked: { label: 'Terjadwal', color: '#111827' },
+  booked: { label: 'Terjadwal', color: 'var(--color-ink)' },
 } as const
+
+const recentColumns: Column<Data.Order>[] = [
+  {
+    key: 'orderNumber',
+    header: 'Nomor',
+    role: 'primary',
+    cell: (order) => (
+      <Link
+        route="admin.order.show"
+        routeParams={{ number: order.orderNumber }}
+        className="font-semibold text-ink underline underline-offset-4"
+      >
+        {order.orderNumber}
+      </Link>
+    ),
+  },
+  {
+    key: 'customerName',
+    header: 'Pelanggan',
+    role: 'meta',
+    cell: (order) => order.customerName,
+  },
+  {
+    key: 'type',
+    header: 'Tipe',
+    cell: (order) => (
+      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>
+        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
+      </StatusBadge>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    role: 'trailing',
+    cell: (order) => (
+      <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
+        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+      </StatusBadge>
+    ),
+  },
+  {
+    key: 'totalPrice',
+    header: 'Total',
+    align: 'right',
+    cellClassName: 'font-semibold text-ink',
+    cell: (order) => (order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)),
+  },
+]
 
 export default function Index({
   summary,
@@ -69,7 +116,7 @@ export default function Index({
         action={<ExportButton />}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
         <StatCard
           label="Total Pesanan"
           value={summary.totalOrders}
@@ -96,14 +143,12 @@ export default function Index({
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card className="rounded-none border border-rule bg-white">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Pendapatan 14 Hari Terakhir
-            </p>
-          </CardHeader>
-          <CardContent>
+      <div className="mt-4 grid gap-3 desktop:grid-cols-2">
+        <Panel>
+          <PanelHeader>
+            <SectionLabel>Pendapatan 14 Hari Terakhir</SectionLabel>
+          </PanelHeader>
+          <PanelBody>
             <ChartContainer config={revenueChartConfig} className="h-56 w-full">
               <AreaChart data={revenueTrend} margin={{ left: 4, right: 4 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -124,137 +169,96 @@ export default function Index({
                 />
               </AreaChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card className="rounded-none border border-rule bg-white">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Beban Penjemputan 7 Hari
-            </p>
-          </CardHeader>
-          <CardContent>
+        <Panel>
+          <PanelHeader>
+            <SectionLabel>Beban Penjemputan 7 Hari</SectionLabel>
+          </PanelHeader>
+          <PanelBody>
             <ChartContainer config={pickupChartConfig} className="h-56 w-full">
               <BarChart data={pickupLoad} margin={{ left: 4, right: 4 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
                 <YAxis allowDecimals={false} width={24} tickLine={false} axisLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="booked" fill="var(--color-booked)" radius={4} />
+                <Bar dataKey="booked" fill="var(--color-booked)" />
               </BarChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
+          </PanelBody>
+        </Panel>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-none border border-rule bg-paper-tint lg:col-span-2">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Pesanan per Status
-            </p>
-          </CardHeader>
-          <CardContent className="grid gap-2 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 desktop:grid-cols-3">
+        <Panel tone="tint" className="desktop:col-span-2">
+          <PanelHeader>
+            <SectionLabel>Pesanan per Status</SectionLabel>
+          </PanelHeader>
+          <PanelBody className="grid gap-x-8 tablet:grid-cols-2">
             {statusBreakdown.map((slice) => (
               <div
                 key={slice.value}
-                className="flex items-center justify-between gap-3 border-b border-rule py-2 last:border-0"
+                className="flex items-center justify-between gap-3 border-b border-rule py-2.5 last:border-b-0 tablet:nth-last-2:border-b-0"
               >
-                <span className="text-sm text-ink-body">{slice.label}</span>
-                <span className="text-sm font-semibold text-ink">{slice.total}</span>
+                <span className="text-small leading-normal text-ink-body">{slice.label}</span>
+                <span className="text-small leading-normal font-semibold text-ink">
+                  {slice.total}
+                </span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card className="rounded-none border border-rule bg-paper-tint">
-          <CardHeader>
-            <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-              Online vs Offline
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Panel tone="tint">
+          <PanelHeader>
+            <SectionLabel>Online vs Offline</SectionLabel>
+          </PanelHeader>
+          <PanelBody className="flex flex-col gap-4">
             {typeSplit.map((slice) => {
               const share = totalTyped > 0 ? Math.round((slice.total / totalTyped) * 100) : 0
 
               return (
                 <div key={slice.value}>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between gap-3 text-small leading-normal">
                     <span className="text-ink-body">{slice.label}</span>
                     <span className="font-semibold text-ink">
                       {slice.total} ({share}%)
                     </span>
                   </div>
-                  <div className="mt-1 h-2 w-full rounded-full bg-paper-tint">
-                    <div className="h-2 rounded-full bg-ink" style={{ width: `${share}%` }} />
+                  <div className="mt-1.5 h-1.5 w-full bg-white">
+                    <div className="h-1.5 bg-ink" style={{ width: `${share}%` }} />
                   </div>
                 </div>
               )
             })}
-          </CardContent>
-        </Card>
+          </PanelBody>
+        </Panel>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <LiveOrders />
       </div>
 
-      <Card className="mt-6 rounded-none border border-rule bg-white">
-        <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-medium tracking-widest text-ink-soft uppercase">
-            Pesanan Terbaru
-          </p>
-          <Link route="admin.order.index" className="text-sm font-medium text-ink underline">
-            Lihat semua
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {recentOrders.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ink-subtle">Belum ada pesanan</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nomor</TableHead>
-                  <TableHead>Pelanggan</TableHead>
-                  <TableHead>Tipe</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-semibold">
-                      <Link
-                        route="admin.order.show"
-                        routeParams={{ number: order.orderNumber }}
-                        className="underline"
-                      >
-                        {order.orderNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>
-                      <Badge className={orderTypeStyles[order.type] ?? neutralBadgeStyle}>
-                        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={orderStatusStyles[order.status] ?? neutralBadgeStyle}>
-                        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="mt-4">
+        <Panel className="border-b-0">
+          <PanelHeader>
+            <SectionLabel>Pesanan Terbaru</SectionLabel>
+            <Link
+              route="admin.order.index"
+              className="text-meta font-medium text-ink underline underline-offset-4"
+            >
+              Lihat semua
+            </Link>
+          </PanelHeader>
+        </Panel>
+        <DataTable
+          columns={recentColumns}
+          rows={recentOrders}
+          getKey={(order) => order.id}
+          empty="Belum ada pesanan"
+        />
+      </div>
     </AdminLayout>
   )
 }

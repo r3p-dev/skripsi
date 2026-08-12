@@ -170,7 +170,7 @@ export default function Create({ address, operationalAreas }: PageProps) {
         <BackLink route="customer.address.show">← Kembali</BackLink>
       </header>
 
-      <div className="flex-1 gutter pb-nav">
+      <div className="flex-1 gutter pb-nav desktop:pb-page">
         <div className="pt-7 pb-6">
           <PageTitle className="mb-1.5">{address ? 'Ubah Alamat' : 'Tambah Alamat'}</PageTitle>
           <Lede>Anda hanya dapat menyimpan satu alamat utama.</Lede>

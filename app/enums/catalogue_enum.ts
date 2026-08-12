@@ -9,7 +9,6 @@ export const CatalogueCategory = {
   BAG_WASH: 'bag_wash',
   HELMET_WASH: 'helmet_wash',
   SHOE_REPAIR: 'shoe_repair',
-  ADDITIONAL: 'additional',
 } as const
 
 export const CatalogueTypeLabel = {
@@ -23,7 +22,6 @@ export const CatalogueCategoryLabel = {
   [CatalogueCategory.BAG_WASH]: 'Cuci Tas',
   [CatalogueCategory.HELMET_WASH]: 'Cuci Helm',
   [CatalogueCategory.SHOE_REPAIR]: 'Reparasi Sepatu',
-  [CatalogueCategory.ADDITIONAL]: 'Tambahan',
 } as const
 
 export type CatalogueType = (typeof CatalogueType)[keyof typeof CatalogueType]
