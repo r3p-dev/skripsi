@@ -9,6 +9,7 @@ import {
   forgotPasswordLimiter,
   geocodeLimiter,
   loginLimiter,
+  paymentLimiter,
   signupLimiter,
   resetPasswordLimiter,
 } from '#start/limiter'
@@ -120,6 +121,19 @@ router
       router.get('address', [controllers.customer.Address, 'show']).as('address.show')
       router.get('address/create', [controllers.customer.Address, 'create']).as('address.create')
       router.post('address', [controllers.customer.Address, 'store']).as('address.store')
+
+      router
+        .get('orders/:number/receipt', [controllers.customer.Order, 'receipt'])
+        .as('orders.receipt')
+
+      router
+        .get('orders/:number/payment', [controllers.customer.Transaction, 'show'])
+        .as('transaction.show')
+
+      router
+        .post('orders/:number/payment', [controllers.customer.Transaction, 'store'])
+        .as('transaction.store')
+        .use(paymentLimiter)
 
       router.resource('orders', controllers.customer.Order).except(['edit', 'destroy']).params({
         orders: 'number',

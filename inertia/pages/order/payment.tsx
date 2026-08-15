@@ -22,58 +22,37 @@ import {
 import { type PropsWithChildren, useEffect, useState } from 'react'
 import type { ComponentProps } from 'react'
 import { TransactionStatus, TransactionStatusLabel } from '@/enums/transaction_enum'
-import { formatRupiah } from '@/lib/format'
 
-type BackRoute = 'customer.order.show' | 'staff.trip.index'
-type RetryRoute = 'customer.transaction.store' | 'staff.transaction.store'
-
+/**
+ * Staff will share this page once their screens land; until those routes exist
+ * the only way here is a customer paying their own order.
+ */
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   transaction: Data.Transaction
-  backRoute: BackRoute
-  retryRoute: RetryRoute
 }>
 
 function BackLink({
-  backRoute,
   orderNumber,
   className,
   children,
-}: PropsWithChildren<{ backRoute: BackRoute; orderNumber: string; className?: string }>) {
-  if (backRoute === 'customer.order.show') {
-    return (
-      <Link route="customer.order.show" routeParams={{ number: orderNumber }} className={className}>
-        {children}
-      </Link>
-    )
-  }
-
+}: PropsWithChildren<{ orderNumber: string; className?: string }>) {
   return (
-    <Link route="staff.trip.index" className={className}>
+    <Link route="customer.orders.show" routeParams={{ number: orderNumber }} className={className}>
       {children}
     </Link>
   )
 }
 
 function RetryForm({
-  retryRoute,
   orderNumber,
   children,
 }: {
-  retryRoute: RetryRoute
   orderNumber: string
   children: ComponentProps<typeof Form>['children']
 }) {
-  if (retryRoute === 'customer.transaction.store') {
-    return (
-      <Form route="customer.transaction.store" routeParams={{ number: orderNumber }}>
-        {children}
-      </Form>
-    )
-  }
-
   return (
-    <Form route="staff.transaction.store" routeParams={{ number: orderNumber }}>
+    <Form route="customer.transaction.store" routeParams={{ number: orderNumber }}>
       {children}
     </Form>
   )
@@ -102,12 +81,7 @@ async function downloadQrCode(source: string, orderNumber: string) {
   }
 }
 
-export default function Payment({
-  order,
-  transaction: initialTransaction,
-  backRoute,
-  retryRoute,
-}: PageProps) {
+export default function Payment({ order, transaction: initialTransaction }: PageProps) {
   const [transaction, setTransaction] = useState(initialTransaction)
   const isPaid = transaction.status === TransactionStatus.PAID
   const isPending = transaction.status === TransactionStatus.PENDING
@@ -147,7 +121,6 @@ export default function Payment({
       <Shell className="flex flex-col tablet:my-14 tablet:min-h-auto tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]">
         <header className="gutter flex items-center gap-3 pt-6">
           <BackLink
-            backRoute={backRoute}
             orderNumber={order.orderNumber}
             className="flex size-11 shrink-0 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-paper-tint"
           >
@@ -173,7 +146,7 @@ export default function Payment({
                 Total Tagihan
               </p>
               <p className="m-0 mt-2 text-title leading-[1.2] font-bold">
-                {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+                {order.totalPrice === 0 ? '-' : order.totalPriceLabel}
               </p>
             </div>
           </div>
@@ -190,7 +163,6 @@ export default function Payment({
                 </p>
               </div>
               <BackLink
-                backRoute={backRoute}
                 orderNumber={order.orderNumber}
                 className="flex min-h-11 items-center justify-center bg-ink px-8 text-small font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
               >
@@ -254,7 +226,7 @@ export default function Payment({
                   Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.
                 </p>
               </div>
-              <RetryForm retryRoute={retryRoute} orderNumber={order.orderNumber}>
+              <RetryForm orderNumber={order.orderNumber}>
                 {({ processing }) => (
                   <SolidButton type="submit" disabled={processing} className="gap-2">
                     <IconRefresh className="size-4" />

@@ -49,7 +49,7 @@ test.group('Customer orders in the browser | booking a pickup', (group) => {
     assert.equal(order.addressId, customer.address.id)
 
     await page.assertPath(`/orders/${order.orderNumber}`)
-    await page.assertExists(page.getByText(order.orderNumber).first())
+    await page.getByText(order.orderNumber).first().waitFor()
 
     const items = await order.related('items').query()
 
@@ -141,5 +141,26 @@ test.group('Customer orders in the browser | calling off a pickup', (group) => {
     const page = await visit('/orders')
 
     await page.assertExists(page.getByText(order.orderNumber).first())
+  })
+})
+
+test.group('Customer orders in the browser | the receipt', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('a customer opens the receipt from the order detail', async ({ visit, browserContext }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, { itemCount: 2 })
+
+    await browserContext.loginAs(customer.user)
+
+    const page = await visit(`/orders/${order.orderNumber}`)
+
+    await page.getByRole('link', { name: 'Lihat Struk' }).click()
+    await page.waitForURL(`**/orders/${order.orderNumber}/receipt`)
+
+    await page.getByText('Struk Pesanan').waitFor()
+    await page.assertExists(page.getByText(order.orderNumber).first())
+    await page.assertExists(page.getByText('Belum ada tagihan'))
+    await page.assertExists(page.getByRole('button', { name: 'Cetak Struk' }))
   })
 })

@@ -44,6 +44,12 @@ export async function validationMessages(
   throw new Error('Expected the action to fail validation, but it succeeded.')
 }
 
+export async function invalidFields(action: () => Promise<unknown>): Promise<string[]> {
+  const messages = await validationMessages(action)
+
+  return messages.map((message) => message.field)
+}
+
 export async function createCustomer(): Promise<{ user: User; address: Address }> {
   const user = await UserFactory.create()
   const address = await AddressFactory.merge({ userId: user.id }).create()

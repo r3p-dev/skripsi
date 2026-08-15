@@ -54,6 +54,17 @@ export default class OrderController {
     return inertia.render('customer/order/show', {
       order: OrderTransformer.transform(order).useVariant('toDetail'),
       canCancel: this.orderService.canCancel(order),
+      canPay: this.orderService.canPay(order),
+    })
+  }
+
+  async receipt({ auth, inertia, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const order = await this.orderService.getCustomerOrderByNumber(user, params.number)
+
+    return inertia.render('customer/order/receipt', {
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
     })
   }
 

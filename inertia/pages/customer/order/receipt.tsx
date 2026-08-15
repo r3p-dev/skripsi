@@ -4,7 +4,7 @@ import type { InertiaProps } from '@/types'
 import { Head } from '@inertiajs/react'
 import { IconPrinter } from '@tabler/icons-react'
 import { OrderStatusLabel } from '@/enums/order_enum'
-import { formatDate, formatRupiah } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { groupLinesByItem } from '@/lib/order'
 import { type ReactNode } from 'react'
 
@@ -38,7 +38,7 @@ export default function Receipt({ order }: PageProps) {
 
       <Shell className="flex flex-col bg-paper-tint print:max-w-none print:bg-white">
         <header className="gutter pt-6 print:hidden">
-          <BackLink route="customer.order.show" routeParams={{ number: order.orderNumber }}>
+          <BackLink route="customer.orders.show" routeParams={{ number: order.orderNumber }}>
             ← Detail Pesanan
           </BackLink>
         </header>
@@ -116,15 +116,20 @@ export default function Receipt({ order }: PageProps) {
                   {itemGroups.map((group) => (
                     <div key={group.key} className="flex flex-col gap-1">
                       <p className="m-0 text-meta leading-normal font-semibold">{group.title}</p>
+                      {group.lines.length === 0 && (
+                        <p className="m-0 text-meta leading-normal text-ink-subtle">
+                          Layanan ditentukan setelah barang diperiksa petugas.
+                        </p>
+                      )}
                       {group.lines.map((line) => (
                         <div
                           key={line.id}
                           className="flex items-baseline gap-2 text-meta leading-normal"
                         >
-                          <span className="text-ink-soft">{line.service?.name ?? line.name}</span>
+                          <span className="text-ink-soft">{line.name}</span>
                           <span className="receipt-leader" />
                           <span className="tabular-nums whitespace-nowrap">
-                            {formatRupiah(line.subtotal)}
+                            {line.subtotalLabel}
                           </span>
                         </div>
                       ))}
@@ -139,7 +144,7 @@ export default function Receipt({ order }: PageProps) {
             <div className="flex items-baseline justify-between gap-3 px-6 py-6">
               <span className="text-meta tracking-[0.2em] uppercase">Total</span>
               <span className="text-lead leading-[1.4] font-bold tabular-nums">
-                {order.totalPrice === null ? 'Belum ada tagihan' : formatRupiah(order.totalPrice)}
+                {order.totalPrice === 0 ? 'Belum ada tagihan' : order.totalPriceLabel}
               </span>
             </div>
 

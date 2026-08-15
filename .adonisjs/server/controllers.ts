@@ -23,6 +23,7 @@ export const controllers = {
     Password: () => import('#controllers/customer/password_controller'),
     Phone: () => import('#controllers/customer/phone_controller'),
     Profile: () => import('#controllers/customer/profile_controller'),
+    Transaction: () => import('#controllers/customer/transaction_controller'),
   },
   Home: () => import('#controllers/home_controller'),
   staff: {

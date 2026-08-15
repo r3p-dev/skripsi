@@ -382,3 +382,62 @@ test.group('Customer orders | calling off a pickup', (group) => {
     assert.equal(order.status, OrderStatus.PICKUP_SCHEDULED)
   })
 })
+
+test.group('Customer orders | the receipt', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('prints the order with its goods and recipient', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, { itemCount: 2 })
+
+    const response = await client
+      .get(`/orders/${order.orderNumber}/receipt`)
+      .loginAs(customer.user)
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('customer/order/receipt')
+    response.assertInertiaPropsContains({
+      order: {
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        address: { street: customer.address.street },
+      },
+    })
+  })
+
+  test('an order that has not been priced shows no bill', async ({ client, assert }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer)
+
+    const response = await client
+      .get(`/orders/${order.orderNumber}/receipt`)
+      .loginAs(customer.user)
+      .withInertia()
+
+    assert.equal(response.inertiaProps.order.totalPrice, 0)
+  })
+
+  test("never prints another customer's receipt", async ({ client }) => {
+    const customer = await createCustomer()
+    const intruder = await createCustomer()
+    const order = await createOrder(customer)
+
+    const response = await client
+      .get(`/orders/${order.orderNumber}/receipt`)
+      .loginAs(intruder.user)
+      .withInertia()
+
+    response.assertStatus(404)
+  })
+
+  test('a guest is sent to sign in', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer)
+
+    const response = await client.get(`/orders/${order.orderNumber}/receipt`).redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/login')
+  })
+})

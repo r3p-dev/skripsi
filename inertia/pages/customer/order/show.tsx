@@ -1,4 +1,10 @@
-import { BackLink, Eyebrow, PageTitle, StatusBadge } from '@/components/atoms/editorial'
+import {
+  BackLink,
+  Eyebrow,
+  PageTitle,
+  SolidButton,
+  StatusBadge,
+} from '@/components/atoms/editorial'
 import CustomerLayout from '@/components/layouts/customer_layout'
 import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import type { Data } from '@/generated/data'
@@ -8,9 +14,10 @@ import { Form, Link } from '@adonisjs/inertia/react'
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   canCancel: boolean
+  canPay: boolean
 }>
 
-export default function Show({ order, canCancel }: PageProps) {
+export default function Show({ order, canCancel, canPay }: PageProps) {
   const items = order.items ?? []
 
   return (
@@ -87,6 +94,24 @@ export default function Show({ order, canCancel }: PageProps) {
         </section>
 
         <div className="gutter flex flex-col gap-3 pt-8 pb-12">
+          {canPay && (
+            <Form route="customer.transaction.store" routeParams={{ number: order.orderNumber }}>
+              {({ processing }) => (
+                <SolidButton type="submit" disabled={processing}>
+                  Bayar Sekarang
+                </SolidButton>
+              )}
+            </Form>
+          )}
+
+          <Link
+            route="customer.orders.receipt"
+            routeParams={{ number: order.orderNumber }}
+            className="flex min-h-12 items-center justify-center border border-rule-field px-4 text-small font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:bg-paper-tint"
+          >
+            Lihat Struk
+          </Link>
+
           <Link
             route="customer.orders.index"
             className="flex min-h-12 items-center justify-center border border-rule-field px-4 text-small font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:bg-paper-tint"

@@ -174,6 +174,24 @@ const routes = {
     tokens: [{"old":"/address","type":0,"val":"address","end":""}],
     types: placeholder as Registry['customer.address.store']['types'],
   },
+  'customer.orders.receipt': {
+    methods: ["GET","HEAD"],
+    pattern: '/orders/:number/receipt',
+    tokens: [{"old":"/orders/:number/receipt","type":0,"val":"orders","end":""},{"old":"/orders/:number/receipt","type":1,"val":"number","end":""},{"old":"/orders/:number/receipt","type":0,"val":"receipt","end":""}],
+    types: placeholder as Registry['customer.orders.receipt']['types'],
+  },
+  'customer.transaction.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/orders/:number/payment',
+    tokens: [{"old":"/orders/:number/payment","type":0,"val":"orders","end":""},{"old":"/orders/:number/payment","type":1,"val":"number","end":""},{"old":"/orders/:number/payment","type":0,"val":"payment","end":""}],
+    types: placeholder as Registry['customer.transaction.show']['types'],
+  },
+  'customer.transaction.store': {
+    methods: ["POST"],
+    pattern: '/orders/:number/payment',
+    tokens: [{"old":"/orders/:number/payment","type":0,"val":"orders","end":""},{"old":"/orders/:number/payment","type":1,"val":"number","end":""},{"old":"/orders/:number/payment","type":0,"val":"payment","end":""}],
+    types: placeholder as Registry['customer.transaction.store']['types'],
+  },
   'customer.orders.index': {
     methods: ["GET","HEAD"],
     pattern: '/orders',

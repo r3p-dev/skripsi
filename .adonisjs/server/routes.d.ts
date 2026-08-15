@@ -32,6 +32,9 @@ export type ScannedRoutes = {
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
     'customer.address.store': { paramsTuple?: []; params?: {} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
@@ -63,6 +66,8 @@ export type ScannedRoutes = {
     'customer.address.nearby': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -88,6 +93,8 @@ export type ScannedRoutes = {
     'customer.address.nearby': { paramsTuple?: []; params?: {} }
     'customer.address.show': { paramsTuple?: []; params?: {} }
     'customer.address.create': { paramsTuple?: []; params?: {} }
+    'customer.orders.receipt': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.transaction.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.index': { paramsTuple?: []; params?: {} }
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -107,6 +114,7 @@ export type ScannedRoutes = {
     'session.destroy': { paramsTuple?: []; params?: {} }
     'customer.phone.store': { paramsTuple?: []; params?: {} }
     'customer.address.store': { paramsTuple?: []; params?: {} }
+    'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }

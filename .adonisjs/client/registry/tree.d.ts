@@ -52,11 +52,16 @@ export interface ApiDefinition {
       store: typeof routes['customer.address.store']
     }
     orders: {
+      receipt: typeof routes['customer.orders.receipt']
       index: typeof routes['customer.orders.index']
       create: typeof routes['customer.orders.create']
       store: typeof routes['customer.orders.store']
       show: typeof routes['customer.orders.show']
       update: typeof routes['customer.orders.update']
+    }
+    transaction: {
+      show: typeof routes['customer.transaction.show']
+      store: typeof routes['customer.transaction.store']
     }
   }
   staff: {

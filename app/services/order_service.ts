@@ -170,6 +170,14 @@ export default class OrderService {
     return order
   }
 
+  /**
+   * An order can be paid once it has been inspected and priced, and only then:
+   * before that there is no bill, and afterwards the money is already in.
+   */
+  canPay(order: Order): boolean {
+    return order.status === OrderStatus.AWAITING_PAYMENT && Number(order.totalPrice ?? 0) > 0
+  }
+
   canCancel(order: Order): boolean {
     const pickupDate = order.pickupDate?.startOf('day')
 

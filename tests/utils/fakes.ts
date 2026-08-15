@@ -1,4 +1,5 @@
 import FonnteService from '#services/fonnte_service'
+import { core } from '#config/midtrans'
 import GeocodingService, { type GeocodeResult } from '#services/geocoding_service'
 import NearbyService, { type NearbyPlace } from '#services/nearby_service'
 
@@ -67,5 +68,34 @@ export class FakeNearbyService extends NearbyService {
 export class BrokenNearbyService extends NearbyService {
   async search(): Promise<NearbyPlace[]> {
     throw new Error('Layanan lokasi terdekat sedang tidak tersedia.')
+  }
+}
+
+/**
+ * Replaces the Midtrans charge call for the duration of a test and hands back
+ * the restore function. `core` is a module-level singleton, so there is nothing
+ * to swap in the container.
+ */
+export function stubMidtransCharge(
+  handler: (parameter: Record<string, unknown>) => unknown
+): () => void {
+  const client = core as { charge: (parameter: Record<string, unknown>) => Promise<unknown> }
+  const original = client.charge
+
+  client.charge = async (parameter) => handler(parameter)
+
+  return () => {
+    client.charge = original
+  }
+}
+
+export function midtransQrResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    transaction_id: 'mt-test-1',
+    order_id: 'ORDTEST-1',
+    actions: [
+      { name: 'generate-qr-code', url: 'https://api.sandbox.midtrans.com/v2/qris/test/qr-code' },
+    ],
+    ...overrides,
   }
 }

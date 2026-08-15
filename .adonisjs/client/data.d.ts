@@ -12,6 +12,7 @@ import type ItemTransformer from '#transformers/item_transformer'
 import type OperationalAreaTransformer from '#transformers/operational_area_transformer'
 import type OrderItemTransformer from '#transformers/order_item_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
+import type TransactionTransformer from '#transformers/transaction_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
 
@@ -39,6 +40,10 @@ export namespace Data {
   export type Order = InferData<OrderTransformer>
   export namespace Order {
     export type Variants = InferVariants<OrderTransformer>
+  }
+  export type Transaction = InferData<TransactionTransformer>
+  export namespace Transaction {
+    export type Variants = InferVariants<TransactionTransformer>
   }
   export type User = InferData<UserTransformer>
   export namespace User {
