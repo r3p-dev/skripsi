@@ -1,4 +1,6 @@
 import type Order from '#models/order'
+import AddressTransformer from '#transformers/address_transformer'
+import ItemTransformer from '#transformers/item_transformer'
 import { OrderStatus, OrderStatusLabel, OrderTypeLabel } from '#enums/order_enum'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import { DateTime } from 'luxon'
@@ -22,6 +24,15 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       pickupDate:
         this.resource.pickupDate?.setLocale('id').toLocaleString(DateTime.DATE_FULL) ?? null,
       createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+    }
+  }
+
+  toDetail() {
+    return {
+      ...this.toObject(),
+
+      address: AddressTransformer.transform(this.whenLoaded(this.resource.address)),
+      items: ItemTransformer.transform(this.whenLoaded(this.resource.items))?.depth(2),
     }
   }
 }

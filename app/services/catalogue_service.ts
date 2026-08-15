@@ -40,23 +40,26 @@ export default class CatalogueService {
   }
 
   async createCatalogue(data: CatalogueData): Promise<Catalogue> {
-    return Catalogue.create({
-      ...data,
-      price: data.price.toString(),
-    })
+    return Catalogue.create(this.#toAttributes(data))
   }
 
   async updateCatalogue(id: number, data: CatalogueData): Promise<Catalogue> {
     const catalogue = await Catalogue.findOrFail(id)
 
-    await catalogue
-      .merge({
-        ...data,
-        price: data.price.toString(),
-      })
-      .save()
+    await catalogue.merge(this.#toAttributes(data)).save()
 
     return catalogue
+  }
+
+  /**
+   * The form field is called `serviceName`, the column is called `name`.
+   */
+  #toAttributes({ serviceName, price, ...rest }: CatalogueData) {
+    return {
+      ...rest,
+      name: serviceName,
+      price: price.toString(),
+    }
   }
 
   async getServiceOptions(): Promise<ItemTypeOptions[]> {

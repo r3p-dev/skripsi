@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { Field, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
+import { Link } from '@adonisjs/inertia/react'
 import { useMemo, useState } from 'react'
 
 type PageProps = InertiaProps<{
@@ -92,12 +93,13 @@ export default function Index({ orders, summaries }: PageProps) {
                 </div>
                 <StatusBadge emphasis={order.isCompleted}>{order.statusLabel}</StatusBadge>
               </div>
-              <a
-                href={`/orders/${order.orderNumber}`}
+              <Link
+                route="customer.orders.show"
+                routeParams={{ number: order.orderNumber }}
                 className="block border-t border-rule px-5 py-3 text-meta font-medium text-ink"
               >
                 Lihat Detail →
-              </a>
+              </Link>
             </div>
           ))}
 

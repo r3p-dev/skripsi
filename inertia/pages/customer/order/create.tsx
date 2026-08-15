@@ -29,6 +29,24 @@ const SIZE_PLACEHOLDER: Record<string, string> = {
   [ItemType.HELMET]: 'cth: L',
 }
 
+const BRAND_PLACEHOLDER: Record<string, string> = {
+  [ItemType.SHOE]: 'cth: Nike',
+  [ItemType.BAG]: 'cth: Adidas',
+  [ItemType.HELMET]: 'cth: Shoei',
+}
+
+const MODEL_PLACEHOLDER: Record<string, string> = {
+  [ItemType.SHOE]: 'cth: Air Force 1',
+  [ItemType.BAG]: 'cth: Adidas Originals',
+  [ItemType.HELMET]: 'cth: GT Air',
+}
+
+const MATERIAL_PLACEHOLDER: Record<string, string> = {
+  [ItemType.SHOE]: 'cth: Kulit',
+  [ItemType.BAG]: 'cth: Kanvas',
+  [ItemType.HELMET]: 'cth: Fiberglass',
+}
+
 type Quantities = Record<string, number>
 
 const summaryLabel = 'mb-1.5 text-eyebrow leading-[1.4] tracking-[0.1em] text-ink-subtle uppercase'
@@ -137,7 +155,7 @@ export default function Create({ address }: PageProps) {
           <Lede>Atur penjemputan barang Anda.</Lede>
         </div>
 
-        <Form action="/orders" method="post" id="order-form">
+        <Form route="customer.orders.store" id="order-form">
           {({ errors, processing }) => (
             <>
               <div className="gutter desktop:grid desktop:grid-cols-[1fr_380px] desktop:items-start desktop:gap-x-14">
@@ -177,7 +195,7 @@ export default function Create({ address }: PageProps) {
                             <UnderlineInput
                               id={`${slot.key}-brand`}
                               name={`items[${index}][brand]`}
-                              placeholder="cth: Nike"
+                              placeholder={BRAND_PLACEHOLDER[slot.type]}
                               className="py-2 text-sm"
                             />
                           </Field>
@@ -189,7 +207,7 @@ export default function Create({ address }: PageProps) {
                             <UnderlineInput
                               id={`${slot.key}-model`}
                               name={`items[${index}][model]`}
-                              placeholder="cth: Air Force 1"
+                              placeholder={MODEL_PLACEHOLDER[slot.type]}
                               className="py-2 text-sm"
                             />
                           </Field>
@@ -205,7 +223,7 @@ export default function Create({ address }: PageProps) {
                               <UnderlineInput
                                 id={`${slot.key}-material`}
                                 name={`items[${index}][material]`}
-                                placeholder="cth: Kulit"
+                                placeholder={MATERIAL_PLACEHOLDER[slot.type]}
                                 className="py-2 text-sm"
                               />
                             </Field>

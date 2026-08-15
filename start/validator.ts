@@ -65,6 +65,7 @@ export const validationFields = {
   photo: 'Foto',
   totalShoes: 'Total sepatu',
   shoes: 'Daftar sepatu',
+  items: 'Daftar barang',
   brand: 'Merek',
   model: 'Model',
   material: 'Bahan',

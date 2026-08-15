@@ -12,10 +12,10 @@ export interface ApiDefinition {
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']
-  home: typeof routes['home']
   transaction: {
     update: typeof routes['transaction.update']
   }
+  home: typeof routes['home']
   signup: {
     create: typeof routes['signup.create']
     store: typeof routes['signup.store']
@@ -54,6 +54,9 @@ export interface ApiDefinition {
     orders: {
       index: typeof routes['customer.orders.index']
       create: typeof routes['customer.orders.create']
+      store: typeof routes['customer.orders.store']
+      show: typeof routes['customer.orders.show']
+      update: typeof routes['customer.orders.update']
     }
   }
   staff: {

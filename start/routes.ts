@@ -69,12 +69,12 @@ transmit.authorize<{ orderNumber: string }>('orders/:orderNumber', async (ctx, {
   return order?.userId === user.id
 })
 
-router.get('/', [controllers.Home, 'index']).as('home').use(middleware.guest())
-
 router.post('transaction/callback', [controllers.webhooks.Transaction, 'update'])
 
 router
   .group(() => {
+    router.get('/', [controllers.Home, 'index']).as('home')
+
     router.get('signup', [controllers.auth.Signup, 'create'])
     router.post('signup', [controllers.auth.Signup, 'store']).use(signupLimiter)
 
@@ -121,7 +121,9 @@ router
       router.get('address/create', [controllers.customer.Address, 'create']).as('address.create')
       router.post('address', [controllers.customer.Address, 'store']).as('address.store')
 
-      router.resource('orders', controllers.customer.Order).only(['index', 'create'])
+      router.resource('orders', controllers.customer.Order).except(['edit', 'destroy']).params({
+        orders: 'number',
+      })
     })
   })
   .use([middleware.auth(), middleware.role(Role.CUSTOMER)])

@@ -4,6 +4,7 @@ import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import { dbAssertions } from '@adonisjs/lucid/plugins/db'
 import testUtils from '@adonisjs/core/services/test_utils'
+import db from '@adonisjs/lucid/services/db'
 import { browserClient } from '@japa/browser-client'
 import { authBrowserClient } from '@adonisjs/auth/plugins/browser_client'
 import { sessionBrowserClient } from '@adonisjs/session/plugins/browser_client'
@@ -33,8 +34,15 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   teardown: [],
 }
 
+const clearRateLimits = async () => {
+  await db.from('rate_limits').delete()
+}
+
 export const configureSuite: Config['configureSuite'] = (suite) => {
   if (['browser', 'functional', 'e2e'].includes(suite.name)) {
+    suite.onGroup((group) => group.each.setup(clearRateLimits))
+    suite.onTest((test) => test.setup(clearRateLimits))
+
     return suite.setup(() => testUtils.httpServer().start())
   }
 }

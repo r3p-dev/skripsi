@@ -42,17 +42,17 @@ const routes = {
     tokens: [{"old":"/__transmit/unsubscribe","type":0,"val":"__transmit","end":""},{"old":"/__transmit/unsubscribe","type":0,"val":"unsubscribe","end":""}],
     types: placeholder as Registry['unsubscribe']['types'],
   },
-  'home': {
-    methods: ["GET","HEAD"],
-    pattern: '/',
-    tokens: [{"old":"/","type":0,"val":"/","end":""}],
-    types: placeholder as Registry['home']['types'],
-  },
   'transaction.update': {
     methods: ["POST"],
     pattern: '/transaction/callback',
     tokens: [{"old":"/transaction/callback","type":0,"val":"transaction","end":""},{"old":"/transaction/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['transaction.update']['types'],
+  },
+  'home': {
+    methods: ["GET","HEAD"],
+    pattern: '/',
+    tokens: [{"old":"/","type":0,"val":"/","end":""}],
+    types: placeholder as Registry['home']['types'],
   },
   'signup.create': {
     methods: ["GET","HEAD"],
@@ -185,6 +185,24 @@ const routes = {
     pattern: '/orders/create',
     tokens: [{"old":"/orders/create","type":0,"val":"orders","end":""},{"old":"/orders/create","type":0,"val":"create","end":""}],
     types: placeholder as Registry['customer.orders.create']['types'],
+  },
+  'customer.orders.store': {
+    methods: ["POST"],
+    pattern: '/orders',
+    tokens: [{"old":"/orders","type":0,"val":"orders","end":""}],
+    types: placeholder as Registry['customer.orders.store']['types'],
+  },
+  'customer.orders.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/orders/:number',
+    tokens: [{"old":"/orders/:number","type":0,"val":"orders","end":""},{"old":"/orders/:number","type":1,"val":"number","end":""}],
+    types: placeholder as Registry['customer.orders.show']['types'],
+  },
+  'customer.orders.update': {
+    methods: ["PUT","PATCH"],
+    pattern: '/orders/:number',
+    tokens: [{"old":"/orders/:number","type":0,"val":"orders","end":""},{"old":"/orders/:number","type":1,"val":"number","end":""}],
+    types: placeholder as Registry['customer.orders.update']['types'],
   },
   'staff.profile.show': {
     methods: ["GET","HEAD"],

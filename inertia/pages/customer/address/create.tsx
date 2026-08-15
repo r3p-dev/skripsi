@@ -50,7 +50,7 @@ export default function Create({ address, operationalAreas }: PageProps) {
 
     const center = toCenter(operationalAreas)
 
-    return center ? latLng(center[1], center[0]) : latLng(-6.2088, 106.8456)
+    return center ? latLng(center[1], center[0]) : latLng(-6.9555305, 107.6540353)
   })
 
   const [street, setStreet] = useState(address?.street ?? '')

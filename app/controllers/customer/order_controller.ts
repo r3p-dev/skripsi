@@ -1,21 +1,23 @@
 import AddressService from '#services/address_service'
 import AddressTransformer from '#transformers/address_transformer'
-import Order from '#models/order'
+import OrderService from '#services/order_service'
 import OrderTransformer from '#transformers/order_transformer'
-import { ItemTypeLabel, type ItemType } from '#enums/item_enum'
+import { orderValidator } from '#validators/order_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import db from '@adonisjs/lucid/services/db'
 
 @inject()
 export default class OrderController {
-  constructor(protected addressService: AddressService) {}
+  constructor(
+    protected orderService: OrderService,
+    protected addressService: AddressService
+  ) {}
 
   async index({ auth, inertia }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const orders = await Order.query().where('user_id', user.id).orderBy('created_at', 'desc')
-    const summaries = await this.#itemSummaries(orders.map((order) => order.id))
+    const orders = await this.orderService.getCustomerOrders(user)
+    const summaries = await this.orderService.itemSummaries(orders.map((order) => order.id))
 
     return inertia.render('customer/order/index', {
       orders: OrderTransformer.transform(orders),
@@ -33,27 +35,34 @@ export default class OrderController {
     })
   }
 
-  async #itemSummaries(orderIds: number[]): Promise<Map<number, string>> {
-    if (orderIds.length === 0) {
-      return new Map()
-    }
+  async store({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
 
-    const rows = await db
-      .from('items')
-      .whereIn('order_id', orderIds)
-      .select('order_id', 'type')
-      .count('* as total')
-      .groupBy('order_id', 'type')
+    const payload = await request.validateUsing(orderValidator)
 
-    const summaries = new Map<number, string[]>()
+    const order = await this.orderService.createOnlineOrder(user, payload)
 
-    for (const row of rows) {
-      const parts = summaries.get(row.order_id) ?? []
+    session.flash('success', 'Pesanan berhasil dibuat. Kami akan menjemput sesuai jadwal.')
+    return response.redirect().toRoute('customer.orders.show', { number: order.orderNumber })
+  }
 
-      parts.push(`${row.total} ${ItemTypeLabel[row.type as ItemType]}`)
-      summaries.set(row.order_id, parts)
-    }
+  async show({ auth, inertia, params }: HttpContext) {
+    const user = auth.getUserOrFail()
 
-    return new Map([...summaries].map(([id, parts]) => [id, parts.join(', ')]))
+    const order = await this.orderService.getCustomerOrderByNumber(user, params.number)
+
+    return inertia.render('customer/order/show', {
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
+      canCancel: this.orderService.canCancel(order),
+    })
+  }
+
+  async update({ auth, params, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const order = await this.orderService.cancelOrder(user, params.number)
+
+    session.flash('success', 'Pesanan berhasil dibatalkan.')
+    return response.redirect().toRoute('customer.orders.show', { number: order.orderNumber })
   }
 }
