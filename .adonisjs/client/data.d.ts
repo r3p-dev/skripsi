@@ -10,8 +10,11 @@ import type AddressTransformer from '#transformers/address_transformer'
 import type CatalogueTransformer from '#transformers/catalogue_transformer'
 import type ItemTransformer from '#transformers/item_transformer'
 import type OperationalAreaTransformer from '#transformers/operational_area_transformer'
+import type OrderActionTransformer from '#transformers/order_action_transformer'
 import type OrderItemTransformer from '#transformers/order_item_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
+import type RouteItemTransformer from '#transformers/route_item_transformer'
+import type ServiceTransformer from '#transformers/service_transformer'
 import type TransactionTransformer from '#transformers/transaction_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
@@ -33,6 +36,10 @@ export namespace Data {
   export namespace OperationalArea {
     export type Variants = InferVariants<OperationalAreaTransformer>
   }
+  export type OrderAction = InferData<OrderActionTransformer>
+  export namespace OrderAction {
+    export type Variants = InferVariants<OrderActionTransformer>
+  }
   export type OrderItem = InferData<OrderItemTransformer>
   export namespace OrderItem {
     export type Variants = InferVariants<OrderItemTransformer>
@@ -40,6 +47,14 @@ export namespace Data {
   export type Order = InferData<OrderTransformer>
   export namespace Order {
     export type Variants = InferVariants<OrderTransformer>
+  }
+  export type RouteItem = InferData<RouteItemTransformer>
+  export namespace RouteItem {
+    export type Variants = InferVariants<RouteItemTransformer>
+  }
+  export type Service = InferData<ServiceTransformer>
+  export namespace Service {
+    export type Variants = InferVariants<ServiceTransformer>
   }
   export type Transaction = InferData<TransactionTransformer>
   export namespace Transaction {

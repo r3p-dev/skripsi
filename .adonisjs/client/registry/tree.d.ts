@@ -73,6 +73,34 @@ export interface ApiDefinition {
       store: typeof routes['staff.phone.store']
       update: typeof routes['staff.phone.update']
     }
+    trip: {
+      index: typeof routes['staff.trip.index']
+      show: typeof routes['staff.trip.show']
+      update: typeof routes['staff.trip.update']
+      destroy: typeof routes['staff.trip.destroy']
+    }
+    inspection: {
+      show: typeof routes['staff.inspection.show']
+      update: typeof routes['staff.inspection.update']
+      destroy: typeof routes['staff.inspection.destroy']
+    }
+    cleaning: {
+      update: typeof routes['staff.cleaning.update']
+    }
+    collection: {
+      update: typeof routes['staff.collection.update']
+    }
+    notification: {
+      store: typeof routes['staff.notification.store']
+    }
+    tag: {
+      show: typeof routes['staff.tag.show']
+    }
+  }
+  internal: {
+    action: {
+      photo: typeof routes['internal.action.photo']
+    }
   }
   admin: {
     profile: {

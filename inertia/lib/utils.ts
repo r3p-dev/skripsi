@@ -1,8 +1,13 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { routes } from '@/generated/registry'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function hasRoute(name: string): boolean {
+  return Object.hasOwn(routes, name)
 }
 
 export function whatsappUrl(phone: string) {

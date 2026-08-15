@@ -151,11 +151,48 @@ router
 
       router.post('phone', [controllers.staff.Phone, 'store'])
       router.get('phone/verify', [controllers.staff.Phone, 'update'])
+
+      router.get('tasks', [controllers.staff.Trip, 'index']).as('trip.index')
+
+      router.get('tasks/:number/trip/:type', [controllers.staff.Trip, 'show']).as('trip.show')
+      router.post('tasks/:number/trip/:type', [controllers.staff.Trip, 'update']).as('trip.update')
+      router
+        .delete('tasks/:number/trip/:type', [controllers.staff.Trip, 'destroy'])
+        .as('trip.destroy')
+
+      router
+        .get('tasks/:number/inspection', [controllers.staff.Inspection, 'show'])
+        .as('inspection.show')
+      router
+        .post('tasks/:number/inspection', [controllers.staff.Inspection, 'update'])
+        .as('inspection.update')
+      router
+        .delete('tasks/:number/inspection', [controllers.staff.Inspection, 'destroy'])
+        .as('inspection.destroy')
+
+      router
+        .post('tasks/:number/cleaning', [controllers.staff.Cleaning, 'update'])
+        .as('cleaning.update')
+
+      router
+        .post('tasks/:number/collection', [controllers.staff.Collection, 'update'])
+        .as('collection.update')
+
+      router
+        .post('tasks/:number/notification', [controllers.staff.Notification, 'store'])
+        .as('notification.store')
+
+      router.get('tasks/:number/tag', [controllers.staff.Tag, 'show']).as('tag.show')
     })
   })
   .use([middleware.auth(), middleware.role(Role.STAFF)])
   .prefix(Role.STAFF)
   .as(Role.STAFF)
+
+router
+  .get('internal/actions/:id/photo', [controllers.internal.ActionPhoto, 'show'])
+  .as('internal.action.photo')
+  .use([middleware.auth(), middleware.role([Role.STAFF, Role.ADMIN])])
 
 router
   .group(() => {

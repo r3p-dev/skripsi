@@ -1,0 +1,65 @@
+import CatalogueService from '#services/catalogue_service'
+import OrderTransformer from '#transformers/order_transformer'
+import ServiceTransformer from '#transformers/service_transformer'
+import TaskService from '#services/task_service'
+import { TaskType } from '#enums/task_enum'
+import { inspectionValidator } from '#validators/task_validator'
+import type { HttpContext } from '@adonisjs/core/http'
+import { inject } from '@adonisjs/core'
+
+@inject()
+export default class InspectionController {
+  constructor(
+    protected catalogueService: CatalogueService,
+    protected taskService: TaskService
+  ) {}
+
+  async show({ auth, inertia, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const summary = await this.taskService.findSummaryByNumber(params.number)
+    const claimed = await this.taskService.claim(user, summary, TaskType.INSPECTION)
+
+    if (!claimed) {
+      return inertia.render('staff/inspection/show', {
+        order: OrderTransformer.transform(summary).useVariant('toDetail'),
+        services: ServiceTransformer.transform([]),
+        blocked: true,
+      })
+    }
+
+    const [order, services] = await Promise.all([
+      this.taskService.findByNumber(params.number),
+      this.catalogueService.getPublicCatalogues(),
+    ])
+
+    return inertia.render('staff/inspection/show', {
+      order: OrderTransformer.transform(order).useVariant('toDetail'),
+      services: ServiceTransformer.transform(services),
+      blocked: false,
+    })
+  }
+
+  async update({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const payload = await request.validateUsing(inspectionValidator)
+    const order = await this.taskService.findByNumber(params.number)
+
+    await this.taskService.completeInspection(user, order, payload)
+
+    session.flash('success', 'Inspeksi selesai. Pelanggan diminta melunasi pembayaran.')
+    return response.redirect().toRoute('staff.trip.index')
+  }
+
+  async destroy({ auth, params, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const order = await this.taskService.findSummaryByNumber(params.number)
+
+    await this.taskService.release(user, order)
+
+    session.flash('success', 'Tugas dikembalikan ke antrean.')
+    return response.redirect().toRoute('staff.trip.index')
+  }
+}

@@ -53,6 +53,21 @@ export default {
           decorators: [{ name: '@column' }],
           imports: [{ source: '#enums/order_enum', namedImports: ['OrderType'] }],
         },
+        claimed_task: {
+          tsType: 'TaskType',
+          decorators: [{ name: '@column' }],
+          imports: [{ source: '#enums/task_enum', namedImports: ['TaskType'] }],
+        },
+      },
+    },
+
+    order_actions: {
+      columns: {
+        name: {
+          tsType: 'ActionName',
+          decorators: [{ name: '@column' }],
+          imports: [{ source: '#enums/order_action_enum', namedImports: ['ActionName'] }],
+        },
       },
     },
 

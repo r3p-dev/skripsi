@@ -54,6 +54,30 @@ export default class AddressService {
     }
   }
 
+  /**
+   * The middle of everywhere we serve. Used as the starting point for routing
+   * when no explicit depot is configured.
+   */
+  async getOperationalAreaCentroid(): Promise<{ latitude: number; longitude: number } | null> {
+    const result = await db
+      .from('operational_areas')
+      .where('is_active', true)
+      .select(
+        db.raw('ST_Y(ST_Centroid(ST_Collect(geometry))) as latitude'),
+        db.raw('ST_X(ST_Centroid(ST_Collect(geometry))) as longitude')
+      )
+      .first()
+
+    if (!result || result.latitude === null) {
+      return null
+    }
+
+    return {
+      latitude: Number(result.latitude),
+      longitude: Number(result.longitude),
+    }
+  }
+
   async filterWithinOperationalArea<T extends { latitude: number; longitude: number }>(
     candidates: T[]
   ): Promise<T[]> {

@@ -6,6 +6,7 @@ import {
   TaskHeader,
   TaskSummary,
 } from '@/components/molecules/staff_task'
+import RouteMap, { type RouteGeometry } from '@/components/organisms/route_map'
 import StaticMap from '@/components/organisms/static_map'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -16,13 +17,21 @@ import { OrderStatusLabel } from '@/enums/order_enum'
 import { formatDate } from '@/lib/format'
 import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import { Form } from '@adonisjs/inertia/react'
-import { IconNavigation } from '@tabler/icons-react'
+import { IconNavigation, IconRoute } from '@tabler/icons-react'
 
 type TripType = 'pickup' | 'delivery'
+
+type TripRoute = {
+  distance: number
+  duration: number
+  geometry: RouteGeometry
+  source: 'osrm' | 'haversine'
+}
 
 type PageProps = InertiaProps<{
   type: TripType
   order: Data.Order.Variants['toDetail']
+  route: TripRoute | null
   blocked: boolean
 }>
 
@@ -31,7 +40,24 @@ const typeLabels: Record<TripType, string> = {
   delivery: 'Pengantaran',
 }
 
-export default function Show({ type, order, blocked }: PageProps) {
+function RouteSummary({ route }: { route: TripRoute }) {
+  const km = (route.distance / 1000).toFixed(1)
+  const minutes = Math.max(1, Math.round(route.duration / 60))
+
+  return (
+    <div className="flex items-center justify-between gap-3 border border-rule bg-paper-tint px-5 py-3.5">
+      <span className="flex items-center gap-2 text-small leading-normal text-ink-soft">
+        <IconRoute className="size-4" />
+        {route.source === 'osrm' ? 'Rute jalan' : 'Perkiraan garis lurus'}
+      </span>
+      <span className="text-small leading-normal font-semibold text-ink">
+        {km} km · {minutes} mnt
+      </span>
+    </div>
+  )
+}
+
+export default function Show({ type, order, route, blocked }: PageProps) {
   return (
     <StaffLayout title={`${typeLabels[type]} - ${order.orderNumber}`} description="Detail tugas">
       <TaskHeader eyebrow={typeLabels[type]} title={order.orderNumber} showBack={blocked} />
@@ -49,13 +75,28 @@ export default function Show({ type, order, blocked }: PageProps) {
             {order.address && (
               <>
                 <div className="border border-rule">
-                  <StaticMap
-                    latitude={order.address.latitude}
-                    longitude={order.address.longitude}
-                  />
+                  {route ? (
+                    <RouteMap
+                      latitude={order.address.latitude}
+                      longitude={order.address.longitude}
+                      geometry={route.geometry}
+                    />
+                  ) : (
+                    <StaticMap
+                      latitude={order.address.latitude}
+                      longitude={order.address.longitude}
+                    />
+                  )}
                 </div>
 
+                {route && <RouteSummary route={route} />}
+
                 <TaskAddress address={order.address}>
+                  {/*
+                    The in-house route above covers the usual case. Google Maps
+                    stays available for turn-by-turn voice guidance, and as a
+                    way out when the routing service is only guessing.
+                  */}
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.latitude},${order.address.longitude}`}
                     target="_blank"

@@ -26,10 +26,19 @@ export const controllers = {
     Transaction: () => import('#controllers/customer/transaction_controller'),
   },
   Home: () => import('#controllers/home_controller'),
+  internal: {
+    ActionPhoto: () => import('#controllers/internal/action_photo_controller'),
+  },
   staff: {
+    Cleaning: () => import('#controllers/staff/cleaning_controller'),
+    Collection: () => import('#controllers/staff/collection_controller'),
+    Inspection: () => import('#controllers/staff/inspection_controller'),
+    Notification: () => import('#controllers/staff/notification_controller'),
     Password: () => import('#controllers/staff/password_controller'),
     Phone: () => import('#controllers/staff/phone_controller'),
     Profile: () => import('#controllers/staff/profile_controller'),
+    Tag: () => import('#controllers/staff/tag_controller'),
+    Trip: () => import('#controllers/staff/trip_controller'),
   },
   webhooks: {
     Transaction: () => import('#controllers/webhooks/transaction_controller'),

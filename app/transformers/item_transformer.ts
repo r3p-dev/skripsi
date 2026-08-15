@@ -12,6 +12,10 @@ export default class ItemTransformer extends BaseTransformer<Item> {
       type: this.resource.type,
       typeLabel: ItemTypeLabel[this.resource.type],
 
+      name: [ItemTypeLabel[this.resource.type], this.resource.brand, this.resource.model]
+        .filter(Boolean)
+        .join(' '),
+
       services: OrderItemTransformer.transform(this.whenLoaded(this.resource.orderItems)),
 
       subtotal: this.#subtotal(),

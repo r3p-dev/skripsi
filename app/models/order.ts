@@ -3,6 +3,7 @@ import { belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Address from '#models/address'
 import Item from '#models/item'
+import OrderAction from '#models/order_action'
 import OrderItem from '#models/order_item'
 import Transaction from '#models/transaction'
 import User from '#models/user'
@@ -12,6 +13,11 @@ export default class Order extends OrderSchema {
     foreignKey: 'userId',
   })
   declare user: BelongsTo<typeof User>
+
+  @belongsTo(() => User, {
+    foreignKey: 'claimedBy',
+  })
+  declare claimant: BelongsTo<typeof User>
 
   @belongsTo(() => Address, {
     foreignKey: 'addressId',
@@ -32,4 +38,9 @@ export default class Order extends OrderSchema {
     foreignKey: 'orderId',
   })
   declare transactions: HasMany<typeof Transaction>
+
+  @hasMany(() => OrderAction, {
+    foreignKey: 'orderId',
+  })
+  declare actions: HasMany<typeof OrderAction>
 }

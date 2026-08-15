@@ -487,6 +487,150 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/phone_controller').default['update']>>>
     }
   }
+  'staff.trip.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/tasks'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['index']>>>
+    }
+  }
+  'staff.trip.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/tasks/:number/trip/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['show']>>>
+    }
+  }
+  'staff.trip.update': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/trip/:type'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.trip.destroy': {
+    methods: ["DELETE"]
+    pattern: '/staff/tasks/:number/trip/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['destroy']>>>
+    }
+  }
+  'staff.inspection.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/tasks/:number/inspection'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
+    }
+  }
+  'staff.inspection.update': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/inspection'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/task_validator').inspectionValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/task_validator').inspectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.inspection.destroy': {
+    methods: ["DELETE"]
+    pattern: '/staff/tasks/:number/inspection'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['destroy']>>>
+    }
+  }
+  'staff.cleaning.update': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/cleaning'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/cleaning_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/cleaning_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'staff.collection.update': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/collection'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
+    }
+  }
+  'staff.notification.store': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/notification'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
+    }
+  }
+  'staff.tag.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/staff/tasks/:number/tag'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/tag_controller').default['show']>>>
+    }
+  }
+  'internal.action.photo': {
+    methods: ["GET","HEAD"]
+    pattern: '/internal/actions/:id/photo'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/internal/action_photo_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/internal/action_photo_controller').default['show']>>>
+    }
+  }
   'admin.profile.show': {
     methods: ["GET","HEAD"]
     pattern: '/admin/profile'

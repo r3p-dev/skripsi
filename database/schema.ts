@@ -8,6 +8,8 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import { CatalogueCategory, CatalogueType } from '#enums/catalogue_enum'
 import { ItemType } from '#enums/item_enum'
+import { ActionName } from '#enums/order_action_enum'
+import { TaskType } from '#enums/task_enum'
 import { OrderStatus, OrderType } from '#enums/order_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
 import { Role } from '#enums/role_enum'
@@ -132,6 +134,36 @@ export class OperationalAreaSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class OrderActionSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'id',
+    'name',
+    'note',
+    'orderId',
+    'photoPath',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = OrderActionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: ActionName
+  @column()
+  declare note: string | null
+  @column()
+  declare orderId: number
+  @column()
+  declare photoPath: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number | null
+}
+
 export class OrderItemSchema extends BaseModel {
   static $columns = [
     'catalogueId',
@@ -171,6 +203,9 @@ export class OrderItemSchema extends BaseModel {
 export class OrderSchema extends BaseModel {
   static $columns = [
     'addressId',
+    'claimedAt',
+    'claimedBy',
+    'claimedTask',
     'createdAt',
     'customerName',
     'customerPhone',
@@ -186,6 +221,12 @@ export class OrderSchema extends BaseModel {
   $columns = OrderSchema.$columns
   @column()
   declare addressId: number | null
+  @column.dateTime()
+  declare claimedAt: DateTime | null
+  @column()
+  declare claimedBy: number | null
+  @column()
+  declare claimedTask: TaskType | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()

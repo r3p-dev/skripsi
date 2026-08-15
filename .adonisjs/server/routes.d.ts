@@ -44,6 +44,18 @@ export type ScannedRoutes = {
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
+    'staff.trip.index': { paramsTuple?: []; params?: {} }
+    'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.trip.update': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.trip.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.collection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.notification.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'internal.action.photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
@@ -73,6 +85,11 @@ export type ScannedRoutes = {
     'customer.orders.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
+    'staff.trip.index': { paramsTuple?: []; params?: {} }
+    'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'internal.action.photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
     'admin.phone.update': { paramsTuple?: []; params?: {} }
   }
@@ -100,6 +117,11 @@ export type ScannedRoutes = {
     'customer.orders.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
+    'staff.trip.index': { paramsTuple?: []; params?: {} }
+    'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'internal.action.photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.profile.show': { paramsTuple?: []; params?: {} }
     'admin.phone.update': { paramsTuple?: []; params?: {} }
   }
@@ -117,6 +139,11 @@ export type ScannedRoutes = {
     'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
+    'staff.trip.update': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.collection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.notification.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
@@ -128,6 +155,10 @@ export type ScannedRoutes = {
   }
   PATCH: {
     'customer.orders.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+  }
+  DELETE: {
+    'staff.trip.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {
