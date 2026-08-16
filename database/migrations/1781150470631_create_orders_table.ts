@@ -21,6 +21,14 @@ export default class extends BaseSchema {
         .inTable('addresses')
         .onDelete('RESTRICT')
 
+      table
+        .integer('claimed_by')
+        .nullable()
+        .index()
+        .references('id')
+        .inTable('users')
+        .onDelete('SET NULL')
+
       table.string('order_number').notNullable().unique()
       table.string('customer_name').notNullable()
       table.string('customer_phone').notNullable()
@@ -28,6 +36,8 @@ export default class extends BaseSchema {
       table.date('pickup_date').nullable().index()
       table.decimal('total_price', 10, 2).nullable()
       table.string('type').notNullable().index()
+      table.string('claimed_task').nullable()
+      table.timestamp('claimed_at').nullable()
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
@@ -35,7 +45,23 @@ export default class extends BaseSchema {
       table.index(['user_id', 'created_at'])
       table.index(['status', 'pickup_date'])
       table.index(['status', 'created_at'])
+      table.index(['claimed_by', 'claimed_at'])
     })
+
+    /**
+     * The admin order search matches with a leading wildcard
+     * (`ILIKE '%term%'`), which no btree index can serve. Trigram GIN indexes
+     * are the one index type that can answer those lookups.
+     */
+    this.schema.raw(`CREATE INDEX orders_order_number_trgm_index
+      ON ${this.tableName} USING GIN (order_number gin_trgm_ops)
+    `)
+    this.schema.raw(`CREATE INDEX orders_customer_name_trgm_index
+      ON ${this.tableName} USING GIN (customer_name gin_trgm_ops)
+    `)
+    this.schema.raw(`CREATE INDEX orders_customer_phone_trgm_index
+      ON ${this.tableName} USING GIN (customer_phone gin_trgm_ops)
+    `)
   }
 
   async down() {

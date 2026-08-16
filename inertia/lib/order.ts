@@ -19,8 +19,8 @@ export type ReceiptGroup = {
 
 /**
  * Turns the goods on an order into the rows a receipt prints: one heading per
- * item, then the services booked against it. Items still waiting on inspection
- * carry no services and are kept, so the customer can see the laundry has them.
+ * item, then the catalogues booked against it. Items still waiting on inspection
+ * carry no catalogues and are kept, so the customer can see the laundry has them.
  */
 export function groupLinesByItem(items: OrderItem[]): ReceiptGroup[] {
   return items.map((item, index) => ({
@@ -28,11 +28,11 @@ export function groupLinesByItem(items: OrderItem[]): ReceiptGroup[] {
     title: [item.typeLabel, [item.brand, item.model].filter(Boolean).join(' ')]
       .filter(Boolean)
       .join(' — '),
-    lines: (item.services ?? []).map((service) => ({
-      id: service.id,
-      name: service.name,
-      subtotal: service.subtotal,
-      subtotalLabel: service.subtotalLabel,
+    lines: (item.catalogues ?? []).map((catalogue) => ({
+      id: catalogue.id,
+      name: catalogue.name,
+      subtotal: catalogue.subtotal,
+      subtotalLabel: catalogue.subtotalLabel,
     })),
     subtotal: item.subtotal,
     subtotalLabel: item.subtotalLabel,

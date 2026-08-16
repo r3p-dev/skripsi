@@ -16,7 +16,13 @@ export default class ItemTransformer extends BaseTransformer<Item> {
         .filter(Boolean)
         .join(' '),
 
-      services: OrderItemTransformer.transform(this.whenLoaded(this.resource.orderItems)),
+      catalogues: OrderItemTransformer.transform(this.whenLoaded(this.resource.orderItems)),
+
+      /**
+       * Condition is recorded per booked catalogue, but every line for one item
+       * carries the same note — it describes the object, not the catalogue.
+       */
+      condition: this.resource.orderItems?.at(0)?.condition ?? '',
 
       subtotal: this.#subtotal(),
       subtotalLabel: formatRupiah(this.#subtotal()),
@@ -24,8 +30,8 @@ export default class ItemTransformer extends BaseTransformer<Item> {
   }
 
   #subtotal(): number {
-    const services = this.resource.orderItems ?? []
+    const catalogues = this.resource.orderItems ?? []
 
-    return services.reduce((total, service) => total + Number(service.subtotal), 0)
+    return catalogues.reduce((total, catalogue) => total + Number(catalogue.subtotal), 0)
   }
 }

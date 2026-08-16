@@ -34,6 +34,12 @@ export default class extends BaseSchema {
       ON ${this.tableName} (order_id)
       WHERE status = '${TransactionStatus.PENDING}'
     `)
+
+    this.schema.raw(`
+      CREATE UNIQUE INDEX transactions_order_id_paid_unique
+      ON ${this.tableName} (order_id)
+      WHERE status = '${TransactionStatus.PAID}'
+    `)
   }
 
   async down() {

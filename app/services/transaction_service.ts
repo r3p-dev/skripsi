@@ -84,6 +84,51 @@ export default class TransactionService {
     })
   }
 
+  /**
+   * Marks an order paid for money that arrived outside Midtrans — a transfer
+   * whose callback never landed, or cash handed over at the shop. The reason is
+   * kept on the transaction so the settlement can be traced back to a person.
+   */
+  async confirmManualPayment(
+    order: Order,
+    paymentMethod: PaymentMethod,
+    note: string
+  ): Promise<Transaction> {
+    this.#assertPayable(order)
+
+    const pending = await this.getPendingTransaction(order)
+
+    const transaction = await db.transaction(async (trx) => {
+      if (pending) {
+        pending.merge({ status: TransactionStatus.EXPIRED })
+        await pending.useTransaction(trx).save()
+      }
+
+      const settled = await Transaction.create(
+        {
+          orderId: order.id,
+          paymentMethod,
+          status: TransactionStatus.PAID,
+          midtransOrderId: null,
+          midtransTransactionId: null,
+          qrCode: null,
+          cashReceived: null,
+        },
+        { client: trx }
+      )
+
+      await this.orderService.transitionTo(order, OrderStatus.IN_CLEANING, trx)
+
+      return settled
+    })
+
+    logger.info({ order: order.orderNumber, note }, 'Payment confirmed manually')
+
+    this.broadcast(order, transaction)
+
+    return transaction
+  }
+
   async handleNotification(payload: MidtransNotification): Promise<void> {
     const transaction = await Transaction.query()
       .where('midtrans_order_id', payload.order_id)

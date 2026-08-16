@@ -4,7 +4,7 @@ import { price } from '#validators/shared'
 import { CatalogueCategory, CatalogueType } from '#enums/catalogue_enum'
 
 export const catalogueValidator = vine.create({
-  serviceName: vine.string().trim().minLength(3).maxLength(100),
+  catalogueName: vine.string().trim().minLength(3).maxLength(100),
   description: vine.string().trim().minLength(3).maxLength(255),
   price: price(),
   category: vine.enum(Object.values(CatalogueCategory)),

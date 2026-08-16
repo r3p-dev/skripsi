@@ -14,7 +14,6 @@ import type OrderActionTransformer from '#transformers/order_action_transformer'
 import type OrderItemTransformer from '#transformers/order_item_transformer'
 import type OrderTransformer from '#transformers/order_transformer'
 import type RouteItemTransformer from '#transformers/route_item_transformer'
-import type ServiceTransformer from '#transformers/service_transformer'
 import type TransactionTransformer from '#transformers/transaction_transformer'
 import type UserTransformer from '#transformers/user_transformer'
 import type InertiaMiddleware from '#middleware/inertia_middleware'
@@ -51,10 +50,6 @@ export namespace Data {
   export type RouteItem = InferData<RouteItemTransformer>
   export namespace RouteItem {
     export type Variants = InferVariants<RouteItemTransformer>
-  }
-  export type Service = InferData<ServiceTransformer>
-  export namespace Service {
-    export type Variants = InferVariants<ServiceTransformer>
   }
   export type Transaction = InferData<TransactionTransformer>
   export namespace Transaction {

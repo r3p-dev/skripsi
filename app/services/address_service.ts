@@ -78,18 +78,43 @@ export default class AddressService {
     }
   }
 
+  /**
+   * Point-in-polygon for a whole batch in one round trip. The candidates ride
+   * along as a VALUES list so PostGIS answers for all of them against the GIST
+   * index at once, rather than one query per candidate.
+   */
   async filterWithinOperationalArea<T extends { latitude: number; longitude: number }>(
     candidates: T[]
   ): Promise<T[]> {
-    const inside: T[] = []
-
-    for (const candidate of candidates) {
-      if (await this.#isWithinOperationalArea(candidate.longitude, candidate.latitude)) {
-        inside.push(candidate)
-      }
+    if (candidates.length === 0) {
+      return []
     }
 
-    return inside
+    const tuples = candidates.map(() => '(?::int, ?::float8, ?::float8)').join(', ')
+    const bindings = candidates.flatMap((candidate, index) => [
+      index,
+      candidate.longitude,
+      candidate.latitude,
+    ])
+
+    const result = await db.rawQuery(
+      `SELECT candidate.idx
+         FROM (VALUES ${tuples}) AS candidate (idx, longitude, latitude)
+        WHERE EXISTS (
+          SELECT 1
+            FROM operational_areas
+           WHERE is_active = true
+             AND ST_Covers(
+                   geometry,
+                   ST_SetSRID(ST_MakePoint(candidate.longitude, candidate.latitude), 4326)
+                 )
+        )`,
+      bindings
+    )
+
+    const inside = new Set<number>(result.rows.map((row: { idx: number }) => Number(row.idx)))
+
+    return candidates.filter((_, index) => inside.has(index))
   }
 
   async replaceActiveAddress(user: User, data: AddressData): Promise<Address> {
@@ -153,14 +178,11 @@ export default class AddressService {
   }
 
   async deleteOrphanedAddresses(): Promise<number> {
-    const orphans = await Address.query()
+    const deleted = await Address.query()
       .where('is_active', false)
       .whereDoesntHave('orders', (query) => query)
+      .delete()
 
-    for (const orphan of orphans) {
-      await orphan.delete()
-    }
-
-    return orphans.length
+    return Number(deleted[0] ?? 0)
   }
 }

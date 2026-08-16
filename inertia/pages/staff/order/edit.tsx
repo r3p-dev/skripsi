@@ -10,50 +10,50 @@ import { CatalogueCategory } from '@/enums/catalogue_enum'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
-  services: Data.Service[]
+  catalogues: Data.Catalogue[]
 }>
 
 type OrderLine = NonNullable<Data.Order.Variants['toDetail']['items']>[number]
 
-function toItemRows(orderItems: OrderLine[]): ItemRow[] {
-  const rowsByItemId = new Map<number, ItemRow>()
+/**
+ * Turns the goods already recorded on the order back into editable rows. Each
+ * item keeps its main catalogue in the dropdown and its add-ons as checkboxes,
+ * which is how the form reads them.
+ */
+function toItemRows(items: OrderLine[], catalogues: Data.Catalogue[]): ItemRow[] {
+  const categoryById = new Map(catalogues.map((catalogue) => [catalogue.id, catalogue.category]))
 
-  for (const orderItem of orderItems) {
-    const item = orderItem.item
-    const service = orderItem.service
-    if (!item || !service) continue
+  return items.map((item, index) => {
+    const row: ItemRow = {
+      key: index,
+      catalogueId: '',
+      defaults: {
+        brand: item.brand,
+        model: item.model,
+        material: item.material ?? '',
+        size: item.size,
+        condition: item.condition,
+        note: item.note ?? '',
+        additionalCatalogueIds: [],
+      },
+    }
 
-    let row = rowsByItemId.get(item.id)
-
-    if (!row) {
-      row = {
-        key: rowsByItemId.size,
-        serviceId: '',
-        defaults: {
-          brand: item.brand,
-          model: item.model,
-          material: item.material ?? '',
-          size: item.size,
-          condition: item.condition,
-          note: item.note ?? '',
-          additionalServiceIds: [],
-        },
+    for (const booked of item.catalogues ?? []) {
+      if (categoryById.get(booked.catalogueId) === CatalogueCategory.ADDITIONAL) {
+        row.defaults!.additionalCatalogueIds.push(booked.catalogueId)
+      } else {
+        row.catalogueId = String(booked.catalogueId)
       }
-      rowsByItemId.set(item.id, row)
     }
 
-    if (service.category === CatalogueCategory.ADDITIONAL) {
-      row.defaults!.additionalServiceIds.push(service.id)
-    } else {
-      row.serviceId = String(service.id)
-    }
-  }
-
-  return [...rowsByItemId.values()]
+    return row
+  })
 }
 
-export default function Edit({ order, services }: PageProps) {
-  const { items, addItem, removeItem, setServiceId } = useItemRows(toItemRows(order.items ?? []))
+export default function Edit({ order, catalogues }: PageProps) {
+  const { items, addItem, removeItem, setCatalogueId } = useItemRows(
+    toItemRows(order.items ?? [], catalogues)
+  )
 
   const inspectionPhoto = order.actions?.find(
     (action) => action.name === ActionName.INSPECTION
@@ -104,10 +104,10 @@ export default function Edit({ order, services }: PageProps) {
                 <ItemCard
                   key={item.key}
                   index={index}
-                  services={services}
+                  catalogues={catalogues}
                   item={item}
                   canRemove={items.length > 1}
-                  onServiceChange={(serviceId) => setServiceId(item.key, serviceId)}
+                  onCatalogueChange={(catalogueId) => setCatalogueId(item.key, catalogueId)}
                   onRemove={() => removeItem(item.key)}
                 />
               ))}

@@ -6,9 +6,13 @@
 export const controllers = {
   admin: {
     Catalogue: () => import('#controllers/admin/catalogue_controller'),
+    Dashboard: () => import('#controllers/admin/dashboard_controller'),
+    Order: () => import('#controllers/admin/order_controller'),
     Password: () => import('#controllers/admin/password_controller'),
     Phone: () => import('#controllers/admin/phone_controller'),
     Profile: () => import('#controllers/admin/profile_controller'),
+    Reconciliation: () => import('#controllers/admin/reconciliation_controller'),
+    Report: () => import('#controllers/admin/report_controller'),
     User: () => import('#controllers/admin/user_controller'),
   },
   auth: {
@@ -29,11 +33,13 @@ export const controllers = {
   internal: {
     ActionPhoto: () => import('#controllers/internal/action_photo_controller'),
   },
+  Seo: () => import('#controllers/seo_controller'),
   staff: {
     Cleaning: () => import('#controllers/staff/cleaning_controller'),
     Collection: () => import('#controllers/staff/collection_controller'),
     Inspection: () => import('#controllers/staff/inspection_controller'),
     Notification: () => import('#controllers/staff/notification_controller'),
+    Order: () => import('#controllers/staff/order_controller'),
     Password: () => import('#controllers/staff/password_controller'),
     Phone: () => import('#controllers/staff/phone_controller'),
     Profile: () => import('#controllers/staff/profile_controller'),

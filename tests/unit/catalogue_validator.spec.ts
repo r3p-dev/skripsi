@@ -5,7 +5,7 @@ import { invalidFields } from '#tests/utils/helpers'
 
 function cataloguePayload(overrides: Record<string, unknown> = {}) {
   return {
-    serviceName: 'Cuci Kilat',
+    catalogueName: 'Cuci Kilat',
     description: 'Selesai dalam satu hari kerja',
     price: 75_000,
     category: CatalogueCategory.SHOE_WASH,
@@ -18,7 +18,7 @@ test.group('catalogueValidator', () => {
   test('accepts a complete price list entry', async ({ assert }) => {
     const payload = await catalogueValidator.validate(cataloguePayload())
 
-    assert.equal(payload.serviceName, 'Cuci Kilat')
+    assert.equal(payload.catalogueName, 'Cuci Kilat')
     assert.equal(payload.price, 75_000)
     assert.equal(payload.category, CatalogueCategory.SHOE_WASH)
   })
@@ -32,7 +32,7 @@ test.group('catalogueValidator', () => {
   test('demands every field', async ({ assert }) => {
     const fields = await invalidFields(() => catalogueValidator.validate({}))
 
-    assert.includeMembers(fields, ['serviceName', 'description', 'price', 'category', 'type'])
+    assert.includeMembers(fields, ['catalogueName', 'description', 'price', 'category', 'type'])
   })
 
   test('accepts every category the laundry offers', async ({ assert }) => {
@@ -92,20 +92,20 @@ test.group('catalogueValidator', () => {
     assert.equal(payload.price, 100_000_000)
   })
 
-  test('refuses a service name shorter than three characters', async ({ assert }) => {
+  test('refuses a catalogue name shorter than three characters', async ({ assert }) => {
     const fields = await invalidFields(() =>
-      catalogueValidator.validate(cataloguePayload({ serviceName: 'ab' }))
+      catalogueValidator.validate(cataloguePayload({ catalogueName: 'ab' }))
     )
 
-    assert.include(fields, 'serviceName')
+    assert.include(fields, 'catalogueName')
   })
 
-  test('refuses a service name longer than a hundred characters', async ({ assert }) => {
+  test('refuses a catalogue name longer than a hundred characters', async ({ assert }) => {
     const fields = await invalidFields(() =>
-      catalogueValidator.validate(cataloguePayload({ serviceName: 'a'.repeat(101) }))
+      catalogueValidator.validate(cataloguePayload({ catalogueName: 'a'.repeat(101) }))
     )
 
-    assert.include(fields, 'serviceName')
+    assert.include(fields, 'catalogueName')
   })
 
   test('refuses a description longer than 255 characters', async ({ assert }) => {
@@ -118,10 +118,10 @@ test.group('catalogueValidator', () => {
 
   test('trims the name and description', async ({ assert }) => {
     const payload = await catalogueValidator.validate(
-      cataloguePayload({ serviceName: '  Cuci Kilat  ', description: '  Selesai sehari  ' })
+      cataloguePayload({ catalogueName: '  Cuci Kilat  ', description: '  Selesai sehari  ' })
     )
 
-    assert.equal(payload.serviceName, 'Cuci Kilat')
+    assert.equal(payload.catalogueName, 'Cuci Kilat')
     assert.equal(payload.description, 'Selesai sehari')
   })
 })

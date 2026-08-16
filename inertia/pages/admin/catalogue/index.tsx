@@ -30,24 +30,24 @@ import { CatalogueCategoryLabel, CatalogueTypeLabel } from '@/enums/catalogue_en
 import { formatRupiah } from '@/lib/format'
 
 type PageProps = InertiaProps<{
-  services: { data: Data.Service[]; metadata: Metadata }
+  catalogues: { data: Data.Catalogue[]; metadata: Metadata }
   filters: Filters
   inUseIds: number[]
 }>
 
-function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
+function buildColumns(inUse: Set<number>): Column<Data.Catalogue>[] {
   return [
     {
       key: 'name',
       header: 'Nama',
       role: 'primary',
-      cell: (service) => service.name,
+      cell: (catalogue) => catalogue.name,
     },
     {
       key: 'description',
       header: 'Deskripsi',
       role: 'meta',
-      cell: (service) => service.description,
+      cell: (catalogue) => catalogue.description,
     },
     {
       key: 'price',
@@ -55,18 +55,18 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
       align: 'right',
       role: 'trailing',
       cellClassName: 'font-semibold text-ink',
-      cell: (service) => (
+      cell: (catalogue) => (
         <span className="text-body font-semibold text-ink tablet:text-small">
-          {formatRupiah(service.price)}
+          {formatRupiah(catalogue.price)}
         </span>
       ),
     },
     {
       key: 'category',
       header: 'Kategori',
-      cell: (service) => (
+      cell: (catalogue) => (
         <StatusBadge tone="muted">
-          {CatalogueCategoryLabel[service.category as keyof typeof CatalogueCategoryLabel]}
+          {CatalogueCategoryLabel[catalogue.category as keyof typeof CatalogueCategoryLabel]}
         </StatusBadge>
       ),
     },
@@ -74,28 +74,28 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
       key: 'type',
       header: 'Tipe',
       cellClassName: 'text-ink-soft',
-      cell: (service) => CatalogueTypeLabel[service.type as keyof typeof CatalogueTypeLabel],
+      cell: (catalogue) => CatalogueTypeLabel[catalogue.type as keyof typeof CatalogueTypeLabel],
     },
     {
       key: 'actions',
       header: 'Aksi',
       align: 'right',
       role: 'actions',
-      cell: (service) => (
+      cell: (catalogue) => (
         <div className="flex items-center gap-1 tablet:justify-end">
           <Link
-            route="admin.service.edit"
-            routeParams={{ id: service.id }}
-            aria-label={`Ubah ${service.name}`}
+            route="admin.catalogue.edit"
+            routeParams={{ id: catalogue.id }}
+            aria-label={`Ubah ${catalogue.name}`}
             className={iconActionLink}
           >
             <IconPencil size={18} />
           </Link>
 
-          {inUse.has(service.id) ? (
+          {inUse.has(catalogue.id) ? (
             <IconAction
               disabled
-              aria-label={`Hapus ${service.name}`}
+              aria-label={`Hapus ${catalogue.name}`}
               title="Layanan ini sudah dipakai pada pesanan"
             >
               <IconTrash size={18} />
@@ -103,7 +103,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
           ) : (
             <AlertDialog>
               <AlertDialogTrigger
-                aria-label={`Hapus ${service.name}`}
+                aria-label={`Hapus ${catalogue.name}`}
                 className={cn(iconActionLink, 'hover:border-destructive/30 hover:text-destructive')}
               >
                 <IconTrash size={18} />
@@ -113,7 +113,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Hapus layanan?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {service.name} akan dihapus dari katalog dan tidak lagi bisa dipilih saat
+                    {catalogue.name} akan dihapus dari katalog dan tidak lagi bisa dipilih saat
                     inspeksi.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -121,7 +121,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
                   <AlertDialogCancel className="h-11 rounded-none border-rule-field text-meta font-medium text-ink">
                     Batal
                   </AlertDialogCancel>
-                  <Form route="admin.service.destroy" routeParams={{ id: service.id }}>
+                  <Form route="admin.catalogue.destroy" routeParams={{ id: catalogue.id }}>
                     {({ processing }) => (
                       <Button
                         type="submit"
@@ -142,7 +142,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Service>[] {
   ]
 }
 
-export default function Index({ services, filters, inUseIds }: PageProps) {
+export default function Index({ catalogues, filters, inUseIds }: PageProps) {
   const inUse = new Set(inUseIds)
 
   return (
@@ -155,7 +155,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
           <>
             <ExportButton />
             <Link
-              route="admin.service.create"
+              route="admin.catalogue.create"
               className="flex min-h-11 items-center gap-2 bg-ink px-4 text-meta font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
             >
               <IconPlus className="size-4" />
@@ -165,7 +165,7 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
         }
       />
 
-      <Form route="admin.service.index" className="mb-5">
+      <Form route="admin.catalogue.index" className="mb-5">
         {() => (
           <div className="flex flex-col gap-2.5 tablet:flex-row tablet:items-center">
             <SearchField
@@ -185,12 +185,12 @@ export default function Index({ services, filters, inUseIds }: PageProps) {
 
       <DataTable
         columns={buildColumns(inUse)}
-        rows={services.data}
-        getKey={(service) => service.id}
+        rows={catalogues.data}
+        getKey={(catalogue) => catalogue.id}
         empty="Belum ada layanan"
       />
 
-      <Pagination metadata={services.metadata} />
+      <Pagination metadata={catalogues.metadata} />
     </AdminLayout>
   )
 }

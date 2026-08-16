@@ -1,6 +1,6 @@
 import CatalogueService from '#services/catalogue_service'
 import OrderTransformer from '#transformers/order_transformer'
-import ServiceTransformer from '#transformers/service_transformer'
+import CatalogueTransformer from '#transformers/catalogue_transformer'
 import TaskService from '#services/task_service'
 import { TaskType } from '#enums/task_enum'
 import { inspectionValidator } from '#validators/task_validator'
@@ -23,19 +23,19 @@ export default class InspectionController {
     if (!claimed) {
       return inertia.render('staff/inspection/show', {
         order: OrderTransformer.transform(summary).useVariant('toDetail'),
-        services: ServiceTransformer.transform([]),
+        catalogues: CatalogueTransformer.transform([]),
         blocked: true,
       })
     }
 
-    const [order, services] = await Promise.all([
+    const [order, catalogues] = await Promise.all([
       this.taskService.findByNumber(params.number),
       this.catalogueService.getPublicCatalogues(),
     ])
 
     return inertia.render('staff/inspection/show', {
       order: OrderTransformer.transform(order).useVariant('toDetail'),
-      services: ServiceTransformer.transform(services),
+      catalogues: CatalogueTransformer.transform(catalogues),
       blocked: false,
     })
   }

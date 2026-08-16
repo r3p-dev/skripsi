@@ -34,8 +34,8 @@ const NAV_ITEMS = [
     icon: IconCashBanknote,
   },
   {
-    route: 'admin.service.index',
-    match: ['admin/service/index', 'admin/service/create', 'admin/service/edit'],
+    route: 'admin.catalogue.index',
+    match: ['admin/catalogue/index', 'admin/catalogue/create', 'admin/catalogue/edit'],
     label: 'Layanan',
     icon: IconSparkles,
   },

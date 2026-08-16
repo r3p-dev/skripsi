@@ -89,7 +89,7 @@ function ReceiptCopy({
             <p className="m-0 text-meta leading-normal font-semibold">{group.title}</p>
             {group.lines.map((line) => (
               <div key={line.id} className="flex items-baseline gap-2 text-meta leading-normal">
-                <span className="text-ink-soft">{line.service?.name ?? line.name}</span>
+                <span className="text-ink-soft">{line.name}</span>
                 <span className="receipt-leader" />
                 <span className="tabular-nums whitespace-nowrap">
                   {formatRupiah(line.subtotal)}

@@ -1,53 +1,69 @@
-import { userValidator } from '#validators/user_validator'
+import CatalogueService from '#services/catalogue_service'
+import CatalogueTransformer from '#transformers/catalogue_transformer'
+import { catalogueValidator } from '#validators/catalogue_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import UserService from '#services/user_service'
 
 @inject()
 export default class CatalogueController {
-  constructor(protected userService: UserService) {}
+  constructor(protected catalogueService: CatalogueService) {}
 
-  async index({ inertia }: HttpContext) {
-    return inertia.render('admin/catalogue/index', {})
+  async index({ inertia, request }: HttpContext) {
+    const filters = {
+      search: request.input('search', '') || '',
+      page: Number(request.input('page', 1)) || 1,
+    }
+
+    const catalogues = await this.catalogueService.list(filters)
+
+    return inertia.render('admin/catalogue/index', {
+      catalogues: CatalogueTransformer.paginate(catalogues.all(), catalogues.getMeta()),
+      filters,
+      inUseIds: await this.catalogueService.inUseIds(catalogues.all()),
+    })
   }
 
   async create({ inertia }: HttpContext) {
-    return inertia.render('admin/catalogue/create', {})
+    return inertia.render('admin/catalogue/create', {
+      categoryOptions: this.catalogueService.categoryOptions(),
+      typeOptions: this.catalogueService.typeOptions(),
+    })
   }
 
   async store({ request, response, session }: HttpContext) {
-    const payload = await request.validateUsing(userValidator)
+    const payload = await request.validateUsing(catalogueValidator)
 
-    await this.userService.createAccount(payload)
+    await this.catalogueService.createCatalogue(payload)
 
-    session.flash('success', 'Katalog layanan berhasil dibuat')
-    return response.redirect().toRoute('admin.dashboard.index')
-  }
-
-  async show({ inertia, params }: HttpContext) {
-    const { id } = params
-
-    const user = await this.userService.getUserById(id)
-
-    return inertia.render('admin/catalogue/show', { user })
+    session.flash('success', 'Layanan berhasil ditambahkan.')
+    return response.redirect().toRoute('admin.catalogue.index')
   }
 
   async edit({ inertia, params }: HttpContext) {
-    const { id } = params
+    const catalogue = await this.catalogueService.findCatalogueOrFail(params.id)
+    const inUse = await this.catalogueService.inUseIds([catalogue])
 
-    const user = await this.userService.getUserById(id)
-
-    return inertia.render('admin/catalogue/edit', { user })
+    return inertia.render('admin/catalogue/edit', {
+      catalogue: CatalogueTransformer.transform(catalogue),
+      categoryOptions: this.catalogueService.categoryOptions(),
+      typeOptions: this.catalogueService.typeOptions(),
+      isInUse: inUse.length > 0,
+    })
   }
 
-  async update({ request, response, session, params }: HttpContext) {
-    const { id } = params
+  async update({ params, request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(catalogueValidator)
 
-    const payload = await request.validateUsing(userValidator)
+    await this.catalogueService.updateCatalogue(params.id, payload)
 
-    await this.userService.updateAccount(id, payload)
+    session.flash('success', 'Layanan berhasil diperbarui.')
+    return response.redirect().toRoute('admin.catalogue.index')
+  }
 
-    session.flash('success', 'Katalog layanan berhasil diperbarui')
-    return response.redirect().toRoute('admin.dashboard.index')
+  async destroy({ params, response, session }: HttpContext) {
+    await this.catalogueService.deleteCatalogue(params.id)
+
+    session.flash('success', 'Layanan berhasil dihapus.')
+    return response.redirect().toRoute('admin.catalogue.index')
   }
 }

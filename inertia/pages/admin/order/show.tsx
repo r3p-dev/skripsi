@@ -38,16 +38,19 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
 
 const itemColumns: Column<OrderLine>[] = [
   {
-    key: 'service',
-    header: 'Layanan',
-    role: 'primary',
-    cell: (line) => line.service?.name ?? line.name,
-  },
-  {
     key: 'item',
     header: 'Barang',
+    role: 'primary',
+    cell: (line) => [line.typeLabel, line.brand, line.model].filter(Boolean).join(' '),
+  },
+  {
+    key: 'catalogue',
+    header: 'Layanan',
     role: 'meta',
-    cell: (line) => (line.item ? `${line.item.brand} ${line.item.model}` : '-'),
+    cell: (line) =>
+      line.catalogues?.length
+        ? line.catalogues.map((catalogue) => catalogue.name).join(', ')
+        : 'Belum diinspeksi',
   },
   {
     key: 'subtotal',

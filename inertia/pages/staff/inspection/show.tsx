@@ -19,12 +19,12 @@ import { Form } from '@adonisjs/inertia/react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
-  services: Data.Service[]
+  catalogues: Data.Catalogue[]
   blocked: boolean
 }>
 
-export default function Show({ order, services, blocked }: PageProps) {
-  const { items, addItem, removeItem, setServiceId } = useItemRows()
+export default function Show({ order, catalogues, blocked }: PageProps) {
+  const { items, addItem, removeItem, setCatalogueId } = useItemRows()
 
   return (
     <StaffLayout title={`Inspeksi - ${order.orderNumber}`} description="Detail tugas inspeksi">
@@ -54,10 +54,10 @@ export default function Show({ order, services, blocked }: PageProps) {
                     <ItemCard
                       key={item.key}
                       index={index}
-                      services={services}
+                      catalogues={catalogues}
                       item={item}
                       canRemove={items.length > 1}
-                      onServiceChange={(serviceId) => setServiceId(item.key, serviceId)}
+                      onCatalogueChange={(catalogueId) => setCatalogueId(item.key, catalogueId)}
                       onRemove={() => removeItem(item.key)}
                     />
                   ))}

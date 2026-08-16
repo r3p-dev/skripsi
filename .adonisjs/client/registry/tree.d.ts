@@ -96,6 +96,16 @@ export interface ApiDefinition {
     tag: {
       show: typeof routes['staff.tag.show']
     }
+    customers: {
+      index: typeof routes['staff.customers.index']
+    }
+    order: {
+      create: typeof routes['staff.order.create']
+      store: typeof routes['staff.order.store']
+      edit: typeof routes['staff.order.edit']
+      update: typeof routes['staff.order.update']
+      receipt: typeof routes['staff.order.receipt']
+    }
   }
   internal: {
     action: {
@@ -110,6 +120,38 @@ export interface ApiDefinition {
     phone: {
       store: typeof routes['admin.phone.store']
       update: typeof routes['admin.phone.update']
+    }
+    dashboard: {
+      index: typeof routes['admin.dashboard.index']
+    }
+    order: {
+      export: typeof routes['admin.order.export']
+      index: typeof routes['admin.order.index']
+      show: typeof routes['admin.order.show']
+    }
+    reconciliation: {
+      index: typeof routes['admin.reconciliation.index']
+      update: typeof routes['admin.reconciliation.update']
+    }
+    catalogue: {
+      index: typeof routes['admin.catalogue.index']
+      create: typeof routes['admin.catalogue.create']
+      store: typeof routes['admin.catalogue.store']
+      edit: typeof routes['admin.catalogue.edit']
+      update: typeof routes['admin.catalogue.update']
+      destroy: typeof routes['admin.catalogue.destroy']
+    }
+    user: {
+      index: typeof routes['admin.user.index']
+      create: typeof routes['admin.user.create']
+      store: typeof routes['admin.user.store']
+      edit: typeof routes['admin.user.edit']
+      update: typeof routes['admin.user.update']
+      destroy: typeof routes['admin.user.destroy']
+    }
+    report: {
+      export: typeof routes['admin.report.export']
+      index: typeof routes['admin.report.index']
     }
   }
 }

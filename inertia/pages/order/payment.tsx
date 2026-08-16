@@ -94,14 +94,13 @@ export default function Payment({ order, transaction: initialTransaction }: Page
 
     subscription.create().then(() => {
       subscription.onMessage<{
-        transactionStatus: string | null
+        transactionStatus: TransactionStatus | null
       }>((message) => {
-        if (!message.transactionStatus) return
+        const status = message.transactionStatus
 
-        setTransaction((current) => ({
-          ...current,
-          status: message.transactionStatus!,
-        }))
+        if (!status) return
+
+        setTransaction((current) => ({ ...current, status }))
       })
     })
 

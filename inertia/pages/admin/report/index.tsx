@@ -76,15 +76,15 @@ const breakdownColumns: Column<MoneyBreakdown>[] = [
 ]
 
 const topServiceColumns: Column<TopService>[] = [
-  { key: 'name', header: 'Layanan', role: 'primary', cell: (service) => service.name },
+  { key: 'name', header: 'Layanan', role: 'primary', cell: (catalogue) => catalogue.name },
   {
     key: 'revenue',
     header: 'Pendapatan',
     align: 'right',
     role: 'trailing',
-    cell: (service) => (
+    cell: (catalogue) => (
       <span className="text-body font-semibold text-ink tablet:text-small">
-        {formatRupiah(service.revenue)}
+        {formatRupiah(catalogue.revenue)}
       </span>
     ),
   },
@@ -93,7 +93,7 @@ const topServiceColumns: Column<TopService>[] = [
     header: 'Terjual',
     align: 'right',
     role: 'meta',
-    cell: (service) => `${service.orders} terjual`,
+    cell: (catalogue) => `${catalogue.orders} terjual`,
   },
 ]
 
@@ -196,7 +196,7 @@ export default function Index({ report }: PageProps) {
         <DataTable
           columns={topServiceColumns}
           rows={report.topServices}
-          getKey={(service) => service.id}
+          getKey={(catalogue) => catalogue.id}
           empty="Belum ada layanan terjual pada rentang ini"
         />
       </div>

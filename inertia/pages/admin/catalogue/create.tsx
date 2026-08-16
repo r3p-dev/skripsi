@@ -1,7 +1,7 @@
 import AdminLayout from '@/components/layouts/admin_layout'
 import { SolidButton } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
-import { ServiceFields, type Option } from '@/components/organisms/service_fields'
+import { CatalogueFields, type Option } from '@/components/organisms/catalogue_fields'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft } from '@tabler/icons-react'
@@ -20,7 +20,7 @@ export default function Create({ categoryOptions, typeOptions }: PageProps) {
         description="Harga berlaku untuk pesanan yang dibuat setelah ini"
         action={
           <Link
-            route="admin.service.index"
+            route="admin.catalogue.index"
             className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
@@ -29,10 +29,10 @@ export default function Create({ categoryOptions, typeOptions }: PageProps) {
         }
       />
 
-      <Form route="admin.service.store" className="flex max-w-2xl flex-col gap-4">
+      <Form route="admin.catalogue.store" className="flex max-w-2xl flex-col gap-4">
         {({ errors, processing }) => (
           <>
-            <ServiceFields
+            <CatalogueFields
               errors={errors}
               categoryOptions={categoryOptions}
               typeOptions={typeOptions}

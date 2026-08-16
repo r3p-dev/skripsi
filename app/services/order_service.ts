@@ -3,7 +3,7 @@ import Item from '#models/item'
 import Order from '#models/order'
 import type User from '#models/user'
 import { ItemTypeLabel, type ItemType } from '#enums/item_enum'
-import { OrderStatus, OrderType } from '#enums/order_enum'
+import { OrderStatus, OrderStatusLabel, OrderType, OrderTypeLabel } from '#enums/order_enum'
 import type { OrderData } from '#validators/order_validator'
 import { errors as vineErrors } from '@vinejs/vine'
 import { inject } from '@adonisjs/core'
@@ -12,6 +12,13 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 
 export const DAILY_PICKUP_LIMIT = 10
+
+export type AdminOrderFilters = {
+  search: string
+  page: number
+  status: string
+  type: string
+}
 
 const ORDER_NUMBER_ATTEMPTS = 3
 
@@ -65,6 +72,75 @@ export default class OrderService {
     return new Map([...summaries].map(([id, parts]) => [id, parts.join(', ')]))
   }
 
+  /**
+   * The admin order list: every order in the shop, narrowed by whatever the
+   * filter bar was set to.
+   */
+  async listForAdmin(filters: AdminOrderFilters) {
+    return this.#adminQuery(filters).paginate(filters.page, 15)
+  }
+
+  /**
+   * The same rows without paging, for the spreadsheet export.
+   */
+  async listAllForAdmin(filters: AdminOrderFilters): Promise<Order[]> {
+    return this.#adminQuery(filters)
+  }
+
+  async findForAdmin(orderNumber: string): Promise<Order> {
+    return Order.query()
+      .where('order_number', orderNumber)
+      .preload('user')
+      .preload('address')
+      .preload('items', (itemsQuery) => {
+        itemsQuery.preload('orderItems').orderBy('id', 'asc')
+      })
+      .preload('actions', (actionsQuery) => {
+        actionsQuery.preload('staff').orderBy('id', 'asc')
+      })
+      .preload('transactions', (query) => query.orderBy('created_at', 'desc'))
+      .firstOrFail()
+  }
+
+  #adminQuery(filters: AdminOrderFilters) {
+    const query = Order.query()
+      .preload('transactions', (transactions) => transactions.orderBy('created_at', 'desc'))
+      .orderBy('created_at', 'desc')
+
+    if (filters.status) {
+      query.where('status', filters.status)
+    }
+
+    if (filters.type) {
+      query.where('type', filters.type)
+    }
+
+    if (filters.search) {
+      query.where((builder) => {
+        builder
+          .whereILike('order_number', `%${filters.search}%`)
+          .orWhereILike('customer_name', `%${filters.search}%`)
+          .orWhereILike('customer_phone', `%${filters.search}%`)
+      })
+    }
+
+    return query
+  }
+
+  statusOptions() {
+    return Object.values(OrderStatus).map((status) => ({
+      value: status,
+      label: OrderStatusLabel[status],
+    }))
+  }
+
+  typeOptions() {
+    return Object.values(OrderType).map((type) => ({
+      value: type,
+      label: OrderTypeLabel[type],
+    }))
+  }
+
   async getCustomerOrderByNumber(user: User, orderNumber: string): Promise<Order> {
     return Order.query()
       .where('user_id', user.id)
@@ -90,7 +166,7 @@ export default class OrderService {
 
     await this.#assertPickupCapacity(data.pickupDate)
 
-    return this.#createWithUniqueOrderNumber((orderNumber) =>
+    return this.createWithUniqueOrderNumber((orderNumber) =>
       db.transaction(async (trx) => {
         const order = await Order.create(
           {
@@ -233,7 +309,11 @@ export default class OrderService {
     return `${prefix}-${String(lastSequence + 1).padStart(4, '0')}`
   }
 
-  async #createWithUniqueOrderNumber(
+  /**
+   * Order numbers are handed out by counting existing rows, so two tills can
+   * pick the same one. The unique index catches it and we simply try again.
+   */
+  async createWithUniqueOrderNumber(
     create: (orderNumber: string) => Promise<Order>
   ): Promise<Order> {
     let lastError: unknown

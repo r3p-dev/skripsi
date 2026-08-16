@@ -14,7 +14,7 @@ test.group('CatalogueService | the price list', (group) => {
 
   test('creates an entry with the price stored as text', async ({ assert }) => {
     const catalogue = await catalogueService.createCatalogue({
-      serviceName: 'Cuci Kilat',
+      catalogueName: 'Cuci Kilat',
       description: 'Selesai dalam satu hari',
       price: 75_000,
       category: CatalogueCategory.SHOE_WASH,
@@ -31,7 +31,7 @@ test.group('CatalogueService | the price list', (group) => {
     const catalogue = await CatalogueFactory.create()
 
     await catalogueService.updateCatalogue(catalogue.id, {
-      serviceName: 'Cuci Kilat',
+      catalogueName: 'Cuci Kilat',
       description: 'Deskripsi diperbarui',
       price: 99_000,
       category: CatalogueCategory.BAG_WASH,
@@ -49,7 +49,7 @@ test.group('CatalogueService | the price list', (group) => {
   test('refuses to update an entry that does not exist', async ({ assert }) => {
     await assert.rejects(() =>
       catalogueService.updateCatalogue(9_999_999, {
-        serviceName: 'Tidak Ada',
+        catalogueName: 'Tidak Ada',
         description: 'Tidak Ada',
         price: 1000,
         category: CatalogueCategory.SHOE_WASH,
@@ -81,22 +81,22 @@ test.group('CatalogueService | the price list', (group) => {
 test.group('CatalogueService | options offered per kind of goods', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('shoe services are offered for shoes and nothing else', async ({ assert }) => {
+  test('shoe catalogues are offered for shoes and nothing else', async ({ assert }) => {
     const shoeWash = await CatalogueFactory.apply('shoeWash').create()
 
-    const options = await catalogueService.getServiceOptions()
+    const options = await catalogueService.getCatalogueOptions()
     const forType = (type: ItemType) => options.find((option) => option.type === type)!
 
     assert.include(
-      forType(ItemType.SHOE).services.map((service) => service.id),
+      forType(ItemType.SHOE).catalogues.map((catalogue) => catalogue.id),
       shoeWash.id
     )
     assert.notInclude(
-      forType(ItemType.BAG).services.map((service) => service.id),
+      forType(ItemType.BAG).catalogues.map((catalogue) => catalogue.id),
       shoeWash.id
     )
     assert.notInclude(
-      forType(ItemType.HELMET).services.map((service) => service.id),
+      forType(ItemType.HELMET).catalogues.map((catalogue) => catalogue.id),
       shoeWash.id
     )
   })
@@ -104,33 +104,33 @@ test.group('CatalogueService | options offered per kind of goods', (group) => {
   test('shoe repair is offered alongside shoe washing', async ({ assert }) => {
     const repair = await CatalogueFactory.apply('shoeRepair').create()
 
-    const options = await catalogueService.getServiceOptions()
+    const options = await catalogueService.getCatalogueOptions()
     const shoes = options.find((option) => option.type === ItemType.SHOE)!
 
     assert.include(
-      shoes.services.map((service) => service.id),
+      shoes.catalogues.map((catalogue) => catalogue.id),
       repair.id
     )
   })
 
-  test('an add-on is listed separately from the main services', async ({ assert }) => {
+  test('an add-on is listed separately from the main catalogues', async ({ assert }) => {
     const addOn = await CatalogueFactory.apply('shoeWash').apply('additional').create()
 
-    const options = await catalogueService.getServiceOptions()
+    const options = await catalogueService.getCatalogueOptions()
     const shoes = options.find((option) => option.type === ItemType.SHOE)!
 
     assert.include(
-      shoes.additionalServices.map((service) => service.id),
+      shoes.additionalCatalogues.map((catalogue) => catalogue.id),
       addOn.id
     )
     assert.notInclude(
-      shoes.services.map((service) => service.id),
+      shoes.catalogues.map((catalogue) => catalogue.id),
       addOn.id
     )
   })
 
   test('every kind of goods gets an entry with its Indonesian label', async ({ assert }) => {
-    const options = await catalogueService.getServiceOptions()
+    const options = await catalogueService.getCatalogueOptions()
 
     assert.deepEqual(
       options.map((option) => option.type),
@@ -146,10 +146,10 @@ test.group('CatalogueService | options offered per kind of goods', (group) => {
     await CatalogueFactory.apply('helmetWash').merge({ price: '90000' }).create()
     await CatalogueFactory.apply('helmetWash').merge({ price: '20000' }).create()
 
-    const options = await catalogueService.getServiceOptions()
+    const options = await catalogueService.getCatalogueOptions()
     const prices = options
       .find((option) => option.type === ItemType.HELMET)!
-      .services.map((service) => Number(service.price))
+      .catalogues.map((catalogue) => Number(catalogue.price))
 
     assert.deepEqual(
       prices,
@@ -161,11 +161,11 @@ test.group('CatalogueService | options offered per kind of goods', (group) => {
 test.group('CatalogueService | checking a customer selection', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('accepts a service that matches the goods', async ({ assert }) => {
+  test('accepts a catalogue that matches the goods', async ({ assert }) => {
     const wash = await CatalogueFactory.apply('helmetWash').create()
 
     const resolved = await catalogueService.resolveForSelections([
-      { type: ItemType.HELMET, service: wash.id },
+      { type: ItemType.HELMET, catalogue: wash.id },
     ])
 
     assert.equal(resolved.get(wash.id)?.id, wash.id)
@@ -176,42 +176,42 @@ test.group('CatalogueService | checking a customer selection', (group) => {
     const addOn = await CatalogueFactory.apply('bagWash').apply('additional').create()
 
     const resolved = await catalogueService.resolveForSelections([
-      { type: ItemType.BAG, service: wash.id, additionalServices: [addOn.id] },
+      { type: ItemType.BAG, catalogue: wash.id, additionalCatalogues: [addOn.id] },
     ])
 
     assert.equal(resolved.get(addOn.id)?.id, addOn.id)
   })
 
-  test('rejects a service meant for different goods', async ({ assert }) => {
+  test('rejects a catalogue meant for different goods', async ({ assert }) => {
     const shoeWash = await CatalogueFactory.apply('shoeWash').create()
 
     const [failure] = await validationMessages(() =>
-      catalogueService.resolveForSelections([{ type: ItemType.HELMET, service: shoeWash.id }])
+      catalogueService.resolveForSelections([{ type: ItemType.HELMET, catalogue: shoeWash.id }])
     )
 
-    assert.equal(failure.field, 'items.0.service')
+    assert.equal(failure.field, 'items.0.catalogue')
     assert.match(failure.message, /tidak tersedia untuk helm/i)
   })
 
-  test('rejects a service that does not exist', async ({ assert }) => {
+  test('rejects a catalogue that does not exist', async ({ assert }) => {
     const [failure] = await validationMessages(() =>
-      catalogueService.resolveForSelections([{ type: ItemType.SHOE, service: 9_999_999 }])
+      catalogueService.resolveForSelections([{ type: ItemType.SHOE, catalogue: 9_999_999 }])
     )
 
-    assert.equal(failure.field, 'items.0.service')
+    assert.equal(failure.field, 'items.0.catalogue')
   })
 
-  test('rejects an add-on that is really a main service', async ({ assert }) => {
+  test('rejects an add-on that is really a main catalogue', async ({ assert }) => {
     const wash = await CatalogueFactory.apply('shoeWash').create()
     const alsoWash = await CatalogueFactory.apply('shoeWash').create()
 
     const [failure] = await validationMessages(() =>
       catalogueService.resolveForSelections([
-        { type: ItemType.SHOE, service: wash.id, additionalServices: [alsoWash.id] },
+        { type: ItemType.SHOE, catalogue: wash.id, additionalCatalogues: [alsoWash.id] },
       ])
     )
 
-    assert.equal(failure.field, 'items.0.additionalServices.0')
+    assert.equal(failure.field, 'items.0.additionalCatalogues.0')
     assert.match(failure.message, /tidak tersedia untuk sepatu/i)
   })
 
@@ -220,11 +220,11 @@ test.group('CatalogueService | checking a customer selection', (group) => {
 
     const [failure] = await validationMessages(() =>
       catalogueService.resolveForSelections([
-        { type: ItemType.SHOE, service: shoeWash.id },
-        { type: ItemType.BAG, service: shoeWash.id },
+        { type: ItemType.SHOE, catalogue: shoeWash.id },
+        { type: ItemType.BAG, catalogue: shoeWash.id },
       ])
     )
 
-    assert.equal(failure.field, 'items.1.service')
+    assert.equal(failure.field, 'items.1.catalogue')
   })
 })

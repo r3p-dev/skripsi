@@ -61,16 +61,18 @@ export default function Show({ order, canCancel, canPay }: PageProps) {
                 Bahan: {item.material ?? '—'} · Ukuran: {item.size}
               </div>
 
-              {(item.services ?? []).map((service) => (
-                <div key={service.id} className="flex justify-between gap-3 py-1.5">
-                  <span className="text-small leading-normal text-ink-body">— {service.name}</span>
+              {(item.catalogues ?? []).map((catalogue) => (
+                <div key={catalogue.id} className="flex justify-between gap-3 py-1.5">
+                  <span className="text-small leading-normal text-ink-body">
+                    — {catalogue.name}
+                  </span>
                   <span className="text-small leading-normal whitespace-nowrap text-ink-body">
-                    {service.priceLabel}
+                    {catalogue.priceLabel}
                   </span>
                 </div>
               ))}
 
-              {(item.services ?? []).length === 0 ? (
+              {(item.catalogues ?? []).length === 0 ? (
                 <div className="text-small leading-normal text-ink-subtle">
                   Layanan ditentukan setelah barang diperiksa petugas.
                 </div>

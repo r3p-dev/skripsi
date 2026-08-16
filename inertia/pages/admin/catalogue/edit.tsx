@@ -1,29 +1,29 @@
 import AdminLayout from '@/components/layouts/admin_layout'
 import { Notice, SolidButton } from '@/components/atoms/editorial'
 import { PageHeader } from '@/components/molecules/page_header'
-import { ServiceFields, type Option } from '@/components/organisms/service_fields'
+import { CatalogueFields, type Option } from '@/components/organisms/catalogue_fields'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconArrowLeft, IconInfoCircle } from '@tabler/icons-react'
 
 type PageProps = InertiaProps<{
-  service: Data.Service
+  catalogue: Data.Catalogue
   categoryOptions: Option[]
   typeOptions: Option[]
   isInUse: boolean
 }>
 
-export default function Edit({ service, categoryOptions, typeOptions, isInUse }: PageProps) {
+export default function Edit({ catalogue, categoryOptions, typeOptions, isInUse }: PageProps) {
   return (
-    <AdminLayout title={service.name} description="Ubah layanan katalog UmimaClean">
+    <AdminLayout title={catalogue.name} description="Ubah layanan katalog UmimaClean">
       <PageHeader
         eyebrow="Katalog"
         title="Ubah Layanan"
-        description={service.name}
+        description={catalogue.name}
         action={
           <Link
-            route="admin.service.index"
+            route="admin.catalogue.index"
             className="flex min-h-11 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-4" />
@@ -43,20 +43,20 @@ export default function Edit({ service, categoryOptions, typeOptions, isInUse }:
       )}
 
       <Form
-        route="admin.service.update"
-        routeParams={{ id: service.id }}
+        route="admin.catalogue.update"
+        routeParams={{ id: catalogue.id }}
         className="flex max-w-2xl flex-col gap-4"
       >
         {({ errors, processing }) => (
           <>
-            <ServiceFields
+            <CatalogueFields
               errors={errors}
               defaults={{
-                serviceName: service.name,
-                description: service.description,
-                price: service.price,
-                category: service.category,
-                type: service.type,
+                catalogueName: catalogue.name,
+                description: catalogue.description,
+                price: catalogue.price,
+                category: catalogue.category,
+                type: catalogue.type,
               }}
               categoryOptions={categoryOptions}
               typeOptions={typeOptions}

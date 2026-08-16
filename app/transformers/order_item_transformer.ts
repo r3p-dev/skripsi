@@ -5,7 +5,7 @@ import { formatRupiah } from '#utils/currency'
 export default class OrderItemTransformer extends BaseTransformer<OrderItem> {
   toObject() {
     return {
-      ...this.pick(this.resource, ['id', 'name', 'itemId']),
+      ...this.pick(this.resource, ['id', 'name', 'itemId', 'catalogueId']),
 
       price: Number(this.resource.price),
       priceLabel: formatRupiah(this.resource.price),

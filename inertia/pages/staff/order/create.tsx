@@ -26,7 +26,7 @@ import { IconInfoCircle } from '@tabler/icons-react'
 import { useState } from 'react'
 
 type PageProps = InertiaProps<{
-  services: Data.Service[]
+  catalogues: Data.Catalogue[]
 }>
 
 const paymentMethods = Object.values(PaymentMethod).map((method) => ({
@@ -34,17 +34,17 @@ const paymentMethods = Object.values(PaymentMethod).map((method) => ({
   label: PaymentMethodLabel[method],
 }))
 
-export default function Create({ services }: PageProps) {
-  const { items, addItem, removeItem, setServiceId } = useItemRows()
+export default function Create({ catalogues }: PageProps) {
+  const { items, addItem, removeItem, setCatalogueId } = useItemRows()
   const [customer, setCustomer] = useState<FoundCustomer | null>(null)
   const [delivery, setDelivery] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<string>('')
   const [cashReceived, setCashReceived] = useState('')
 
   const runningTotal = items.reduce((total, row) => {
-    const service = services.find((candidate) => String(candidate.id) === row.serviceId)
+    const catalogue = catalogues.find((candidate) => String(candidate.id) === row.catalogueId)
 
-    return total + (service?.price ?? 0)
+    return total + (catalogue?.price ?? 0)
   }, 0)
 
   const isCash = paymentMethod === PaymentMethod.CASH
@@ -139,10 +139,10 @@ export default function Create({ services }: PageProps) {
                 <ItemCard
                   key={item.key}
                   index={index}
-                  services={services}
+                  catalogues={catalogues}
                   item={item}
                   canRemove={items.length > 1}
-                  onServiceChange={(serviceId) => setServiceId(item.key, serviceId)}
+                  onCatalogueChange={(catalogueId) => setCatalogueId(item.key, catalogueId)}
                   onRemove={() => removeItem(item.key)}
                 />
               ))}
@@ -240,8 +240,8 @@ export default function Create({ services }: PageProps) {
                           Uang yang diterima masih kurang dari total pesanan.
                         </p>
                       )}
-                      {services.some(
-                        (service) => service.category === CatalogueCategory.ADDITIONAL
+                      {catalogues.some(
+                        (catalogue) => catalogue.category === CatalogueCategory.ADDITIONAL
                       ) && (
                         <p className="m-0 mt-2 text-meta leading-normal text-ink-subtle">
                           Belum termasuk layanan tambahan — total akhir ada di struk.

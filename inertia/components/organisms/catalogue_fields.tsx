@@ -3,39 +3,39 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 
 export type Option = { value: string; label: string }
 
-export type ServiceDefaults = {
-  serviceName: string
+export type CatalogueDefaults = {
+  catalogueName: string
   description: string
   price: number
   category: string
   type: string
 }
 
-export function ServiceFields({
+export function CatalogueFields({
   errors,
   defaults,
   categoryOptions,
   typeOptions,
 }: {
   errors: Record<string, string | undefined>
-  defaults?: ServiceDefaults
+  defaults?: CatalogueDefaults
   categoryOptions: Option[]
   typeOptions: Option[]
 }) {
   return (
     <Panel tone="tint" className="flex flex-col gap-5 px-5 py-5">
-      <Field data-invalid={errors.serviceName ? 'true' : undefined}>
-        <FieldLabel htmlFor="serviceName" className="field-label mb-2">
+      <Field data-invalid={errors.catalogueName ? 'true' : undefined}>
+        <FieldLabel htmlFor="catalogueName" className="field-label mb-2">
           Nama Layanan
         </FieldLabel>
         <BoxInput
-          id="serviceName"
-          name="serviceName"
-          defaultValue={defaults?.serviceName}
+          id="catalogueName"
+          name="catalogueName"
+          defaultValue={defaults?.catalogueName}
           required
-          aria-invalid={!!errors.serviceName}
+          aria-invalid={!!errors.catalogueName}
         />
-        <FieldError>{errors.serviceName}</FieldError>
+        <FieldError>{errors.catalogueName}</FieldError>
       </Field>
 
       <Field data-invalid={errors.description ? 'true' : undefined}>

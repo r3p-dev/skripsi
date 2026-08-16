@@ -7,11 +7,20 @@ import Item from '#models/item'
 import Order from '#models/order'
 import OrderAction from '#models/order_action'
 import OrderItem from '#models/order_item'
+import Transaction from '#models/transaction'
+import UserModel from '#models/user'
 import type User from '#models/user'
 import { ActionName } from '#enums/order_action_enum'
-import { OrderStatus } from '#enums/order_enum'
+import { OrderStatus, OrderType } from '#enums/order_enum'
+import { Role } from '#enums/role_enum'
+import { TransactionStatus } from '#enums/transaction_enum'
 import { CLAIM_DURATION_HOURS, TASK_SOURCE_STATUS, TaskType, type TripType } from '#enums/task_enum'
-import type { InspectedItemData, InspectionData } from '#validators/task_validator'
+import type {
+  InspectedItemData,
+  InspectionData,
+  OfflineOrderData,
+  OrderItemsData,
+} from '#validators/task_validator'
 import { errors as vineErrors } from '@vinejs/vine'
 import { inject } from '@adonisjs/core'
 import { randomUUID } from 'node:crypto'
@@ -278,6 +287,163 @@ export default class TaskService {
     await this.#recordAction(order, user, ActionName.READY_NOTICE_SENT)
   }
 
+  /**
+   * Takes an order over the counter. The customer is present, so the goods are
+   * recorded, priced and paid for in one go — which is why the order is born
+   * already paid and drops straight into the wash queue.
+   */
+  async createOfflineOrder(user: User, data: OfflineOrderData): Promise<Order> {
+    const catalogues = await this.catalogueService.resolveForSelections(data.items)
+    const address = await this.#resolveCounterAddress(data)
+    const photoPath = await this.#storePhoto(data.photo)
+
+    return this.orderService.createWithUniqueOrderNumber((orderNumber) =>
+      db.transaction(async (trx) => {
+        const order = await Order.create(
+          {
+            userId: data.customerId ?? null,
+            addressId: address?.id ?? null,
+            customerName: data.name,
+            customerPhone: data.phone,
+            orderNumber,
+            pickupDate: null,
+            type: address ? OrderType.WALK_IN_DELIVERY : OrderType.OFFLINE,
+            status: OrderStatus.IN_CLEANING,
+            totalPrice: null,
+          },
+          { client: trx }
+        )
+
+        let total = 0
+
+        for (const entry of data.items) {
+          total += await this.#recordInspectedItem(order, entry, catalogues, trx)
+        }
+
+        order.merge({ totalPrice: total.toString() })
+        order.useTransaction(trx)
+        await order.save()
+
+        await Transaction.create(
+          {
+            orderId: order.id,
+            paymentMethod: data.paymentMethod,
+            status: TransactionStatus.PAID,
+            cashReceived: data.cashReceived?.toString() ?? null,
+            midtransOrderId: null,
+            midtransTransactionId: null,
+            qrCode: null,
+          },
+          { client: trx }
+        )
+
+        await this.#recordAction(order, user, ActionName.OFFLINE_ORDER, trx, photoPath, data.note)
+
+        return order
+      })
+    )
+  }
+
+  /**
+   * Corrects the goods on an order that has been priced but not yet paid for.
+   * Re-prices from scratch, since a changed catalogue changes the bill.
+   */
+  async updateOrderItems(order: Order, data: OrderItemsData): Promise<Order> {
+    if (order.status !== OrderStatus.AWAITING_PAYMENT) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'form',
+          message: 'Barang hanya dapat diubah selagi pesanan menunggu pelunasan.',
+        },
+      ])
+    }
+
+    const catalogues = await this.catalogueService.resolveForSelections(data.items)
+
+    return db.transaction(async (trx) => {
+      await Item.query({ client: trx }).where('order_id', order.id).delete()
+
+      let total = 0
+
+      for (const entry of data.items) {
+        total += await this.#recordInspectedItem(order, entry, catalogues, trx)
+      }
+
+      order.merge({ totalPrice: total.toString() })
+      order.useTransaction(trx)
+      await order.save()
+
+      return order
+    })
+  }
+
+  /**
+   * Customers a staff member can attach a counter order to, so a regular does
+   * not end up with a second, account-less order history.
+   */
+  async findCustomers(search: string): Promise<User[]> {
+    const term = search.trim()
+
+    if (term.length < 3) {
+      return []
+    }
+
+    return UserModel.query()
+      .where('role', Role.CUSTOMER)
+      .where('is_active', true)
+      .where((query) => {
+        query.whereILike('name', `%${term}%`).orWhereILike('phone', `%${term}%`)
+      })
+      .orderBy('name', 'asc')
+      .limit(10)
+  }
+
+  /**
+   * What the customer gets back from the cash they handed over.
+   */
+  changeFor(order: Order, transaction: Transaction | null): number {
+    if (!transaction?.cashReceived) {
+      return 0
+    }
+
+    return Math.max(0, Number(transaction.cashReceived) - Number(order.totalPrice ?? 0))
+  }
+
+  /**
+   * Delivery is only offered to customers with an account, because that is the
+   * only place an address lives. Asking for it without one is a validation error
+   * rather than a silent downgrade to a shop pickup.
+   */
+  async #resolveCounterAddress(data: OfflineOrderData) {
+    if (!data.delivery) {
+      return null
+    }
+
+    const customer = data.customerId ? await UserModel.find(data.customerId) : null
+
+    if (!customer) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'delivery',
+          message: 'Pengantaran memerlukan akun pelanggan. Pilih akun terlebih dahulu.',
+        },
+      ])
+    }
+
+    const address = await this.addressService.getActiveAddress(customer)
+
+    if (!address) {
+      throw new vineErrors.E_VALIDATION_ERROR([
+        {
+          field: 'delivery',
+          message: 'Akun pelanggan ini belum memiliki alamat tersimpan.',
+        },
+      ])
+    }
+
+    return address
+  }
+
   async #recordInspectedItem(
     order: Order,
     entry: InspectedItemData,
@@ -297,30 +463,25 @@ export default class TaskService {
       { client: trx }
     )
 
-    const chosen = [entry.service, ...(entry.additionalServices ?? [])]
-    let subtotal = 0
+    const chosen = [entry.catalogue, ...(entry.additionalCatalogues ?? [])]
 
-    for (const catalogueId of chosen) {
+    const lines = chosen.map((catalogueId) => {
       const catalogue = catalogues.get(catalogueId)!
-      const price = Number(catalogue.price)
 
-      subtotal += price
+      return {
+        orderId: order.id,
+        itemId: item.id,
+        catalogueId: catalogue.id,
+        name: catalogue.name,
+        condition: entry.condition,
+        price: catalogue.price,
+        subtotal: Number(catalogue.price).toString(),
+      }
+    })
 
-      await OrderItem.create(
-        {
-          orderId: order.id,
-          itemId: item.id,
-          catalogueId: catalogue.id,
-          name: catalogue.name,
-          condition: entry.condition,
-          price: catalogue.price,
-          subtotal: price.toString(),
-        },
-        { client: trx }
-      )
-    }
+    await OrderItem.createMany(lines, { client: trx })
 
-    return subtotal
+    return lines.reduce((total, line) => total + Number(line.subtotal), 0)
   }
 
   async depot(fallback: RoutePoint): Promise<RoutePoint> {
@@ -376,7 +537,8 @@ export default class TaskService {
     user: User,
     name: ActionName,
     trx?: TransactionClientContract,
-    photoPath: string | null = null
+    photoPath: string | null = null,
+    note: string | null = null
   ): Promise<OrderAction> {
     return OrderAction.create(
       {
@@ -384,7 +546,7 @@ export default class TaskService {
         userId: user.id,
         name,
         photoPath,
-        note: null,
+        note,
       },
       trx ? { client: trx } : {}
     )

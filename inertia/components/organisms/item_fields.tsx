@@ -28,54 +28,54 @@ export type ItemDefaults = {
   size: string
   condition: string
   note: string
-  additionalServiceIds: number[]
+  additionalCatalogueIds: number[]
 }
 
 export type ItemRow = {
   key: number
-  serviceId: string
+  catalogueId: string
   defaults?: ItemDefaults
 }
 
 export function useItemRows(initialRows?: ItemRow[]) {
-  const [items, setItems] = useState<ItemRow[]>(initialRows ?? [{ key: 0, serviceId: '' }])
+  const [items, setItems] = useState<ItemRow[]>(initialRows ?? [{ key: 0, catalogueId: '' }])
   const nextKey = useRef(items.length)
 
   function addItem() {
-    setItems((prev) => [...prev, { key: nextKey.current++, serviceId: '' }])
+    setItems((prev) => [...prev, { key: nextKey.current++, catalogueId: '' }])
   }
 
   function removeItem(key: number) {
     setItems((prev) => prev.filter((item) => item.key !== key))
   }
 
-  function setServiceId(key: number, serviceId: string) {
-    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, serviceId } : item)))
+  function setCatalogueId(key: number, catalogueId: string) {
+    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, catalogueId } : item)))
   }
 
-  return { items, addItem, removeItem, setServiceId }
+  return { items, addItem, removeItem, setCatalogueId }
 }
 
 function ItemFields({
   index,
-  services,
-  serviceId,
+  catalogues,
+  catalogueId,
   defaults,
-  onServiceChange,
+  onCatalogueChange,
 }: {
   index: number
-  services: Data.Service[]
-  serviceId: string
+  catalogues: Data.Catalogue[]
+  catalogueId: string
   defaults?: ItemDefaults
-  onServiceChange: (serviceId: string) => void
+  onCatalogueChange: (catalogueId: string) => void
 }) {
-  const mainServices = services.filter(
-    (service) => service.category !== CatalogueCategory.ADDITIONAL
+  const mainServices = catalogues.filter(
+    (catalogue) => catalogue.category !== CatalogueCategory.ADDITIONAL
   )
-  const additionalServices = services.filter(
-    (service) => service.category === CatalogueCategory.ADDITIONAL
+  const additionalCatalogues = catalogues.filter(
+    (catalogue) => catalogue.category === CatalogueCategory.ADDITIONAL
   )
-  const selectedService = services.find((service) => String(service.id) === serviceId)
+  const selectedService = catalogues.find((catalogue) => String(catalogue.id) === catalogueId)
   const itemType = selectedService ? (itemTypeByCategory[selectedService.category] ?? '') : ''
 
   return (
@@ -114,37 +114,37 @@ function ItemFields({
       <Field>
         <FieldLabel className="field-label mb-2">Layanan</FieldLabel>
         <BoxSelect
-          name={`items[${index}][service]`}
-          value={serviceId}
-          onChange={(event) => onServiceChange(event.target.value)}
+          name={`items[${index}][catalogue]`}
+          value={catalogueId}
+          onChange={(event) => onCatalogueChange(event.target.value)}
           required
         >
           <option value="">Pilih layanan</option>
-          {mainServices.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name} - {formatRupiah(service.price)}
+          {mainServices.map((catalogue) => (
+            <option key={catalogue.id} value={catalogue.id}>
+              {catalogue.name} - {formatRupiah(catalogue.price)}
             </option>
           ))}
         </BoxSelect>
       </Field>
 
-      {additionalServices.length > 0 && (
+      {additionalCatalogues.length > 0 && (
         <Field>
           <FieldLabel className="field-label mb-2">Layanan Tambahan</FieldLabel>
           <div className="border border-rule-field bg-white px-3.5">
-            {additionalServices.map((service) => (
+            {additionalCatalogues.map((catalogue) => (
               <label
-                key={service.id}
+                key={catalogue.id}
                 className="flex min-h-11 items-center gap-3 border-b border-rule py-2 text-small leading-normal text-ink-body last:border-b-0"
               >
                 <input
                   type="checkbox"
-                  name={`items[${index}][additionalServices][]`}
-                  value={service.id}
-                  defaultChecked={defaults?.additionalServiceIds.includes(service.id)}
+                  name={`items[${index}][additionalCatalogues][]`}
+                  value={catalogue.id}
+                  defaultChecked={defaults?.additionalCatalogueIds.includes(catalogue.id)}
                   className="size-4.5 shrink-0 rounded-xs border-rule-field accent-ink"
                 />
-                {service.name} - {formatRupiah(service.price)}
+                {catalogue.name} - {formatRupiah(catalogue.price)}
               </label>
             ))}
           </div>
@@ -156,17 +156,17 @@ function ItemFields({
 
 export function ItemCard({
   index,
-  services,
+  catalogues,
   item,
   canRemove,
-  onServiceChange,
+  onCatalogueChange,
   onRemove,
 }: {
   index: number
-  services: Data.Service[]
+  catalogues: Data.Catalogue[]
   item: ItemRow
   canRemove: boolean
-  onServiceChange: (serviceId: string) => void
+  onCatalogueChange: (catalogueId: string) => void
   onRemove: () => void
 }) {
   return (
@@ -188,10 +188,10 @@ export function ItemCard({
       <div className="px-5 py-5">
         <ItemFields
           index={index}
-          services={services}
-          serviceId={item.serviceId}
+          catalogues={catalogues}
+          catalogueId={item.catalogueId}
           defaults={item.defaults}
-          onServiceChange={onServiceChange}
+          onCatalogueChange={onCatalogueChange}
         />
       </div>
     </Panel>

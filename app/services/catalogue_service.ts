@@ -1,8 +1,14 @@
 import Catalogue from '#models/catalogue'
-import { CatalogueCategory, CatalogueType } from '#enums/catalogue_enum'
+import {
+  CatalogueCategory,
+  CatalogueCategoryLabel,
+  CatalogueType,
+  CatalogueTypeLabel,
+} from '#enums/catalogue_enum'
 import { ItemType, ItemTypeCategories, ItemTypeLabel } from '#enums/item_enum'
 import { type CatalogueData } from '#validators/catalogue_validator'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import db from '@adonisjs/lucid/services/db'
 import { errors } from '@vinejs/vine'
 
 export type CatalogueOption = {
@@ -16,14 +22,14 @@ export type CatalogueOption = {
 export type ItemTypeOptions = {
   type: ItemType
   label: string
-  services: CatalogueOption[]
-  additionalServices: CatalogueOption[]
+  catalogues: CatalogueOption[]
+  additionalCatalogues: CatalogueOption[]
 }
 
-export type ServiceSelection = {
+export type CatalogueSelection = {
   type: ItemType
-  service: number
-  additionalServices?: number[]
+  catalogue: number
+  additionalCatalogues?: number[]
 }
 
 export default class CatalogueService {
@@ -39,6 +45,75 @@ export default class CatalogueService {
     return Catalogue.find(id)
   }
 
+  async findCatalogueOrFail(id: number): Promise<Catalogue> {
+    return Catalogue.findOrFail(id)
+  }
+
+  async list(filters: { search: string; page: number }) {
+    const query = Catalogue.query().orderBy('created_at', 'desc')
+
+    if (filters.search) {
+      query.where((builder) => {
+        builder
+          .whereILike('name', `%${filters.search}%`)
+          .orWhereILike('description', `%${filters.search}%`)
+      })
+    }
+
+    return query.paginate(filters.page, 10)
+  }
+
+  /**
+   * Catalogues already booked on an order. Their price is copied onto the order
+   * line at the time of booking, but removing the row would still break the
+   * link an admin follows back from a receipt, so deletion is blocked.
+   */
+  async inUseIds(catalogues: Catalogue[]): Promise<number[]> {
+    const ids = catalogues.map((catalogue) => catalogue.id)
+
+    if (ids.length === 0) {
+      return []
+    }
+
+    const rows = await db.from('order_items').whereIn('catalogue_id', ids).distinct('catalogue_id')
+
+    return rows.map((row) => Number(row.catalogue_id))
+  }
+
+  async deleteCatalogue(id: number): Promise<void> {
+    const catalogue = await Catalogue.findOrFail(id)
+    const booked = await db
+      .from('order_items')
+      .where('catalogue_id', catalogue.id)
+      .count('* as total')
+      .first()
+
+    if (Number(booked?.total ?? 0) > 0) {
+      throw new errors.E_VALIDATION_ERROR([
+        {
+          field: 'form',
+          message: 'Layanan ini sudah pernah dipesan dan tidak dapat dihapus.',
+        },
+      ])
+    }
+
+    await catalogue.delete()
+  }
+
+  categoryOptions() {
+    return Object.values(CatalogueCategory).map((category) => ({
+      value: category,
+      label: CatalogueCategoryLabel[category],
+    }))
+  }
+
+  typeOptions() {
+    return Object.values(CatalogueType).map((type) => ({
+      value: type,
+      label: CatalogueTypeLabel[type],
+    }))
+  }
+
   async createCatalogue(data: CatalogueData): Promise<Catalogue> {
     return Catalogue.create(this.#toAttributes(data))
   }
@@ -52,40 +127,40 @@ export default class CatalogueService {
   }
 
   /**
-   * The form field is called `serviceName`, the column is called `name`.
+   * The form field is called `catalogueName`, the column is called `name`.
    */
-  #toAttributes({ serviceName, price, ...rest }: CatalogueData) {
+  #toAttributes({ catalogueName, price, ...rest }: CatalogueData) {
     return {
       ...rest,
-      name: serviceName,
+      name: catalogueName,
       price: price.toString(),
     }
   }
 
-  async getServiceOptions(): Promise<ItemTypeOptions[]> {
+  async getCatalogueOptions(): Promise<ItemTypeOptions[]> {
     const catalogues = await Catalogue.query().orderBy('price', 'asc')
 
     return Object.values(ItemType).map((type) => ({
       type,
       label: ItemTypeLabel[type],
-      services: catalogues
-        .filter((catalogue) => this.#isServiceFor(catalogue, type))
-        .map((catalogue) => this.#toServiceOption(catalogue)),
-      additionalServices: catalogues
-        .filter((catalogue) => this.#isAdditionalServiceFor(catalogue, type))
-        .map((catalogue) => this.#toServiceOption(catalogue)),
+      catalogues: catalogues
+        .filter((catalogue) => this.#isCatalogueFor(catalogue, type))
+        .map((catalogue) => this.#toCatalogueOption(catalogue)),
+      additionalCatalogues: catalogues
+        .filter((catalogue) => this.#isAdditionalCatalogueFor(catalogue, type))
+        .map((catalogue) => this.#toCatalogueOption(catalogue)),
     }))
   }
 
   async resolveForSelections(
-    selections: ServiceSelection[],
+    selections: CatalogueSelection[],
     trx?: TransactionClientContract
   ): Promise<Map<number, Catalogue>> {
     const ids = [
       ...new Set(
         selections.flatMap((selection) => [
-          selection.service,
-          ...(selection.additionalServices ?? []),
+          selection.catalogue,
+          ...(selection.additionalCatalogues ?? []),
         ])
       ),
     ]
@@ -95,21 +170,21 @@ export default class CatalogueService {
 
     selections.forEach((selection, index) => {
       const label = ItemTypeLabel[selection.type].toLowerCase()
-      const service = byId.get(selection.service)
+      const catalogue = byId.get(selection.catalogue)
 
-      if (!service || !this.#isServiceFor(service, selection.type)) {
+      if (!catalogue || !this.#isCatalogueFor(catalogue, selection.type)) {
         this.#validationError(
-          `items.${index}.service`,
+          `items.${index}.catalogue`,
           `Layanan yang dipilih tidak tersedia untuk ${label}`
         )
       }
 
-      selection.additionalServices?.forEach((additionalId, additionalIndex) => {
+      selection.additionalCatalogues?.forEach((additionalId, additionalIndex) => {
         const additional = byId.get(additionalId)
 
-        if (!additional || !this.#isAdditionalServiceFor(additional, selection.type)) {
+        if (!additional || !this.#isAdditionalCatalogueFor(additional, selection.type)) {
           this.#validationError(
-            `items.${index}.additionalServices.${additionalIndex}`,
+            `items.${index}.additionalCatalogues.${additionalIndex}`,
             `Layanan tambahan yang dipilih tidak tersedia untuk ${label}`
           )
         }
@@ -119,14 +194,14 @@ export default class CatalogueService {
     return byId
   }
 
-  #isServiceFor(catalogue: Catalogue, type: ItemType): boolean {
+  #isCatalogueFor(catalogue: Catalogue, type: ItemType): boolean {
     return (
       catalogue.type !== CatalogueType.ADDITIONAL &&
       ItemTypeCategories[type].includes(catalogue.category)
     )
   }
 
-  #isAdditionalServiceFor(catalogue: Catalogue, type: ItemType): boolean {
+  #isAdditionalCatalogueFor(catalogue: Catalogue, type: ItemType): boolean {
     return (
       catalogue.type === CatalogueType.ADDITIONAL &&
       (catalogue.category === CatalogueCategory.ADDITIONAL ||
@@ -134,7 +209,7 @@ export default class CatalogueService {
     )
   }
 
-  #toServiceOption(catalogue: Catalogue): CatalogueOption {
+  #toCatalogueOption(catalogue: Catalogue): CatalogueOption {
     return {
       id: catalogue.id,
       name: catalogue.name,

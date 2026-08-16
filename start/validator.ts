@@ -50,7 +50,7 @@ export const validationMessages = {
 
 export const validationFields = {
   name: 'Nama lengkap',
-  serviceName: 'Nama layanan',
+  catalogueName: 'Nama layanan',
   phone: 'Nomor telepon',
   password: 'Kata sandi',
   passwordConfirmation: 'Konfirmasi kata sandi',
@@ -71,8 +71,8 @@ export const validationFields = {
   material: 'Bahan',
   size: 'Ukuran',
   condition: 'Kondisi',
-  service: 'Layanan',
-  additionalServices: 'Layanan tambahan',
+  catalogue: 'Layanan',
+  additionalCatalogues: 'Layanan tambahan',
   paymentMethod: 'Metode pembayaran',
   price: 'Harga',
   description: 'Deskripsi',

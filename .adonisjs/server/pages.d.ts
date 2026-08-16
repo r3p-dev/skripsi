@@ -12,15 +12,15 @@ type ExtractProps<T> =
 
 declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
+    'admin/catalogue/create': ExtractProps<(typeof import('../../inertia/pages/admin/catalogue/create.tsx'))['default']>
+    'admin/catalogue/edit': ExtractProps<(typeof import('../../inertia/pages/admin/catalogue/edit.tsx'))['default']>
+    'admin/catalogue/index': ExtractProps<(typeof import('../../inertia/pages/admin/catalogue/index.tsx'))['default']>
     'admin/index': ExtractProps<(typeof import('../../inertia/pages/admin/index.tsx'))['default']>
     'admin/order/index': ExtractProps<(typeof import('../../inertia/pages/admin/order/index.tsx'))['default']>
     'admin/order/show': ExtractProps<(typeof import('../../inertia/pages/admin/order/show.tsx'))['default']>
     'admin/profile/show': ExtractProps<(typeof import('../../inertia/pages/admin/profile/show.tsx'))['default']>
     'admin/reconciliation/index': ExtractProps<(typeof import('../../inertia/pages/admin/reconciliation/index.tsx'))['default']>
     'admin/report/index': ExtractProps<(typeof import('../../inertia/pages/admin/report/index.tsx'))['default']>
-    'admin/service/create': ExtractProps<(typeof import('../../inertia/pages/admin/service/create.tsx'))['default']>
-    'admin/service/edit': ExtractProps<(typeof import('../../inertia/pages/admin/service/edit.tsx'))['default']>
-    'admin/service/index': ExtractProps<(typeof import('../../inertia/pages/admin/service/index.tsx'))['default']>
     'admin/user/create': ExtractProps<(typeof import('../../inertia/pages/admin/user/create.tsx'))['default']>
     'admin/user/edit': ExtractProps<(typeof import('../../inertia/pages/admin/user/edit.tsx'))['default']>
     'admin/user/index': ExtractProps<(typeof import('../../inertia/pages/admin/user/index.tsx'))['default']>

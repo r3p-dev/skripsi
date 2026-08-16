@@ -33,6 +33,7 @@ import {
   IconBell,
   IconMapPin,
   IconPackage,
+  IconPlus,
   IconPrinter,
   IconSearch,
   IconShoppingBag,
@@ -335,6 +336,14 @@ export default function Index({ trips, inspections, cleanings, collections }: Pa
           <Eyebrow className="mb-1.5">Tugas</Eyebrow>
           <PageTitle>Antrean Tugas</PageTitle>
         </div>
+
+        <Link
+          route="staff.order.create"
+          aria-label="Buat pesanan offline"
+          className="flex size-11 shrink-0 items-center justify-center bg-ink text-white transition-colors hover:bg-ink/90"
+        >
+          <IconPlus className="size-5" />
+        </Link>
       </div>
 
       <div
