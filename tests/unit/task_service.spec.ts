@@ -268,18 +268,23 @@ test.group('TaskService | the queues', (group) => {
       taskService.getCollectionQueue(),
     ])
 
-    assert.deepEqual(
-      inspections.map((order) => order.orderNumber),
-      [inspecting.orderNumber]
-    )
-    assert.deepEqual(
-      cleanings.map((order) => order.orderNumber),
-      [cleaning.orderNumber]
-    )
-    assert.deepEqual(
-      collections.map((order) => order.orderNumber),
-      [collecting.orderNumber]
-    )
+    const ids = (orders: Order[]) => orders.map((order) => order.id)
+
+    /**
+     * Scoped to the three orders this test creates, so unrelated rows already
+     * in the database do not affect the outcome.
+     */
+    assert.include(ids(inspections), inspecting.id)
+    assert.notInclude(ids(cleanings), inspecting.id)
+    assert.notInclude(ids(collections), inspecting.id)
+
+    assert.include(ids(cleanings), cleaning.id)
+    assert.notInclude(ids(inspections), cleaning.id)
+    assert.notInclude(ids(collections), cleaning.id)
+
+    assert.include(ids(collections), collecting.id)
+    assert.notInclude(ids(inspections), collecting.id)
+    assert.notInclude(ids(cleanings), collecting.id)
   })
 
   test('the trip queue is ordered nearest first', async ({ assert }) => {

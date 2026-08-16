@@ -153,14 +153,20 @@ test.group('Staff counter orders | taking the order', (group) => {
   test('an order without a photo is rejected', async ({ client, assert }) => {
     const catalogue = await CatalogueFactory.create()
 
+    /**
+     * A phone number unique to this test, so the "nothing was created" check
+     * can be scoped to this submission rather than the whole table.
+     */
+    const phone = '081200000199'
+
     const response = await client
       .post('/staff/orders')
       .loginAs(await staff())
       .withCsrfToken()
-      .fields(counterFields(catalogue.id))
+      .fields(counterFields(catalogue.id, { phone }))
       .redirects(0)
 
     response.assertStatus(302)
-    assert.isNull(await Order.query().orderBy('id', 'desc').first())
+    assert.isNull(await Order.query().where('customer_phone', phone).first())
   })
 })
