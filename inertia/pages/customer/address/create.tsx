@@ -286,7 +286,7 @@ export default function Create({ address, operationalAreas }: PageProps) {
 
               <Field
                 className="mb-5"
-                data-invalid={errors.radius || isOutsideArea ? 'true' : undefined}
+                data-invalid={errors.location || isOutsideArea ? 'true' : undefined}
               >
                 <FieldLabel className="field-label mb-2.5">Titik Lokasi</FieldLabel>
                 <div className="border border-rule">
@@ -297,7 +297,7 @@ export default function Create({ address, operationalAreas }: PageProps) {
                     areas={operationalAreas}
                   />
                 </div>
-                <FieldError>{isOutsideArea ? OUTSIDE_AREA_MESSAGE : errors.radius}</FieldError>
+                <FieldError>{isOutsideArea ? OUTSIDE_AREA_MESSAGE : errors.location}</FieldError>
               </Field>
 
               {errors.form && <p className="mb-4 text-small text-destructive">{errors.form}</p>}

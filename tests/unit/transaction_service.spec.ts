@@ -16,6 +16,17 @@ import { DateTime } from 'luxon'
 
 const transactionService = new TransactionService(new OrderService(new AddressService()))
 
+/**
+ * The rate limiter keeps its own connection to the database, outside whatever
+ * transaction a test is running in. Reaching for the same pooled client is
+ * what lets a test read and rewrite its rows without the two deadlocking.
+ */
+const rateLimitClient = db.connection().getWriteClient()
+
+function rateLimits() {
+  return rateLimitClient.from('rate_limits')
+}
+
 async function createPayableOrder(totalPrice = '120000'): Promise<Order> {
   const customer = await createCustomer()
 
@@ -213,6 +224,114 @@ test.group('TransactionService | starting a payment', (group) => {
 
       await first.refresh()
       assert.equal(first.status, TransactionStatus.PENDING)
+    } finally {
+      restore()
+    }
+  })
+})
+
+test.group('TransactionService | throttling the gateway', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.teardown(async () => {
+    await rateLimits().delete()
+  })
+
+  /**
+   * Makes the code the order is holding look old, so the next attempt has to
+   * buy a new one from Midtrans instead of handing back the pending code.
+   */
+  async function ageTheCode(transaction: Transaction): Promise<void> {
+    await db
+      .from('transactions')
+      .where('id', transaction.id)
+      .update({ created_at: DateTime.now().minus({ hours: 1 }).toSQL() })
+  }
+
+  async function chargeRepeatedly(order: Order, times: number): Promise<void> {
+    for (let attempt = 0; attempt < times; attempt++) {
+      await ageTheCode(await transactionService.startPayment(order))
+    }
+  }
+
+  /**
+   * Fast-forwards past the block window rather than waiting fifteen real
+   * minutes. The store keeps one row per key holding the moment it lapses, so
+   * dating that row into the past is the window running out.
+   */
+  async function waitOutTheBlock(): Promise<void> {
+    await rateLimits().update({ expire: Date.now() - 1000 })
+  }
+
+  test('an order cannot keep asking Midtrans for codes', async ({ assert }) => {
+    let charges = 0
+
+    const restore = stubMidtransCharge(() => {
+      charges += 1
+
+      return midtransQrResponse({ order_id: `ORDUJI-${charges}` })
+    })
+
+    const order = await createPayableOrder()
+
+    try {
+      await chargeRepeatedly(order, 5)
+
+      const [failure] = await validationMessages(() => transactionService.startPayment(order))
+
+      assert.equal(failure.field, 'form')
+      assert.match(failure.message, /terlalu banyak/i)
+      assert.equal(charges, 5, 'the blocked attempt never reached Midtrans')
+    } finally {
+      restore()
+    }
+  })
+
+  test('the order can pay again once the block has passed', async ({ assert }) => {
+    let charges = 0
+
+    const restore = stubMidtransCharge(() => {
+      charges += 1
+
+      return midtransQrResponse({ order_id: `ORDUJI-${charges}` })
+    })
+
+    const order = await createPayableOrder()
+
+    try {
+      await chargeRepeatedly(order, 5)
+      await validationMessages(() => transactionService.startPayment(order))
+
+      await waitOutTheBlock()
+
+      const transaction = await transactionService.startPayment(order)
+
+      assert.equal(transaction.status, TransactionStatus.PENDING)
+      assert.equal(charges, 6)
+    } finally {
+      restore()
+    }
+  })
+
+  test('one order running out does not stop another from paying', async ({ assert }) => {
+    let charges = 0
+
+    const restore = stubMidtransCharge(() => {
+      charges += 1
+
+      return midtransQrResponse({ order_id: `ORDUJI-${charges}` })
+    })
+
+    const exhausted = await createPayableOrder()
+    const other = await createPayableOrder()
+
+    try {
+      await chargeRepeatedly(exhausted, 5)
+      await validationMessages(() => transactionService.startPayment(exhausted))
+
+      const transaction = await transactionService.startPayment(other)
+
+      assert.equal(transaction.orderId, other.id)
+      assert.equal(transaction.status, TransactionStatus.PENDING)
     } finally {
       restore()
     }

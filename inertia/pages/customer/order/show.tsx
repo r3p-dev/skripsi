@@ -128,7 +128,7 @@ export default function Show({ order, canCancel, canPay }: PageProps) {
               title="Batalkan pesanan ini?"
               description={`Penjemputan untuk ${order.orderNumber} akan dibatalkan dan pesanan tidak dapat diaktifkan kembali.`}
             >
-              <Form route="customer.orders.update" routeParams={{ number: order.orderNumber }}>
+              <Form route="customer.orders.destroy" routeParams={{ number: order.orderNumber }}>
                 {({ processing }) => (
                   <ConfirmFooter label="Batalkan Pesanan" processing={processing} destructive />
                 )}

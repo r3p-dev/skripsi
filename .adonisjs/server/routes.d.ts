@@ -39,21 +39,22 @@ export type ScannedRoutes = {
     'customer.orders.create': { paramsTuple?: []; params?: {} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
     'customer.orders.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'customer.orders.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.profile.show': { paramsTuple?: []; params?: {} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
     'staff.phone.update': { paramsTuple?: []; params?: {} }
     'staff.trip.index': { paramsTuple?: []; params?: {} }
     'staff.trip.show': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.trip.claim': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.trip.update': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.trip.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
+    'staff.inspection.claim': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.collection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.notification.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.tag.show': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.customers.index': { paramsTuple?: []; params?: {} }
     'staff.order.create': { paramsTuple?: []; params?: {} }
@@ -199,11 +200,12 @@ export type ScannedRoutes = {
     'customer.transaction.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'customer.orders.store': { paramsTuple?: []; params?: {} }
     'staff.phone.store': { paramsTuple?: []; params?: {} }
+    'staff.trip.claim': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.trip.update': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
+    'staff.inspection.claim': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.inspection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.cleaning.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.collection.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-    'staff.notification.store': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.order.store': { paramsTuple?: []; params?: {} }
     'admin.phone.store': { paramsTuple?: []; params?: {} }
     'admin.reconciliation.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
@@ -213,17 +215,14 @@ export type ScannedRoutes = {
   PUT: {
     'customer.profile.update': { paramsTuple?: []; params?: {} }
     'customer.password.update': { paramsTuple?: []; params?: {} }
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.profile.update': { paramsTuple?: []; params?: {} }
     'staff.order.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.profile.update': { paramsTuple?: []; params?: {} }
     'admin.catalogue.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.user.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
-  PATCH: {
-    'customer.orders.update': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
-  }
   DELETE: {
+    'customer.orders.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'staff.trip.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'number': ParamValue,'type': ParamValue} }
     'staff.inspection.destroy': { paramsTuple: [ParamValue]; params: {'number': ParamValue} }
     'admin.catalogue.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

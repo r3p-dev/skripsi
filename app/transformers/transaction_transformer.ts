@@ -6,7 +6,7 @@ import {
   TransactionStatusLabel,
 } from '#enums/transaction_enum'
 import { formatRupiah } from '#utils/currency'
-import { DateTime } from 'luxon'
+import { formatDate } from '#utils/date'
 
 export default class TransactionTransformer extends BaseTransformer<Transaction> {
   toObject() {
@@ -22,9 +22,10 @@ export default class TransactionTransformer extends BaseTransformer<Transaction>
       paymentMethodLabel: PaymentMethodLabel[this.resource.paymentMethod],
 
       cashReceived: this.resource.cashReceived === null ? null : Number(this.resource.cashReceived),
-      cashReceivedLabel: formatRupiah(this.resource.cashReceived),
+      cashReceivedLabel:
+        this.resource.cashReceived === null ? null : formatRupiah(this.resource.cashReceived),
 
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      createdAt: formatDate(this.resource.createdAt),
     }
   }
 }

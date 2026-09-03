@@ -27,9 +27,8 @@ import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
-import { Role, RoleLabel } from '@/enums/role_enum'
+import { Role } from '@/enums/role_enum'
 import { neutralTone } from '@/lib/constants'
-import { formatShortDate } from '@/lib/format'
 
 type PageProps = InertiaProps<{
   users: { data: Data.User[]; metadata: Metadata }
@@ -73,7 +72,7 @@ function buildColumns(undeletable: Set<number>): Column<Data.User>[] {
       role: 'trailing',
       cell: (account) => (
         <StatusBadge tone={ROLE_TONES[account.role] ?? neutralTone}>
-          {RoleLabel[account.role as keyof typeof RoleLabel]}
+          {account.roleLabel}
         </StatusBadge>
       ),
     },
@@ -81,7 +80,7 @@ function buildColumns(undeletable: Set<number>): Column<Data.User>[] {
       key: 'createdAt',
       header: 'Bergabung',
       cellClassName: 'text-ink-soft',
-      cell: (account) => formatShortDate(account.createdAt),
+      cell: (account) => account.createdAt,
     },
     {
       key: 'actions',

@@ -253,6 +253,26 @@ test.group('Customer orders | booking a pickup', (group) => {
     assert.property(inputErrors(response), 'pickupDate')
     assert.isEmpty(await Order.query().where('user_id', customer.user.id))
   })
+
+  test('a day stays full once its pickups have moved on', async ({ client, assert }) => {
+    const customer = await createCustomer()
+    const pickupDate = DateTime.now().plus({ days: 6 })
+
+    await OrderFactory.merge({ pickupDate, status: OrderStatus.IN_CLEANING }).createMany(
+      DAILY_PICKUP_LIMIT
+    )
+
+    const response = await client
+      .post('/orders')
+      .loginAs(customer.user)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ pickupDate: pickupDate.toISODate()!, ...itemFields([itemPayload()]) })
+
+    response.assertStatus(302)
+    assert.property(inputErrors(response), 'pickupDate')
+    assert.isEmpty(await Order.query().where('user_id', customer.user.id))
+  })
 })
 
 test.group('Customer orders | one order', (group) => {
@@ -320,7 +340,7 @@ test.group('Customer orders | calling off a pickup', (group) => {
     const order = await createOrder(customer)
 
     const response = await client
-      .put(`/orders/${order.orderNumber}`)
+      .delete(`/orders/${order.orderNumber}`)
       .loginAs(customer.user)
       .withCsrfToken()
       .redirects(0)
@@ -332,12 +352,38 @@ test.group('Customer orders | calling off a pickup', (group) => {
     assert.equal(order.status, OrderStatus.CANCELLED)
   })
 
+  test('the cancelled order is still on file', async ({ client, assert }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer)
+
+    await client
+      .delete(`/orders/${order.orderNumber}`)
+      .loginAs(customer.user)
+      .withCsrfToken()
+      .redirects(0)
+
+    assert.isNotNull(await Order.findBy('order_number', order.orderNumber))
+  })
+
+  test('the old PUT route is gone', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer)
+
+    const response = await client
+      .put(`/orders/${order.orderNumber}`)
+      .loginAs(customer.user)
+      .withCsrfToken()
+      .redirects(0)
+
+    response.assertStatus(404)
+  })
+
   test('refuses to cancel an order already on the van', async ({ client, assert }) => {
     const customer = await createCustomer()
     const order = await createOrder(customer, { states: ['collected'] })
 
     const response = await client
-      .put(`/orders/${order.orderNumber}`)
+      .delete(`/orders/${order.orderNumber}`)
       .loginAs(customer.user)
       .withCsrfToken()
       .redirects(0)
@@ -354,7 +400,7 @@ test.group('Customer orders | calling off a pickup', (group) => {
     const order = await createOrder(customer, { states: ['pickupToday'] })
 
     const response = await client
-      .put(`/orders/${order.orderNumber}`)
+      .delete(`/orders/${order.orderNumber}`)
       .loginAs(customer.user)
       .withCsrfToken()
       .redirects(0)
@@ -371,7 +417,7 @@ test.group('Customer orders | calling off a pickup', (group) => {
     const order = await createOrder(customer)
 
     const response = await client
-      .put(`/orders/${order.orderNumber}`)
+      .delete(`/orders/${order.orderNumber}`)
       .loginAs(stranger.user)
       .withCsrfToken()
       .redirects(0)

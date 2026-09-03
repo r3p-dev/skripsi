@@ -4,14 +4,14 @@ import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { Role } from '#enums/role_enum'
-import { FakeFonnteService } from '#tests/utils/fakes'
+import { FakeWhatsappService } from '#tests/utils/fakes'
 import { USER_PASSWORD, UserFactory } from '#database/factories/user_factory'
 import { commitRoutes } from '#tests/utils/helpers'
 
-function makeService(): { service: AuthService; fonnte: FakeFonnteService } {
-  const fonnte = new FakeFonnteService()
+function makeService(): { service: AuthService; whatsapp: FakeWhatsappService } {
+  const whatsapp = new FakeWhatsappService()
 
-  return { service: new AuthService(fonnte), fonnte }
+  return { service: new AuthService(whatsapp), whatsapp }
 }
 
 test.group('AuthService | signing up', (group) => {
@@ -89,32 +89,32 @@ test.group('AuthService | forgotten passwords', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('an active account is sent a signed reset link', async ({ assert }) => {
-    const { service, fonnte } = makeService()
+    const { service, whatsapp } = makeService()
     const user = await UserFactory.create()
 
     await service.requestPasswordReset({ phone: user.phone })
 
-    assert.lengthOf(fonnte.messages, 1)
-    assert.equal(fonnte.lastMessage!.target, user.phone)
-    assert.include(fonnte.lastMessage!.body, '/reset-password')
-    assert.include(fonnte.lastMessage!.body, 'signature=')
+    assert.lengthOf(whatsapp.messages, 1)
+    assert.equal(whatsapp.lastMessage!.target, user.phone)
+    assert.include(whatsapp.lastMessage!.body, '/reset-password')
+    assert.include(whatsapp.lastMessage!.body, 'signature=')
   })
 
   test('an unknown phone is met with silence, not an error', async ({ assert }) => {
-    const { service, fonnte } = makeService()
+    const { service, whatsapp } = makeService()
 
     await service.requestPasswordReset({ phone: '081999999998' })
 
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
   })
 
   test('a deactivated account gets no link either', async ({ assert }) => {
-    const { service, fonnte } = makeService()
+    const { service, whatsapp } = makeService()
     const user = await UserFactory.apply('inactive').create()
 
     await service.requestPasswordReset({ phone: user.phone })
 
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
   })
 })
 

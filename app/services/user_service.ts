@@ -61,10 +61,6 @@ export default class UserService {
     return Object.fromEntries(rows.map((row) => [row.role, Number(row.total)]))
   }
 
-  /**
-   * Accounts that cannot be removed because orders point at them. Deleting one
-   * would orphan a customer's history, so the UI hides the button instead.
-   */
   async undeletableIds(users: User[]): Promise<number[]> {
     const ids = users.map((user) => user.id)
 
@@ -77,10 +73,6 @@ export default class UserService {
     return rows.map((row) => Number(row.user_id))
   }
 
-  /**
-   * Updates an account from the admin screen. The password is only rewritten
-   * when one was actually typed, so saving a name does not reset a login.
-   */
   async updateFromAdmin(id: number, data: AdminUserData): Promise<User> {
     const user = await User.findOrFail(id)
 
@@ -123,9 +115,6 @@ export default class UserService {
     await user.delete()
   }
 
-  /**
-   * Every role a new account may be given, for the admin form.
-   */
   roleOptions() {
     return Object.values(Role).map((role) => ({ value: role, label: RoleLabel[role] }))
   }

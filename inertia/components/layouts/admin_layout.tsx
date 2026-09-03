@@ -70,6 +70,9 @@ export default function AdminLayout({
   const { component } = usePage()
   const [isNavOpen, setIsNavOpen] = useState(false)
 
+  // Silent by design: a nav entry whose route name no longer resolves is
+  // dropped without a warning, so renaming or removing a route can make a menu
+  // item vanish. Re-check NAV_ITEMS above by hand after any route rename.
   const navItems = NAV_ITEMS.filter((item) => hasRoute(item.route))
 
   const links = navItems.map((item) => {

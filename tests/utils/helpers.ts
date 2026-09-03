@@ -115,6 +115,11 @@ export function today(): string {
   return DateTime.now().toISODate()!
 }
 
+export const PNG_PIXEL = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64'
+)
+
 export function toRelativeUrl(url: string): string {
   const parsed = new URL(url)
 

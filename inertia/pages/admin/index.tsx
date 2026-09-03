@@ -1,4 +1,3 @@
-import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import {
   Panel,
@@ -14,7 +13,6 @@ import { LiveOrders } from '@/components/molecules/live_orders'
 import { StatCard } from '@/components/molecules/stat_card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { neutralTone, orderStatusTones, orderTypeTones } from '@/lib/constants'
-import { formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
@@ -30,12 +28,13 @@ type PageProps = InertiaProps<{
     completedOrders: number
     awaitingPayment: number
     revenue: number
+    revenueLabel: string
     customers: number
     staff: number
   }
   statusBreakdown: Breakdown[]
   typeSplit: Breakdown[]
-  revenueTrend: { date: string; label: string; total: number }[]
+  revenueTrend: { date: string; label: string; total: number; totalLabel: string }[]
   pickupLoad: { date: string; label: string; booked: number; capacity: number }[]
   recentOrders: Data.Order[]
 }>
@@ -73,9 +72,7 @@ const recentColumns: Column<Data.Order>[] = [
     key: 'type',
     header: 'Tipe',
     cell: (order) => (
-      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>
-        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
-      </StatusBadge>
+      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>{order.typeLabel}</StatusBadge>
     ),
   },
   {
@@ -84,7 +81,7 @@ const recentColumns: Column<Data.Order>[] = [
     role: 'trailing',
     cell: (order) => (
       <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
-        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+        {order.statusLabel}
       </StatusBadge>
     ),
   },
@@ -93,7 +90,7 @@ const recentColumns: Column<Data.Order>[] = [
     header: 'Total',
     align: 'right',
     cellClassName: 'font-semibold text-ink',
-    cell: (order) => (order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)),
+    cell: (order) => order.totalPriceLabel,
   },
 ]
 
@@ -125,7 +122,7 @@ export default function Index({
         />
         <StatCard
           label="Pendapatan"
-          value={formatRupiah(summary.revenue)}
+          value={summary.revenueLabel}
           hint={`${summary.completedOrders} pesanan selesai`}
           icon={IconCash}
         />
@@ -156,7 +153,7 @@ export default function Index({
                 <YAxis hide />
                 <ChartTooltip
                   content={
-                    <ChartTooltipContent formatter={(value) => formatRupiah(Number(value))} />
+                    <ChartTooltipContent formatter={(_, __, item) => item.payload.totalLabel} />
                   }
                 />
                 <Area

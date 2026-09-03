@@ -18,10 +18,6 @@ export default class ItemTransformer extends BaseTransformer<Item> {
 
       catalogues: OrderItemTransformer.transform(this.whenLoaded(this.resource.orderItems)),
 
-      /**
-       * Condition is recorded per booked catalogue, but every line for one item
-       * carries the same note — it describes the object, not the catalogue.
-       */
       condition: this.resource.orderItems?.at(0)?.condition ?? '',
 
       subtotal: this.#subtotal(),

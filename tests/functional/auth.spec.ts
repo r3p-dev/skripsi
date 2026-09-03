@@ -1,12 +1,12 @@
 import { test } from '@japa/runner'
 import type { ApiClient } from '@japa/api-client'
-import FonnteService from '#services/fonnte_service'
+import WhatsappService from '#notifications/whatsapp_service'
 import User from '#models/user'
 import app from '@adonisjs/core/services/app'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { Role } from '#enums/role_enum'
-import { BrokenFonnteService, FakeFonnteService } from '#tests/utils/fakes'
+import { BrokenWhatsappService, FakeWhatsappService } from '#tests/utils/fakes'
 import { USER_PASSWORD, UserFactory } from '#database/factories/user_factory'
 import { inputErrors, toRelativeUrl } from '#tests/utils/helpers'
 
@@ -244,9 +244,9 @@ test.group('Auth | forgotten passwords', (group) => {
   group.each.teardown(() => app.container.restoreAll())
 
   test('a reset link is sent over WhatsApp', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
 
@@ -257,14 +257,14 @@ test.group('Auth | forgotten passwords', (group) => {
       .form({ phone: user.phone })
 
     response.assertStatus(302)
-    assert.lengthOf(fonnte.messages, 1)
-    assert.equal(fonnte.lastMessage!.target, user.phone)
+    assert.lengthOf(whatsapp.messages, 1)
+    assert.equal(whatsapp.lastMessage!.target, user.phone)
   })
 
   test('an unknown phone gets the same reassuring answer', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const response = await client
       .post('/forgot-password')
@@ -274,11 +274,11 @@ test.group('Auth | forgotten passwords', (group) => {
 
     response.assertStatus(302)
     response.assertFlashMessage('success')
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
   })
 
   test('a WhatsApp outage is reported rather than swallowed', async ({ client }) => {
-    app.container.swap(FonnteService, () => new BrokenFonnteService())
+    app.container.swap(WhatsappService, () => new BrokenWhatsappService())
 
     const user = await UserFactory.create()
 
@@ -291,24 +291,66 @@ test.group('Auth | forgotten passwords', (group) => {
     response.assertStatus(302)
     response.assertFlashMessage('error', 'Gagal mengirim pesan WhatsApp.')
   })
+
+  test('a mistyped number does not use up the one attempt', async ({ client, assert }) => {
+    const whatsapp = new FakeWhatsappService()
+
+    app.container.swap(WhatsappService, () => whatsapp)
+
+    const user = await UserFactory.create()
+
+    const rejected = await client
+      .post('/forgot-password')
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: 'bukan-nomor' })
+
+    assert.property(inputErrors(rejected), 'phone')
+
+    const response = await client
+      .post('/forgot-password')
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: user.phone })
+
+    response.assertStatus(302)
+    response.assertFlashMessage('success')
+    assert.lengthOf(whatsapp.messages, 1)
+  })
+
+  test('a second link within the window is turned away', async ({ client, assert }) => {
+    const whatsapp = new FakeWhatsappService()
+
+    app.container.swap(WhatsappService, () => whatsapp)
+
+    const user = await UserFactory.create()
+
+    await client.post('/forgot-password').withCsrfToken().redirects(0).form({ phone: user.phone })
+
+    const response = await client
+      .post('/forgot-password')
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: user.phone })
+
+    response.assertStatus(302)
+    assert.property(inputErrors(response), 'form')
+    assert.lengthOf(whatsapp.messages, 1)
+  })
 })
 
 test.group('Auth | resetting a password', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.teardown(() => app.container.restoreAll())
 
-  /**
-   * The reset link is only ever handed to the customer over WhatsApp, so the
-   * test reads it back off the fake.
-   */
   async function requestResetLink(client: ApiClient, user: User): Promise<string> {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     await client.post('/forgot-password').withCsrfToken().redirects(0).form({ phone: user.phone })
 
-    return toRelativeUrl(fonnte.lastMessage!.body)
+    return toRelativeUrl(whatsapp.lastMessage!.body)
   }
 
   test('the signed link opens the reset form', async ({ client }) => {

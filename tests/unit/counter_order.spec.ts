@@ -15,13 +15,11 @@ import { ItemType } from '#enums/item_enum'
 import { OrderStatus, OrderType } from '#enums/order_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
 import { UserFactory } from '#database/factories/user_factory'
-import { FakeFonnteService } from '#tests/utils/fakes'
 import { createCustomer, validationMessages } from '#tests/utils/helpers'
 
 const taskService = new TaskService(
   new AddressService(),
   new CatalogueService(),
-  new FakeFonnteService(),
   new OrderService(new AddressService()),
   new RoutingService()
 )

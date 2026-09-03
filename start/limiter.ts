@@ -37,22 +37,24 @@ export const loginLimiter = limiter.define('login', (ctx) => {
     })
 })
 
-export const forgotPasswordLimiter = limiter.define('forgot-password', (ctx) => {
-  return limiter
-    .allowRequests(1)
-    .every('15 minutes')
-    .blockFor('15 minute')
-    .usingKey(`forgot-password:${ctx.request.ip()}`)
-    .limitExceeded(() => {
-      throw new errors.E_VALIDATION_ERROR([
-        {
-          field: 'form',
-          message:
-            'Terlalu banyak percobaan permintaan tautan atur ulang kata sandi. Silakan coba lagi nanti.',
-        },
-      ])
-    })
+export const forgotPasswordLimiter = limiter.use({
+  requests: 1,
+  duration: '15 minutes',
 })
+
+export function forgotPasswordKey(ip: string): string {
+  return `forgot-password:${ip}`
+}
+
+export function throwForgotPasswordLimitExceeded(): never {
+  throw new errors.E_VALIDATION_ERROR([
+    {
+      field: 'form',
+      message:
+        'Terlalu banyak percobaan permintaan tautan atur ulang kata sandi. Silakan coba lagi nanti.',
+    },
+  ])
+}
 
 export const resetPasswordLimiter = limiter.define('reset-password', (ctx) => {
   return limiter
@@ -107,3 +109,17 @@ export const midtransChargeLimiter = limiter.use({
   duration: '15 minutes',
   blockDuration: '15 minutes',
 })
+
+export function midtransChargeKey(orderId: number): string {
+  return `midtrans-charge:${orderId}`
+}
+
+export function throwMidtransChargeLimitExceeded(): never {
+  throw new errors.E_VALIDATION_ERROR([
+    {
+      field: 'form',
+      message:
+        'Terlalu banyak percobaan pembayaran untuk pesanan ini. Silakan coba lagi dalam beberapa saat.',
+    },
+  ])
+}

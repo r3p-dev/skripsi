@@ -427,16 +427,16 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['show']>>>
     }
   }
-  'customer.orders.update': {
-    methods: ["PUT","PATCH"]
+  'customer.orders.destroy': {
+    methods: ["DELETE"]
     pattern: '/orders/:number'
     types: {
       body: {}
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['update']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customer/order_controller').default['destroy']>>>
     }
   }
   'staff.profile.show': {
@@ -511,6 +511,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['show']>>>
     }
   }
+  'staff.trip.claim': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/trip/:type/claim'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { number: ParamValue; type: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['claim']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/trip_controller').default['claim']>>>
+    }
+  }
   'staff.trip.update': {
     methods: ["POST"]
     pattern: '/staff/tasks/:number/trip/:type'
@@ -545,6 +557,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['show']>>>
+    }
+  }
+  'staff.inspection.claim': {
+    methods: ["POST"]
+    pattern: '/staff/tasks/:number/inspection/claim'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { number: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['claim']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/inspection_controller').default['claim']>>>
     }
   }
   'staff.inspection.update': {
@@ -587,24 +611,12 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/staff/tasks/:number/collection'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
       paramsTuple: [ParamValue]
       params: { number: ParamValue }
-      query: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/task_validator').taskPhotoValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>>
-    }
-  }
-  'staff.notification.store': {
-    methods: ["POST"]
-    pattern: '/staff/tasks/:number/notification'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { number: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/notification_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/staff/collection_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'staff.tag.show': {

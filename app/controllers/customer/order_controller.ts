@@ -68,7 +68,7 @@ export default class OrderController {
     })
   }
 
-  async update({ auth, params, response, session }: HttpContext) {
+  async destroy({ auth, params, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
 
     const order = await this.orderService.cancelOrder(user, params.number)

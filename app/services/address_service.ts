@@ -54,10 +54,6 @@ export default class AddressService {
     }
   }
 
-  /**
-   * The middle of everywhere we serve. Used as the starting point for routing
-   * when no explicit depot is configured.
-   */
   async getOperationalAreaCentroid(): Promise<{ latitude: number; longitude: number } | null> {
     const result = await db
       .from('operational_areas')
@@ -78,11 +74,6 @@ export default class AddressService {
     }
   }
 
-  /**
-   * Point-in-polygon for a whole batch in one round trip. The candidates ride
-   * along as a VALUES list so PostGIS answers for all of them against the GIST
-   * index at once, rather than one query per candidate.
-   */
   async filterWithinOperationalArea<T extends { latitude: number; longitude: number }>(
     candidates: T[]
   ): Promise<T[]> {
@@ -121,7 +112,7 @@ export default class AddressService {
     if (!(await this.#isWithinOperationalArea(data.longitude, data.latitude))) {
       throw new errors.E_VALIDATION_ERROR([
         {
-          field: 'radius',
+          field: 'location',
           message: 'Lokasi tersebut berada di luar jangkauan layanan jemput-antar kami.',
         },
       ])

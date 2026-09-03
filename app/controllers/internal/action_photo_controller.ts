@@ -8,10 +8,6 @@ const CONTENT_TYPES: Record<string, string> = {
   png: 'image/png',
 }
 
-/**
- * Streams a task proof photo to staff and admins. The files live on a private
- * disk, so this route is the only way to see them and it sits behind auth.
- */
 export default class ActionPhotoController {
   async show({ params, response }: HttpContext) {
     const action = await OrderAction.findOrFail(params.id)

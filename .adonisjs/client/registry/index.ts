@@ -216,11 +216,11 @@ const routes = {
     tokens: [{"old":"/orders/:number","type":0,"val":"orders","end":""},{"old":"/orders/:number","type":1,"val":"number","end":""}],
     types: placeholder as Registry['customer.orders.show']['types'],
   },
-  'customer.orders.update': {
-    methods: ["PUT","PATCH"],
+  'customer.orders.destroy': {
+    methods: ["DELETE"],
     pattern: '/orders/:number',
     tokens: [{"old":"/orders/:number","type":0,"val":"orders","end":""},{"old":"/orders/:number","type":1,"val":"number","end":""}],
-    types: placeholder as Registry['customer.orders.update']['types'],
+    types: placeholder as Registry['customer.orders.destroy']['types'],
   },
   'staff.profile.show': {
     methods: ["GET","HEAD"],
@@ -258,6 +258,12 @@ const routes = {
     tokens: [{"old":"/staff/tasks/:number/trip/:type","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/trip/:type","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/trip/:type","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/trip/:type","type":0,"val":"trip","end":""},{"old":"/staff/tasks/:number/trip/:type","type":1,"val":"type","end":""}],
     types: placeholder as Registry['staff.trip.show']['types'],
   },
+  'staff.trip.claim': {
+    methods: ["POST"],
+    pattern: '/staff/tasks/:number/trip/:type/claim',
+    tokens: [{"old":"/staff/tasks/:number/trip/:type/claim","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/trip/:type/claim","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/trip/:type/claim","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/trip/:type/claim","type":0,"val":"trip","end":""},{"old":"/staff/tasks/:number/trip/:type/claim","type":1,"val":"type","end":""},{"old":"/staff/tasks/:number/trip/:type/claim","type":0,"val":"claim","end":""}],
+    types: placeholder as Registry['staff.trip.claim']['types'],
+  },
   'staff.trip.update': {
     methods: ["POST"],
     pattern: '/staff/tasks/:number/trip/:type',
@@ -275,6 +281,12 @@ const routes = {
     pattern: '/staff/tasks/:number/inspection',
     tokens: [{"old":"/staff/tasks/:number/inspection","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/inspection","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/inspection","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/inspection","type":0,"val":"inspection","end":""}],
     types: placeholder as Registry['staff.inspection.show']['types'],
+  },
+  'staff.inspection.claim': {
+    methods: ["POST"],
+    pattern: '/staff/tasks/:number/inspection/claim',
+    tokens: [{"old":"/staff/tasks/:number/inspection/claim","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/inspection/claim","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/inspection/claim","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/inspection/claim","type":0,"val":"inspection","end":""},{"old":"/staff/tasks/:number/inspection/claim","type":0,"val":"claim","end":""}],
+    types: placeholder as Registry['staff.inspection.claim']['types'],
   },
   'staff.inspection.update': {
     methods: ["POST"],
@@ -299,12 +311,6 @@ const routes = {
     pattern: '/staff/tasks/:number/collection',
     tokens: [{"old":"/staff/tasks/:number/collection","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/collection","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/collection","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/collection","type":0,"val":"collection","end":""}],
     types: placeholder as Registry['staff.collection.update']['types'],
-  },
-  'staff.notification.store': {
-    methods: ["POST"],
-    pattern: '/staff/tasks/:number/notification',
-    tokens: [{"old":"/staff/tasks/:number/notification","type":0,"val":"staff","end":""},{"old":"/staff/tasks/:number/notification","type":0,"val":"tasks","end":""},{"old":"/staff/tasks/:number/notification","type":1,"val":"number","end":""},{"old":"/staff/tasks/:number/notification","type":0,"val":"notification","end":""}],
-    types: placeholder as Registry['staff.notification.store']['types'],
   },
   'staff.tag.show': {
     methods: ["GET","HEAD"],

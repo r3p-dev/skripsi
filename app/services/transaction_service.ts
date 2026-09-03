@@ -1,10 +1,18 @@
 import Order from '#models/order'
 import Transaction from '#models/transaction'
+import OrderPaid from '#events/order_paid'
 import OrderService from '#services/order_service'
+import { dispatch } from '#utils/events'
 import { type MidtransNotification, core } from '#config/midtrans'
 import { OrderStatus } from '#enums/order_enum'
 import { PaymentMethod, TransactionStatus } from '#enums/transaction_enum'
+import {
+  midtransChargeKey,
+  midtransChargeLimiter,
+  throwMidtransChargeLimitExceeded,
+} from '#start/limiter'
 import { errors as vineErrors } from '@vinejs/vine'
+import { errors as limiterErrors } from '@adonisjs/limiter'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
@@ -84,11 +92,6 @@ export default class TransactionService {
     })
   }
 
-  /**
-   * Marks an order paid for money that arrived outside Midtrans — a transfer
-   * whose callback never landed, or cash handed over at the shop. The reason is
-   * kept on the transaction so the settlement can be traced back to a person.
-   */
   async confirmManualPayment(
     order: Order,
     paymentMethod: PaymentMethod,
@@ -117,7 +120,7 @@ export default class TransactionService {
         { client: trx }
       )
 
-      await this.orderService.transitionTo(order, OrderStatus.IN_CLEANING, trx)
+      await this.orderService.transitionTo(order, OrderStatus.IN_CLEANING, trx, 'payment')
 
       return settled
     })
@@ -174,10 +177,12 @@ export default class TransactionService {
 
   async #settle(order: Order): Promise<void> {
     if (order.status !== OrderStatus.AWAITING_PAYMENT) {
+      await dispatch(OrderPaid, new OrderPaid(order))
+
       return
     }
 
-    await this.orderService.transitionTo(order, OrderStatus.IN_CLEANING)
+    await this.orderService.transitionTo(order, OrderStatus.IN_CLEANING, undefined, 'payment')
   }
 
   #assertPayable(order: Order): void {
@@ -214,6 +219,24 @@ export default class TransactionService {
     return status
   }
 
+  /**
+   * Throttles the charge itself, not the route that asked for it, so no entry
+   * path can hammer Midtrans on behalf of one order.
+   */
+  async #assertChargeAllowed(order: Order): Promise<void> {
+    try {
+      await midtransChargeLimiter.consume(midtransChargeKey(order.id))
+    } catch (error) {
+      if (!(error instanceof limiterErrors.E_TOO_MANY_REQUESTS)) {
+        throw error
+      }
+
+      logger.warn({ order: order.orderNumber }, 'Midtrans charge attempt throttled')
+
+      throwMidtransChargeLimitExceeded()
+    }
+  }
+
   async #nextMidtransOrderId(order: Order): Promise<string> {
     const [row] = await Transaction.query().where('order_id', order.id).count('* as total')
 
@@ -222,6 +245,8 @@ export default class TransactionService {
 
   async #charge(order: Order): Promise<ChargeResult> {
     const midtransOrderId = await this.#nextMidtransOrderId(order)
+
+    await this.#assertChargeAllowed(order)
 
     let response: MidtransChargeResponse
 

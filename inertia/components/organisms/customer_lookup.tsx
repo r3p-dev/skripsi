@@ -8,6 +8,8 @@ export type FoundCustomer = {
   phone: string
 }
 
+const MINIMUM_SEARCH_LENGTH = 3
+
 export function CustomerLookup({
   selected,
   onSelect,
@@ -21,6 +23,9 @@ export function CustomerLookup({
   const [results, setResults] = useState<FoundCustomer[]>([])
   const [searching, setSearching] = useState(false)
   const [searched, setSearched] = useState(false)
+
+  const typedLength = term.trim().length
+  const isTooShort = typedLength > 0 && typedLength < MINIMUM_SEARCH_LENGTH
 
   async function search() {
     setSearching(true)
@@ -68,12 +73,13 @@ export function CustomerLookup({
           onChange={(event) => setTerm(event.target.value)}
           placeholder="Cari nama atau nomor telepon pelanggan..."
           aria-label="Cari pelanggan terdaftar"
+          aria-describedby={isTooShort ? 'customer-lookup-hint' : undefined}
           className="flex-1"
         />
         <button
           type="button"
           onClick={search}
-          disabled={searching || term.trim().length < 3}
+          disabled={searching || typedLength < MINIMUM_SEARCH_LENGTH}
           className="flex min-h-11 shrink-0 items-center gap-2 border border-rule-field px-4 text-meta font-medium tracking-[0.04em] text-ink transition-colors hover:bg-paper-tint disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <IconSearch className="size-4" />
@@ -81,7 +87,13 @@ export function CustomerLookup({
         </button>
       </div>
 
-      {searched && results.length === 0 && (
+      {isTooShort && (
+        <p id="customer-lookup-hint" className="m-0 text-meta leading-normal text-ink-subtle">
+          Ketik minimal {MINIMUM_SEARCH_LENGTH} karakter untuk mencari.
+        </p>
+      )}
+
+      {!isTooShort && searched && results.length === 0 && (
         <p className="m-0 text-meta leading-normal text-ink-subtle">
           Tidak ada akun yang cocok. Lanjutkan dengan mengisi data pelanggan secara manual.
         </p>

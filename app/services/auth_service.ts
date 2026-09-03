@@ -6,7 +6,7 @@ import type {
   ResetPasswordData,
 } from '#validators/auth_validator'
 import { inject } from '@adonisjs/core'
-import FonnteService from '#services/fonnte_service'
+import WhatsappService from '#notifications/whatsapp_service'
 import { errors as authErrors } from '@adonisjs/auth'
 import { signedUrlFor } from '@adonisjs/core/services/url_builder'
 import { appUrl } from '#config/app'
@@ -15,7 +15,7 @@ import { DateTime } from 'luxon'
 
 @inject()
 export default class AuthService {
-  constructor(private fonnteService: FonnteService) {}
+  constructor(private whatsappService: WhatsappService) {}
 
   async signup(data: SignupData): Promise<User> {
     return User.create({ ...data, role: Role.CUSTOMER })
@@ -50,7 +50,7 @@ export default class AuthService {
       }
     )
 
-    await this.fonnteService.sendPasswordResetLink(user.phone, resetUrl)
+    await this.whatsappService.sendPasswordResetLink(user.phone, resetUrl)
   }
 
   async resetPassword(data: ResetPasswordData, phone: string): Promise<void> {

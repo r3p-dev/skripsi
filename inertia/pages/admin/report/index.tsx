@@ -7,24 +7,17 @@ import {
   SectionLabel,
   SolidButton,
 } from '@/components/atoms/editorial'
+import { BreakdownPanel, type MoneyBreakdown } from '@/components/molecules/breakdown_panel'
 import { DataTable, type Column } from '@/components/molecules/data_table'
 import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { StatCard } from '@/components/molecules/stat_card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Field, FieldLabel } from '@/components/ui/field'
-import { formatRupiah } from '@/lib/format'
 import type { InertiaProps } from '@/types'
 import { Form } from '@adonisjs/inertia/react'
 import { IconCash, IconReceipt2, IconTrendingUp } from '@tabler/icons-react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-
-type MoneyBreakdown = {
-  value: string
-  label: string
-  orders: number
-  revenue: number
-}
 
 type TopService = {
   id: number
@@ -32,6 +25,7 @@ type TopService = {
   category: string
   orders: number
   revenue: number
+  revenueLabel: string
 }
 
 type PageProps = InertiaProps<{
@@ -40,9 +34,11 @@ type PageProps = InertiaProps<{
     to: string
     label: string
     totalRevenue: number
+    totalRevenueLabel: string
     paidOrders: number
     averageOrderValue: number
-    series: { date: string; label: string; total: number }[]
+    averageOrderValueLabel: string
+    series: { date: string; label: string; total: number; totalLabel: string }[]
     byPaymentMethod: MoneyBreakdown[]
     byType: MoneyBreakdown[]
     topServices: TopService[]
@@ -53,28 +49,6 @@ const chartConfig = {
   total: { label: 'Pendapatan', color: 'var(--color-ink)' },
 } as const
 
-const breakdownColumns: Column<MoneyBreakdown>[] = [
-  { key: 'label', header: 'Nama', role: 'primary', cell: (row) => row.label },
-  {
-    key: 'revenue',
-    header: 'Pendapatan',
-    align: 'right',
-    role: 'trailing',
-    cell: (row) => (
-      <span className="text-body font-semibold text-ink tablet:text-small">
-        {formatRupiah(row.revenue)}
-      </span>
-    ),
-  },
-  {
-    key: 'orders',
-    header: 'Pesanan',
-    align: 'right',
-    role: 'meta',
-    cell: (row) => `${row.orders} pesanan`,
-  },
-]
-
 const topServiceColumns: Column<TopService>[] = [
   { key: 'name', header: 'Layanan', role: 'primary', cell: (catalogue) => catalogue.name },
   {
@@ -84,7 +58,7 @@ const topServiceColumns: Column<TopService>[] = [
     role: 'trailing',
     cell: (catalogue) => (
       <span className="text-body font-semibold text-ink tablet:text-small">
-        {formatRupiah(catalogue.revenue)}
+        {catalogue.revenueLabel}
       </span>
     ),
   },
@@ -96,24 +70,6 @@ const topServiceColumns: Column<TopService>[] = [
     cell: (catalogue) => `${catalogue.orders} terjual`,
   },
 ]
-
-function BreakdownPanel({ title, rows }: { title: string; rows: MoneyBreakdown[] }) {
-  return (
-    <div>
-      <Panel className="border-b-0">
-        <PanelHeader>
-          <SectionLabel>{title}</SectionLabel>
-        </PanelHeader>
-      </Panel>
-      <DataTable
-        columns={breakdownColumns}
-        rows={rows}
-        getKey={(row) => row.value}
-        empty="Belum ada data pada rentang ini"
-      />
-    </div>
-  )
-}
 
 export default function Index({ report }: PageProps) {
   return (
@@ -150,15 +106,11 @@ export default function Index({ report }: PageProps) {
       </Form>
 
       <div className="grid gap-3 tablet:grid-cols-3">
-        <StatCard
-          label="Total Pendapatan"
-          value={formatRupiah(report.totalRevenue)}
-          icon={IconCash}
-        />
+        <StatCard label="Total Pendapatan" value={report.totalRevenueLabel} icon={IconCash} />
         <StatCard label="Pesanan Terbayar" value={report.paidOrders} icon={IconReceipt2} />
         <StatCard
           label="Rata-rata per Pesanan"
-          value={formatRupiah(report.averageOrderValue)}
+          value={report.averageOrderValueLabel}
           icon={IconTrendingUp}
         />
       </div>
@@ -174,7 +126,9 @@ export default function Index({ report }: PageProps) {
               <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis hide />
               <ChartTooltip
-                content={<ChartTooltipContent formatter={(value) => formatRupiah(Number(value))} />}
+                content={
+                  <ChartTooltipContent formatter={(_, __, item) => item.payload.totalLabel} />
+                }
               />
               <Bar dataKey="total" fill="var(--color-total)" />
             </BarChart>

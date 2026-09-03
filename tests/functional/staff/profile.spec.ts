@@ -1,9 +1,9 @@
 import { test } from '@japa/runner'
-import FonnteService from '#services/fonnte_service'
+import WhatsappService from '#notifications/whatsapp_service'
 import User from '#models/user'
 import app from '@adonisjs/core/services/app'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { FakeFonnteService } from '#tests/utils/fakes'
+import { FakeWhatsappService } from '#tests/utils/fakes'
 import { UserFactory } from '#database/factories/user_factory'
 import { inputErrors, toRelativeUrl } from '#tests/utils/helpers'
 
@@ -100,9 +100,9 @@ test.group('Staff profile | changing phone number', (group) => {
   group.each.teardown(() => app.container.restoreAll())
 
   test('the verification link points at the staff route', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const staff = await UserFactory.apply('staff').create()
 
@@ -114,13 +114,13 @@ test.group('Staff profile | changing phone number', (group) => {
       .form({ phone: '081200000651' })
 
     response.assertStatus(302)
-    assert.include(fonnte.lastMessage!.body, '/staff/phone/verify')
+    assert.include(whatsapp.messageTo('081200000651')!.body, '/staff/phone/verify')
   })
 
   test('following the link swaps the number over', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const staff = await UserFactory.apply('staff').create()
 
@@ -132,7 +132,7 @@ test.group('Staff profile | changing phone number', (group) => {
       .form({ phone: '081200000652' })
 
     const response = await client
-      .get(toRelativeUrl(fonnte.lastMessage!.body))
+      .get(toRelativeUrl(whatsapp.messageTo('081200000652')!.body))
       .loginAs(staff)
       .redirects(0)
 
@@ -144,9 +144,9 @@ test.group('Staff profile | changing phone number', (group) => {
   })
 
   test('a tampered link is turned away', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const staff = await UserFactory.apply('staff').create()
 
@@ -157,7 +157,7 @@ test.group('Staff profile | changing phone number', (group) => {
       .redirects(0)
       .form({ phone: '081200000653' })
 
-    const link = toRelativeUrl(fonnte.lastMessage!.body)
+    const link = toRelativeUrl(whatsapp.messageTo('081200000653')!.body)
 
     const response = await client
       .get(link.replace(/signature=\w/, 'signature=x'))

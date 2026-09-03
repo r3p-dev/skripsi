@@ -9,10 +9,6 @@ export const CatalogueCategory = {
   BAG_WASH: 'bag_wash',
   HELMET_WASH: 'helmet_wash',
   SHOE_REPAIR: 'shoe_repair',
-  /**
-   * Add-ons that are not tied to one kind of item — a protective coating or a
-   * rush fee applies just as well to a shoe as to a bag.
-   */
   ADDITIONAL: 'additional',
 } as const
 

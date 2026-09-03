@@ -102,12 +102,6 @@ test.group('Customer geocode | searching for an address', (group) => {
     response.assertStatus(422)
   })
 
-  /**
-   * Without an `Accept: application/json` header the shared exception handler
-   * treats the failure as a form post and redirects, even though the endpoint
-   * only ever answers in JSON. The browser code must ask for JSON to see the
-   * error.
-   */
   test('a search term rejected without asking for JSON comes back as a redirect', async ({
     client,
     assert,

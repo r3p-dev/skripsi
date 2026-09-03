@@ -1,7 +1,7 @@
 import CatalogueService from '#services/catalogue_service'
 import OrderTransformer from '#transformers/order_transformer'
 import CatalogueTransformer from '#transformers/catalogue_transformer'
-import TaskService from '#services/task_service'
+import TaskService, { TASK_TAKEN_MESSAGE } from '#services/task_service'
 import { TaskType } from '#enums/task_enum'
 import { inspectionValidator } from '#validators/task_validator'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -14,17 +14,21 @@ export default class InspectionController {
     protected taskService: TaskService
   ) {}
 
-  async show({ auth, inertia, params }: HttpContext) {
+  async show({ auth, inertia, params, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
 
     const summary = await this.taskService.findSummaryByNumber(params.number)
-    const claimed = await this.taskService.claim(user, summary, TaskType.INSPECTION)
 
-    if (!claimed) {
+    if (this.taskService.isBlocked(user, summary)) {
+      session.flash('error', TASK_TAKEN_MESSAGE)
+      return response.redirect().toRoute('staff.trip.index')
+    }
+
+    if (!this.taskService.holds(user, summary)) {
       return inertia.render('staff/inspection/show', {
         order: OrderTransformer.transform(summary).useVariant('toDetail'),
         catalogues: CatalogueTransformer.transform([]),
-        blocked: true,
+        claimed: false,
       })
     }
 
@@ -36,8 +40,21 @@ export default class InspectionController {
     return inertia.render('staff/inspection/show', {
       order: OrderTransformer.transform(order).useVariant('toDetail'),
       catalogues: CatalogueTransformer.transform(catalogues),
-      blocked: false,
+      claimed: true,
     })
+  }
+
+  async claim({ auth, params, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const order = await this.taskService.findSummaryByNumber(params.number)
+
+    if (!(await this.taskService.claim(user, order, TaskType.INSPECTION))) {
+      session.flash('error', TASK_TAKEN_MESSAGE)
+      return response.redirect().toRoute('staff.trip.index')
+    }
+
+    return response.redirect().toRoute('staff.inspection.show', { number: params.number })
   }
 
   async update({ auth, params, request, response, session }: HttpContext) {

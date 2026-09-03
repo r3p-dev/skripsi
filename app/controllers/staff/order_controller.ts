@@ -6,6 +6,7 @@ import { offlineOrderValidator, orderItemsValidator } from '#validators/task_val
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import CatalogueTransformer from '#transformers/catalogue_transformer'
+import { formatRupiah } from '#utils/currency'
 
 @inject()
 export default class OrderController {
@@ -42,6 +43,8 @@ export default class OrderController {
     return inertia.render('staff/order/edit', {
       order: OrderTransformer.transform(order).useVariant('toDetail'),
       catalogues: CatalogueTransformer.transform(catalogues),
+      canEdit: this.taskService.canEditItems(order),
+      isCounterOrder: this.taskService.isCounterOrder(order),
     })
   }
 
@@ -59,9 +62,11 @@ export default class OrderController {
     const order = await this.taskService.findByNumber(params.number)
     const transaction = await this.transactionService.getLatestTransaction(order)
 
+    const change = this.taskService.changeFor(order, transaction)
+
     return inertia.render('staff/order/receipt', {
       order: OrderTransformer.transform(order).useVariant('toDetail'),
-      change: this.taskService.changeFor(order, transaction),
+      changeLabel: formatRupiah(change),
     })
   }
 

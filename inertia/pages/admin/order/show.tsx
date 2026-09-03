@@ -1,4 +1,3 @@
-import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import {
   EmptyState,
@@ -9,11 +8,9 @@ import {
   StatusBadge,
 } from '@/components/atoms/editorial'
 import { DataTable, type Column } from '@/components/molecules/data_table'
+import { DetailRow } from '@/components/molecules/detail_row'
 import { PageHeader } from '@/components/molecules/page_header'
 import { neutralTone, orderStatusTones, transactionStatusTones } from '@/lib/constants'
-import { ActionNameLabel } from '@/enums/order_action_enum'
-import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
-import { formatDate, formatDateTime, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Link } from '@adonisjs/inertia/react'
@@ -26,15 +23,6 @@ type OrderTransaction = NonNullable<OrderDetail['transactions']>[number]
 type PageProps = InertiaProps<{
   order: OrderDetail
 }>
-
-function Detail({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-rule py-3 last:border-b-0">
-      <p className="m-0 text-micro tracking-[0.14em] text-ink-subtle uppercase">{label}</p>
-      <p className="m-0 text-small leading-normal font-medium text-ink">{value ?? '-'}</p>
-    </div>
-  )
-}
 
 const itemColumns: Column<OrderLine>[] = [
   {
@@ -59,7 +47,7 @@ const itemColumns: Column<OrderLine>[] = [
     role: 'trailing',
     cell: (line) => (
       <span className="text-body font-semibold text-ink tablet:text-small">
-        {formatRupiah(line.subtotal)}
+        {line.subtotalLabel}
       </span>
     ),
   },
@@ -70,14 +58,13 @@ const transactionColumns: Column<OrderTransaction>[] = [
     key: 'method',
     header: 'Metode',
     role: 'primary',
-    cell: (transaction) =>
-      PaymentMethodLabel[transaction.paymentMethod as keyof typeof PaymentMethodLabel],
+    cell: (transaction) => transaction.paymentMethodLabel,
   },
   {
     key: 'createdAt',
     header: 'Tanggal',
     role: 'meta',
-    cell: (transaction) => formatDateTime(transaction.createdAt),
+    cell: (transaction) => transaction.createdAt,
   },
   {
     key: 'status',
@@ -85,7 +72,7 @@ const transactionColumns: Column<OrderTransaction>[] = [
     role: 'trailing',
     cell: (transaction) => (
       <StatusBadge tone={transactionStatusTones[transaction.status] ?? neutralTone}>
-        {TransactionStatusLabel[transaction.status as keyof typeof TransactionStatusLabel]}
+        {transaction.statusLabel}
       </StatusBadge>
     ),
   },
@@ -101,7 +88,7 @@ export default function Show({ order }: PageProps) {
       <PageHeader
         eyebrow="Pesanan"
         title={order.orderNumber}
-        description={`${OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]} · dibuat ${formatDate(order.createdAt)}`}
+        description={`${order.typeLabel} · dibuat ${order.createdAt}`}
         action={
           <Link
             route="admin.order.index"
@@ -118,20 +105,15 @@ export default function Show({ order }: PageProps) {
           <PanelHeader>
             <SectionLabel>Ringkasan</SectionLabel>
             <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
-              {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+              {order.statusLabel}
             </StatusBadge>
           </PanelHeader>
           <PanelBody className="py-1">
-            <Detail label="Pelanggan" value={order.customerName} />
-            <Detail label="Telepon" value={order.customerPhone} />
-            <Detail label="Akun" value={order.user?.name ?? 'Tanpa akun (offline)'} />
-            <Detail label="Jadwal Jemput" value={formatDate(order.pickupDate)} />
-            <Detail
-              label="Total"
-              value={
-                order.totalPrice === null ? 'Belum ada tagihan' : formatRupiah(order.totalPrice)
-              }
-            />
+            <DetailRow label="Pelanggan" value={order.customerName} />
+            <DetailRow label="Telepon" value={order.customerPhone} />
+            <DetailRow label="Akun" value={order.user?.name ?? 'Tanpa akun (offline)'} />
+            <DetailRow label="Jadwal Jemput" value={order.pickupDate ?? '—'} />
+            <DetailRow label="Total" value={order.totalPriceLabel} />
           </PanelBody>
         </Panel>
 
@@ -141,10 +123,10 @@ export default function Show({ order }: PageProps) {
           </PanelHeader>
           {order.address ? (
             <PanelBody className="py-1">
-              <Detail label="Penerima" value={order.address.name} />
-              <Detail label="Telepon" value={order.address.phone} />
-              <Detail label="Alamat" value={order.address.street} />
-              <Detail label="Catatan" value={order.address.note} />
+              <DetailRow label="Penerima" value={order.address.name} />
+              <DetailRow label="Telepon" value={order.address.phone} />
+              <DetailRow label="Alamat" value={order.address.street} />
+              <DetailRow label="Catatan" value={order.address.note} />
             </PanelBody>
           ) : (
             <EmptyState>
@@ -196,12 +178,9 @@ export default function Show({ order }: PageProps) {
                   <li key={action.id} className="border-b border-rule py-3.5 last:border-b-0">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
                       <p className="m-0 text-small leading-normal font-medium text-ink">
-                        {ActionNameLabel[action.name as keyof typeof ActionNameLabel] ??
-                          action.name}
+                        {action.nameLabel ?? action.name}
                       </p>
-                      <p className="m-0 text-meta text-ink-subtle">
-                        {formatDateTime(action.createdAt)}
-                      </p>
+                      <p className="m-0 text-meta text-ink-subtle">{action.createdAt}</p>
                     </div>
                     <p className="m-0 mt-0.5 text-meta leading-normal text-ink-soft">
                       oleh {action.staff?.name ?? 'petugas tidak diketahui'}

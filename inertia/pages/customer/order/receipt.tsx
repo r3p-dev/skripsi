@@ -1,30 +1,14 @@
 import { BackLink, Eyebrow, OutlineButton, PageTitle, Shell } from '@/components/atoms/editorial'
+import { ReceiptPerforation, ReceiptRow } from '@/components/molecules/receipt'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
 import { Head } from '@inertiajs/react'
 import { IconPrinter } from '@tabler/icons-react'
-import { OrderStatusLabel } from '@/enums/order_enum'
-import { formatDate } from '@/lib/format'
 import { groupLinesByItem } from '@/lib/order'
-import { type ReactNode } from 'react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
 }>
-
-function Row({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-ink-soft">{label}</span>
-      <span className="receipt-leader" />
-      <span className="text-right font-semibold">{children}</span>
-    </div>
-  )
-}
-
-function Perforation() {
-  return <div className="border-t border-dashed border-rule-field" />
-}
 
 export default function Receipt({ order }: PageProps) {
   const itemGroups = groupLinesByItem(order.items ?? [])
@@ -85,15 +69,13 @@ export default function Receipt({ order }: PageProps) {
               </div>
 
               <div className="flex flex-col gap-1.5 text-meta leading-normal">
-                <Row label="Status">
-                  {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-                </Row>
-                <Row label="Tgl. Pemesanan">{formatDate(order.createdAt)}</Row>
-                <Row label="Tgl. Penjemputan">{formatDate(order.pickupDate)}</Row>
+                <ReceiptRow label="Status">{order.statusLabel}</ReceiptRow>
+                <ReceiptRow label="Tgl. Pemesanan">{order.createdAt}</ReceiptRow>
+                <ReceiptRow label="Tgl. Penjemputan">{order.pickupDate ?? '—'}</ReceiptRow>
               </div>
             </div>
 
-            <Perforation />
+            <ReceiptPerforation />
 
             <div className="px-6 py-6 text-meta leading-normal">
               <p className="m-0 text-badge tracking-[0.2em] text-ink-subtle uppercase">Penerima</p>
@@ -106,7 +88,7 @@ export default function Receipt({ order }: PageProps) {
 
             {itemGroups.length > 0 && (
               <>
-                <Perforation />
+                <ReceiptPerforation />
 
                 <div className="flex flex-col gap-4 px-6 py-6">
                   <p className="m-0 text-badge tracking-[0.2em] text-ink-subtle uppercase">
@@ -139,7 +121,7 @@ export default function Receipt({ order }: PageProps) {
               </>
             )}
 
-            <Perforation />
+            <ReceiptPerforation />
 
             <div className="flex items-baseline justify-between gap-3 px-6 py-6">
               <span className="text-meta tracking-[0.2em] uppercase">Total</span>
@@ -148,7 +130,7 @@ export default function Receipt({ order }: PageProps) {
               </span>
             </div>
 
-            <Perforation />
+            <ReceiptPerforation />
 
             <div className="px-6 pt-6 pb-8 text-center">
               <p className="m-0 text-badge tracking-[0.2em] text-ink-subtle uppercase">

@@ -58,6 +58,7 @@ export const validationFields = {
   street: 'Alamat',
   latitude: 'Latitude',
   longitude: 'Longitude',
+  location: 'Titik lokasi',
   note: 'Catatan',
   date: 'Tanggal',
   pickupDate: 'Tanggal penjemputan',

@@ -1,6 +1,5 @@
 import AddressService from '#services/address_service'
 import CatalogueService from '#services/catalogue_service'
-import FonnteService from '#services/fonnte_service'
 import OrderService from '#services/order_service'
 import RoutingService, { type RouteLine, type RoutePoint } from '#services/routing_service'
 import Item from '#models/item'
@@ -10,8 +9,11 @@ import OrderItem from '#models/order_item'
 import Transaction from '#models/transaction'
 import UserModel from '#models/user'
 import type User from '#models/user'
+import OrderCreated from '#events/order_created'
+import OrderPriceCorrected from '#events/order_price_corrected'
+import { dispatch } from '#utils/events'
 import { ActionName } from '#enums/order_action_enum'
-import { OrderStatus, OrderType } from '#enums/order_enum'
+import { OrderStatus, OrderType, WALK_IN_TYPES } from '#enums/order_enum'
 import { Role } from '#enums/role_enum'
 import { TransactionStatus } from '#enums/transaction_enum'
 import { CLAIM_DURATION_HOURS, TASK_SOURCE_STATUS, TaskType, type TripType } from '#enums/task_enum'
@@ -23,6 +25,8 @@ import type {
 } from '#validators/task_validator'
 import { errors as vineErrors } from '@vinejs/vine'
 import { inject } from '@adonisjs/core'
+import drive from '@adonisjs/drive/services/main'
+import logger from '@adonisjs/core/services/logger'
 import { randomUUID } from 'node:crypto'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import db from '@adonisjs/lucid/services/db'
@@ -39,6 +43,9 @@ export type RouteItem = {
 }
 
 const PHOTO_DIRECTORY = 'order-actions'
+
+export const TASK_TAKEN_MESSAGE =
+  'Pesanan ini sudah diambil petugas lain. Silakan pilih pesanan lain.'
 
 const COMPLETION_STATUS: Record<TripType, OrderStatus> = {
   [TaskType.PICKUP]: OrderStatus.IN_PICKUP,
@@ -61,7 +68,6 @@ export default class TaskService {
   constructor(
     protected addressService: AddressService,
     protected catalogueService: CatalogueService,
-    protected fonnteService: FonnteService,
     protected orderService: OrderService,
     protected routingService: RoutingService
   ) {}
@@ -189,6 +195,18 @@ export default class TaskService {
     return !!order.claimedAt && order.claimedAt > this.#claimFloor()
   }
 
+  holds(user: User, order: Order): boolean {
+    return order.claimedBy === user.id && !!order.claimedAt && order.claimedAt > this.#claimFloor()
+  }
+
+  canEditItems(order: Order): boolean {
+    return order.status === OrderStatus.AWAITING_PAYMENT
+  }
+
+  isCounterOrder(order: Order): boolean {
+    return WALK_IN_TYPES.includes(order.type)
+  }
+
   async completeTrip(
     user: User,
     order: Order,
@@ -197,10 +215,11 @@ export default class TaskService {
   ): Promise<Order> {
     this.#assertHolder(user, order)
 
-    const photoPath = await this.#storePhoto(photo)
-
     return db.transaction(async (trx) => {
       await this.orderService.transitionTo(order, COMPLETION_STATUS[type], trx)
+
+      const photoPath = await this.#storePhoto(photo, trx)
+
       await this.#recordAction(order, user, COMPLETION_ACTION[type], trx, photoPath)
       await this.#clearClaim(order, trx)
 
@@ -212,7 +231,6 @@ export default class TaskService {
     this.#assertHolder(user, order)
 
     const catalogues = await this.catalogueService.resolveForSelections(data.items)
-    const photoPath = await this.#storePhoto(data.photo)
 
     return db.transaction(async (trx) => {
       await Item.query({ client: trx }).where('order_id', order.id).delete()
@@ -228,6 +246,9 @@ export default class TaskService {
       await order.save()
 
       await this.orderService.transitionTo(order, OrderStatus.AWAITING_PAYMENT, trx)
+
+      const photoPath = await this.#storePhoto(data.photo, trx)
+
       await this.#recordAction(order, user, ActionName.INSPECTION, trx, photoPath)
       await this.#clearClaim(order, trx)
 
@@ -244,10 +265,11 @@ export default class TaskService {
       ])
     }
 
-    const photoPath = await this.#storePhoto(photo)
-
     return db.transaction(async (trx) => {
       await this.orderService.transitionTo(order, next, trx)
+
+      const photoPath = await this.#storePhoto(photo, trx)
+
       await this.#recordAction(order, user, ActionName.CLEANING_DONE, trx, photoPath)
 
       return order
@@ -258,48 +280,25 @@ export default class TaskService {
     return order.status === OrderStatus.IN_DELIVERY
   }
 
-  async completeCollection(user: User, order: Order): Promise<Order> {
+  async completeCollection(user: User, order: Order, photo: MultipartFile): Promise<Order> {
     return db.transaction(async (trx) => {
       await this.orderService.transitionTo(order, OrderStatus.COMPLETED, trx)
-      await this.#recordAction(order, user, ActionName.COLLECTED, trx)
+
+      const photoPath = await this.#storePhoto(photo, trx)
+
+      await this.#recordAction(order, user, ActionName.COLLECTED, trx, photoPath)
 
       return order
     })
   }
 
-  async sendReadyNotice(user: User, order: Order): Promise<void> {
-    if (order.status !== OrderStatus.CLEANING_DONE) {
-      throw new vineErrors.E_VALIDATION_ERROR([
-        { field: 'form', message: 'Pesanan ini belum siap diambil.' },
-      ])
-    }
-
-    const alreadySent = await OrderAction.query()
-      .where('order_id', order.id)
-      .where('name', ActionName.READY_NOTICE_SENT)
-      .first()
-
-    if (alreadySent) {
-      return
-    }
-
-    await this.fonnteService.sendReadyForCollection(order.customerPhone, order.orderNumber)
-    await this.#recordAction(order, user, ActionName.READY_NOTICE_SENT)
-  }
-
-  /**
-   * Takes an order over the counter. The customer is present, so the goods are
-   * recorded, priced and paid for in one go — which is why the order is born
-   * already paid and drops straight into the wash queue.
-   */
   async createOfflineOrder(user: User, data: OfflineOrderData): Promise<Order> {
     const catalogues = await this.catalogueService.resolveForSelections(data.items)
     const address = await this.#resolveCounterAddress(data)
-    const photoPath = await this.#storePhoto(data.photo)
 
-    return this.orderService.createWithUniqueOrderNumber((orderNumber) =>
+    const order = await this.orderService.createWithUniqueOrderNumber((orderNumber) =>
       db.transaction(async (trx) => {
-        const order = await Order.create(
+        const created = await Order.create(
           {
             userId: data.customerId ?? null,
             addressId: address?.id ?? null,
@@ -317,16 +316,16 @@ export default class TaskService {
         let total = 0
 
         for (const entry of data.items) {
-          total += await this.#recordInspectedItem(order, entry, catalogues, trx)
+          total += await this.#recordInspectedItem(created, entry, catalogues, trx)
         }
 
-        order.merge({ totalPrice: total.toString() })
-        order.useTransaction(trx)
-        await order.save()
+        created.merge({ totalPrice: total.toString() })
+        created.useTransaction(trx)
+        await created.save()
 
         await Transaction.create(
           {
-            orderId: order.id,
+            orderId: created.id,
             paymentMethod: data.paymentMethod,
             status: TransactionStatus.PAID,
             cashReceived: data.cashReceived?.toString() ?? null,
@@ -337,17 +336,19 @@ export default class TaskService {
           { client: trx }
         )
 
-        await this.#recordAction(order, user, ActionName.OFFLINE_ORDER, trx, photoPath, data.note)
+        const photoPath = await this.#storePhoto(data.photo, trx)
 
-        return order
+        await this.#recordAction(created, user, ActionName.OFFLINE_ORDER, trx, photoPath, data.note)
+
+        return created
       })
     )
+
+    await dispatch(OrderCreated, new OrderCreated(order))
+
+    return order
   }
 
-  /**
-   * Corrects the goods on an order that has been priced but not yet paid for.
-   * Re-prices from scratch, since a changed catalogue changes the bill.
-   */
   async updateOrderItems(order: Order, data: OrderItemsData): Promise<Order> {
     if (order.status !== OrderStatus.AWAITING_PAYMENT) {
       throw new vineErrors.E_VALIDATION_ERROR([
@@ -373,14 +374,12 @@ export default class TaskService {
       order.useTransaction(trx)
       await order.save()
 
+      await dispatch(OrderPriceCorrected, new OrderPriceCorrected(order), trx)
+
       return order
     })
   }
 
-  /**
-   * Customers a staff member can attach a counter order to, so a regular does
-   * not end up with a second, account-less order history.
-   */
   async findCustomers(search: string): Promise<User[]> {
     const term = search.trim()
 
@@ -398,9 +397,6 @@ export default class TaskService {
       .limit(10)
   }
 
-  /**
-   * What the customer gets back from the cash they handed over.
-   */
   changeFor(order: Order, transaction: Transaction | null): number {
     if (!transaction?.cashReceived) {
       return 0
@@ -409,11 +405,6 @@ export default class TaskService {
     return Math.max(0, Number(transaction.cashReceived) - Number(order.totalPrice ?? 0))
   }
 
-  /**
-   * Delivery is only offered to customers with an account, because that is the
-   * only place an address lives. Asking for it without one is a validation error
-   * rather than a silent downgrade to a shop pickup.
-   */
   async #resolveCounterAddress(data: OfflineOrderData) {
     if (!data.delivery) {
       return null
@@ -552,11 +543,21 @@ export default class TaskService {
     )
   }
 
-  async #storePhoto(photo: MultipartFile): Promise<string> {
+  async #storePhoto(photo: MultipartFile, trx: TransactionClientContract): Promise<string> {
     const key = `${PHOTO_DIRECTORY}/${randomUUID()}.${photo.extname}`
 
     await photo.moveToDisk(key)
 
+    trx.after('rollback', () => this.#discardPhoto(key))
+
     return key
+  }
+
+  async #discardPhoto(key: string): Promise<void> {
+    try {
+      await drive.use().delete(key)
+    } catch (error) {
+      logger.warn({ err: error, photo: key }, 'Could not remove the photo of a failed task')
+    }
   }
 }

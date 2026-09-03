@@ -38,7 +38,6 @@ export const controllers = {
     Cleaning: () => import('#controllers/staff/cleaning_controller'),
     Collection: () => import('#controllers/staff/collection_controller'),
     Inspection: () => import('#controllers/staff/inspection_controller'),
-    Notification: () => import('#controllers/staff/notification_controller'),
     Order: () => import('#controllers/staff/order_controller'),
     Password: () => import('#controllers/staff/password_controller'),
     Phone: () => import('#controllers/staff/phone_controller'),

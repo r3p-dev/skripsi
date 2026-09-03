@@ -2,6 +2,11 @@ import AuthService from '#services/auth_service'
 import { forgotPasswordValidator, resetPasswordValidator } from '#validators/auth_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
+import {
+  forgotPasswordKey,
+  forgotPasswordLimiter,
+  throwForgotPasswordLimitExceeded,
+} from '#start/limiter'
 
 @inject()
 export default class PasswordResetController {
@@ -14,8 +19,16 @@ export default class PasswordResetController {
   async store({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(forgotPasswordValidator)
 
+    const key = forgotPasswordKey(request.ip())
+
+    if ((await forgotPasswordLimiter.remaining(key)) < 1) {
+      throwForgotPasswordLimitExceeded()
+    }
+
     try {
       await this.authService.requestPasswordReset(payload)
+
+      await forgotPasswordLimiter.increment(key)
 
       session.flash(
         'success',

@@ -1,4 +1,3 @@
-import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import {
   EmptyState,
   Panel,
@@ -15,17 +14,20 @@ import { useEffect, useState } from 'react'
 
 type AdminOrderEvent = {
   event: 'order:created' | 'order:updated' | 'order:paid'
+  reason: 'created' | 'status-change' | 'price-correction' | 'payment'
   orderNumber: string
   customerName: string
   status: string
-  type: string
-  totalPrice: number | null
+  statusLabel: string
+  typeLabel: string
+  totalPriceLabel: string | null
 }
 
-const EVENT_LABEL: Record<AdminOrderEvent['event'], string> = {
-  'order:created': 'Pesanan Masuk',
-  'order:updated': 'Pesanan Diperbarui',
-  'order:paid': 'Pesanan Terbayar',
+const REASON_LABEL: Record<AdminOrderEvent['reason'], string> = {
+  'created': 'Pesanan Masuk',
+  'status-change': 'Status Diperbarui',
+  'price-correction': 'Harga Diperbarui',
+  'payment': 'Pesanan Terbayar',
 }
 
 const EVENT_TONE: Record<AdminOrderEvent['event'], BadgeTone> = {
@@ -80,20 +82,17 @@ export function LiveOrders() {
                     {entry.orderNumber}
                   </span>
                   <StatusBadge tone={EVENT_TONE[entry.event]}>
-                    {EVENT_LABEL[entry.event]}
+                    {REASON_LABEL[entry.reason]}
                   </StatusBadge>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-meta leading-normal">
                   <span className="text-ink-soft">
-                    {entry.customerName} ·{' '}
-                    {OrderTypeLabel[entry.type as keyof typeof OrderTypeLabel]}
+                    {entry.customerName} · {entry.typeLabel}
                   </span>
-                  <span className="text-ink-body">
-                    {entry.totalPrice === null ? '—' : entry.totalPrice}
-                  </span>
+                  <span className="text-ink-body">{entry.totalPriceLabel ?? '—'}</span>
                 </div>
                 <StatusBadge tone={orderStatusTones[entry.status] ?? neutralTone} className="w-fit">
-                  {OrderStatusLabel[entry.status as keyof typeof OrderStatusLabel]}
+                  {entry.statusLabel}
                 </StatusBadge>
               </li>
             ))}

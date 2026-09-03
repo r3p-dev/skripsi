@@ -20,11 +20,6 @@ export default class extends BaseSchema {
       table.timestamp('updated_at').nullable()
     })
 
-    /**
-     * The staff customer picker matches with a leading wildcard
-     * (`ILIKE '%term%'`), which no btree index can serve. Trigram GIN indexes
-     * are the one index type that can answer those lookups.
-     */
     this.schema.raw(`CREATE INDEX users_name_trgm_index
       ON ${this.tableName} USING GIN (name gin_trgm_ops)
     `)

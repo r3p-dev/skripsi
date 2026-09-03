@@ -2,6 +2,7 @@ import { indexPages } from '@adonisjs/inertia'
 import { indexEntities } from '@adonisjs/core'
 import { defineConfig } from '@adonisjs/core/app'
 import { generateRegistry } from '@tuyau/core/hooks'
+import { indexPolicies } from '@adonisjs/bouncer'
 
 export default defineConfig({
   experimental: {},
@@ -11,6 +12,7 @@ export default defineConfig({
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/session/commands'),
     () => import('@adonisjs/inertia/commands'),
+    () => import('@adonisjs/bouncer/commands'),
   ],
 
   providers: [
@@ -34,12 +36,14 @@ export default defineConfig({
     () => import('@adonisjs/drive/drive_provider'),
     () => import('@adonisjs/limiter/limiter_provider'),
     () => import('@adonisjs/transmit/transmit_provider'),
+    () => import('@adonisjs/bouncer/bouncer_provider'),
   ],
 
   preloads: [
     () => import('#start/routes'),
     () => import('#start/kernel'),
     () => import('#start/validator'),
+    () => import('#start/events'),
   ],
 
   tests: {
@@ -82,6 +86,7 @@ export default defineConfig({
       }),
       indexPages({ framework: 'react' }),
       generateRegistry(),
+      indexPolicies(),
     ],
     buildStarting: [() => import('@adonisjs/vite/build_hook')],
   },

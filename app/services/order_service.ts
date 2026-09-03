@@ -2,6 +2,10 @@ import AddressService from '#services/address_service'
 import Item from '#models/item'
 import Order from '#models/order'
 import type User from '#models/user'
+import OrderCreated from '#events/order_created'
+import OrderPaid from '#events/order_paid'
+import OrderStatusChanged from '#events/order_status_changed'
+import { dispatch } from '#utils/events'
 import { ItemTypeLabel, type ItemType } from '#enums/item_enum'
 import { OrderStatus, OrderStatusLabel, OrderType, OrderTypeLabel } from '#enums/order_enum'
 import type { OrderData } from '#validators/order_validator'
@@ -12,6 +16,14 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 
 export const DAILY_PICKUP_LIMIT = 10
+
+export const ADMIN_ORDERS_CHANNEL = 'admin/orders'
+
+/**
+ * Why an order moved. A move caused by a payment is announced as a payment,
+ * not as a plain status change.
+ */
+export type TransitionReason = 'status-change' | 'payment'
 
 export type AdminOrderFilters = {
   search: string
@@ -72,17 +84,10 @@ export default class OrderService {
     return new Map([...summaries].map(([id, parts]) => [id, parts.join(', ')]))
   }
 
-  /**
-   * The admin order list: every order in the shop, narrowed by whatever the
-   * filter bar was set to.
-   */
   async listForAdmin(filters: AdminOrderFilters) {
     return this.#adminQuery(filters).paginate(filters.page, 15)
   }
 
-  /**
-   * The same rows without paging, for the spreadsheet export.
-   */
   async listAllForAdmin(filters: AdminOrderFilters): Promise<Order[]> {
     return this.#adminQuery(filters)
   }
@@ -166,9 +171,9 @@ export default class OrderService {
 
     await this.#assertPickupCapacity(data.pickupDate)
 
-    return this.createWithUniqueOrderNumber((orderNumber) =>
+    const order = await this.createWithUniqueOrderNumber((orderNumber) =>
       db.transaction(async (trx) => {
-        const order = await Order.create(
+        const created = await Order.create(
           {
             userId: user.id,
             addressId: address.id,
@@ -185,7 +190,7 @@ export default class OrderService {
 
         await Item.createMany(
           data.items.map((item) => ({
-            orderId: order.id,
+            orderId: created.id,
             type: item.type,
             brand: item.brand,
             model: item.model,
@@ -196,9 +201,13 @@ export default class OrderService {
           { client: trx }
         )
 
-        return order
+        return created
       })
     )
+
+    await dispatch(OrderCreated, new OrderCreated(order))
+
+    return order
   }
 
   nextStatuses(order: Order): readonly OrderStatus[] {
@@ -217,10 +226,16 @@ export default class OrderService {
     return this.nextStatuses(order).includes(status)
   }
 
+  /**
+   * Moves an order to its next stage and says so. What anyone does about it —
+   * telling the admin feed, messaging the customer — belongs to the listeners
+   * in #listeners, not here.
+   */
   async transitionTo(
     order: Order,
     status: OrderStatus,
-    trx?: TransactionClientContract
+    trx?: TransactionClientContract,
+    reason: TransitionReason = 'status-change'
   ): Promise<Order> {
     if (order.status === status) {
       return order
@@ -235,6 +250,8 @@ export default class OrderService {
       ])
     }
 
+    const from = order.status
+
     order.merge({ status })
 
     if (trx) {
@@ -243,13 +260,15 @@ export default class OrderService {
 
     await order.save()
 
+    await dispatch(OrderStatusChanged, new OrderStatusChanged(order, from, status, reason), trx)
+
+    if (reason === 'payment') {
+      await dispatch(OrderPaid, new OrderPaid(order), trx)
+    }
+
     return order
   }
 
-  /**
-   * An order can be paid once it has been inspected and priced, and only then:
-   * before that there is no bill, and afterwards the money is already in.
-   */
   canPay(order: Order): boolean {
     return order.status === OrderStatus.AWAITING_PAYMENT && Number(order.totalPrice ?? 0) > 0
   }
@@ -280,12 +299,12 @@ export default class OrderService {
   }
 
   async #assertPickupCapacity(pickupDate: DateTime): Promise<void> {
-    const scheduled = await Order.query()
+    const booked = await Order.query()
       .where('pickup_date', pickupDate.toFormat('yyyy-MM-dd'))
-      .where('status', OrderStatus.PICKUP_SCHEDULED)
+      .whereNot('status', OrderStatus.CANCELLED)
       .count('* as total')
 
-    if (Number(scheduled[0].$extras.total) >= DAILY_PICKUP_LIMIT) {
+    if (Number(booked[0].$extras.total) >= DAILY_PICKUP_LIMIT) {
       throw new vineErrors.E_VALIDATION_ERROR([
         {
           field: 'pickupDate',
@@ -309,10 +328,6 @@ export default class OrderService {
     return `${prefix}-${String(lastSequence + 1).padStart(4, '0')}`
   }
 
-  /**
-   * Order numbers are handed out by counting existing rows, so two tills can
-   * pick the same one. The unique index catches it and we simply try again.
-   */
   async createWithUniqueOrderNumber(
     create: (orderNumber: string) => Promise<Order>
   ): Promise<Order> {

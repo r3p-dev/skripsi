@@ -103,7 +103,6 @@ test.group('Customer orders in the browser | calling off a pickup', (group) => {
     await page.getByRole('button', { name: 'Batalkan Pesanan' }).first().click()
     await page.getByText('Batalkan pesanan ini?').waitFor()
 
-    // The dialog repeats the trigger's wording on its submit button.
     await page.locator('form button[type="submit"]', { hasText: 'Batalkan Pesanan' }).click()
 
     await page.getByText('Batalkan pesanan ini?').waitFor({ state: 'hidden' })

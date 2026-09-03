@@ -3,4 +3,6 @@
  * DO NOT EDIT manually
  */
 
-export const listeners = {}
+export const listeners = {
+  BroadcastOrderToAdmin: () => import('#listeners/broadcast_order_to_admin'),
+}

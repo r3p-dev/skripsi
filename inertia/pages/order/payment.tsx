@@ -7,9 +7,9 @@ import {
   Shell,
   SolidButton,
 } from '@/components/atoms/editorial'
+import { OrderBackLink, RetryPaymentForm } from '@/components/molecules/payment'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
-import { Form, Link } from '@adonisjs/inertia/react'
 import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
 import {
@@ -19,44 +19,13 @@ import {
   IconDownload,
   IconRefresh,
 } from '@tabler/icons-react'
-import { type PropsWithChildren, useEffect, useState } from 'react'
-import type { ComponentProps } from 'react'
-import { TransactionStatus, TransactionStatusLabel } from '@/enums/transaction_enum'
+import { useEffect, useState } from 'react'
+import { TransactionStatus } from '@/enums/transaction_enum'
 
-/**
- * Staff will share this page once their screens land; until those routes exist
- * the only way here is a customer paying their own order.
- */
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   transaction: Data.Transaction
 }>
-
-function BackLink({
-  orderNumber,
-  className,
-  children,
-}: PropsWithChildren<{ orderNumber: string; className?: string }>) {
-  return (
-    <Link route="customer.orders.show" routeParams={{ number: orderNumber }} className={className}>
-      {children}
-    </Link>
-  )
-}
-
-function RetryForm({
-  orderNumber,
-  children,
-}: {
-  orderNumber: string
-  children: ComponentProps<typeof Form>['children']
-}) {
-  return (
-    <Form route="customer.transaction.store" routeParams={{ number: orderNumber }}>
-      {children}
-    </Form>
-  )
-}
 
 async function downloadQrCode(source: string, orderNumber: string) {
   try {
@@ -119,12 +88,12 @@ export default function Payment({ order, transaction: initialTransaction }: Page
 
       <Shell className="flex flex-col tablet:my-14 tablet:min-h-auto tablet:rounded-[6px] tablet:border tablet:border-rule tablet:shadow-[0_24px_64px_rgba(0,0,0,0.08)]">
         <header className="gutter flex items-center gap-3 pt-6">
-          <BackLink
+          <OrderBackLink
             orderNumber={order.orderNumber}
             className="flex size-11 shrink-0 items-center justify-center border border-rule-field text-ink transition-colors hover:bg-paper-tint"
           >
             <IconArrowLeft className="size-5" />
-          </BackLink>
+          </OrderBackLink>
           <div className="min-w-0">
             <Eyebrow className="mb-1">Pembayaran</Eyebrow>
             <PageTitle className="truncate">{order.orderNumber}</PageTitle>
@@ -161,12 +130,12 @@ export default function Payment({ order, transaction: initialTransaction }: Page
                   Pesanan Anda akan segera diproses
                 </p>
               </div>
-              <BackLink
+              <OrderBackLink
                 orderNumber={order.orderNumber}
                 className="flex min-h-11 items-center justify-center bg-ink px-8 text-small font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
               >
                 Kembali ke Pesanan
-              </BackLink>
+              </OrderBackLink>
             </Panel>
           ) : isPending ? (
             <>
@@ -217,22 +186,20 @@ export default function Payment({ order, transaction: initialTransaction }: Page
             >
               <div>
                 <p className="m-0 text-lead leading-[1.4] font-semibold text-ink">
-                  {TransactionStatusLabel[
-                    transaction.status as keyof typeof TransactionStatusLabel
-                  ] ?? 'Pembayaran Gagal'}
+                  {transaction.statusLabel ?? 'Pembayaran Gagal'}
                 </p>
                 <p className="m-0 mt-1.5 text-small leading-[1.6] text-ink-soft">
                   Kode QR sudah tidak berlaku. Silakan buat pembayaran baru.
                 </p>
               </div>
-              <RetryForm orderNumber={order.orderNumber}>
+              <RetryPaymentForm orderNumber={order.orderNumber}>
                 {({ processing }) => (
                   <SolidButton type="submit" disabled={processing} className="gap-2">
                     <IconRefresh className="size-4" />
                     Buat Pembayaran Baru
                   </SolidButton>
                 )}
-              </RetryForm>
+              </RetryPaymentForm>
             </Panel>
           )}
         </div>

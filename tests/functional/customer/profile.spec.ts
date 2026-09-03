@@ -1,10 +1,10 @@
 import { test } from '@japa/runner'
-import FonnteService from '#services/fonnte_service'
+import WhatsappService from '#notifications/whatsapp_service'
 import User from '#models/user'
 import app from '@adonisjs/core/services/app'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { FakeFonnteService } from '#tests/utils/fakes'
+import { FakeWhatsappService } from '#tests/utils/fakes'
 import { USER_PASSWORD, UserFactory } from '#database/factories/user_factory'
 import { createCustomer, inputErrors, toRelativeUrl, withConfirmation } from '#tests/utils/helpers'
 
@@ -180,9 +180,9 @@ test.group('Customer profile | changing phone number', (group) => {
   group.each.teardown(() => app.container.restoreAll())
 
   test('a verification link is sent to the new number', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
 
@@ -196,8 +196,11 @@ test.group('Customer profile | changing phone number', (group) => {
     response.assertStatus(302)
     response.assertFlashMessage('success', 'Permintaan perubahan nomor telepon berhasil dikirim')
 
-    assert.lengthOf(fonnte.messages, 1)
-    assert.equal(fonnte.lastMessage!.target, '081200000451')
+    assert.isDefined(whatsapp.messageTo('081200000451'), 'the link goes to the new number')
+    assert.isDefined(
+      whatsapp.messageTo(user.phone),
+      'the old number is told a change was asked for'
+    )
 
     const stored = await User.findOrFail(user.id)
 
@@ -205,9 +208,9 @@ test.group('Customer profile | changing phone number', (group) => {
   })
 
   test('following the link swaps the number over', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
 
@@ -219,7 +222,7 @@ test.group('Customer profile | changing phone number', (group) => {
       .form({ phone: '081200000452' })
 
     const response = await client
-      .get(toRelativeUrl(fonnte.lastMessage!.body))
+      .get(toRelativeUrl(whatsapp.messageTo('081200000452')!.body))
       .loginAs(user)
       .redirects(0)
 
@@ -232,9 +235,9 @@ test.group('Customer profile | changing phone number', (group) => {
   })
 
   test('a tampered link is turned away', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
 
@@ -245,7 +248,7 @@ test.group('Customer profile | changing phone number', (group) => {
       .redirects(0)
       .form({ phone: '081200000453' })
 
-    const link = toRelativeUrl(fonnte.lastMessage!.body)
+    const link = toRelativeUrl(whatsapp.messageTo('081200000453')!.body)
 
     const response = await client
       .get(link.replace(/signature=\w/, 'signature=x'))
@@ -260,9 +263,9 @@ test.group('Customer profile | changing phone number', (group) => {
   })
 
   test('one customer cannot follow another customer link', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
     const intruder = await UserFactory.create()
@@ -275,7 +278,7 @@ test.group('Customer profile | changing phone number', (group) => {
       .form({ phone: '081200000454' })
 
     const response = await client
-      .get(toRelativeUrl(fonnte.lastMessage!.body))
+      .get(toRelativeUrl(whatsapp.messageTo('081200000454')!.body))
       .loginAs(intruder)
       .withInertia()
 
@@ -287,9 +290,9 @@ test.group('Customer profile | changing phone number', (group) => {
   })
 
   test('asking for the number you already have is refused', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
 
@@ -302,13 +305,47 @@ test.group('Customer profile | changing phone number', (group) => {
 
     response.assertStatus(302)
     assert.property(inputErrors(response), 'phone')
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
+  })
+
+  test('a number another customer is verifying is refused', async ({ client, assert }) => {
+    const whatsapp = new FakeWhatsappService()
+
+    app.container.swap(WhatsappService, () => whatsapp)
+
+    const first = await UserFactory.create()
+    const second = await UserFactory.create()
+
+    await client
+      .post('/phone')
+      .loginAs(first)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: '081200000461' })
+
+    const response = await client
+      .post('/phone')
+      .loginAs(second)
+      .withCsrfToken()
+      .redirects(0)
+      .form({ phone: '081200000461' })
+
+    response.assertStatus(302)
+    assert.property(inputErrors(response), 'phone')
+
+    const link = toRelativeUrl(whatsapp.messageTo('081200000461')!.body)
+
+    await client.get(link).loginAs(first).redirects(0)
+
+    const stored = await User.findOrFail(first.id)
+
+    assert.equal(stored.phone, '081200000461', 'the customer who asked first still gets it')
   })
 
   test('asking for a number another account holds is refused', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const user = await UserFactory.create()
     const other = await UserFactory.create()
@@ -322,6 +359,6 @@ test.group('Customer profile | changing phone number', (group) => {
 
     response.assertStatus(302)
     assert.property(inputErrors(response), 'phone')
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
   })
 })

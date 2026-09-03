@@ -251,6 +251,23 @@ export class OrderSchema extends BaseModel {
   declare userId: number | null
 }
 
+export class PhoneChangeRequestSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'phone', 'updatedAt', 'userId'] as const
+  $columns = PhoneChangeRequestSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare phone: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
 export class RateLimitSchema extends BaseModel {
   static $columns = ['expire', 'key', 'points'] as const
   $columns = RateLimitSchema.$columns

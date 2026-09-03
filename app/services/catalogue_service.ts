@@ -63,11 +63,6 @@ export default class CatalogueService {
     return query.paginate(filters.page, 10)
   }
 
-  /**
-   * Catalogues already booked on an order. Their price is copied onto the order
-   * line at the time of booking, but removing the row would still break the
-   * link an admin follows back from a receipt, so deletion is blocked.
-   */
   async inUseIds(catalogues: Catalogue[]): Promise<number[]> {
     const ids = catalogues.map((catalogue) => catalogue.id)
 
@@ -126,9 +121,6 @@ export default class CatalogueService {
     return catalogue
   }
 
-  /**
-   * The form field is called `catalogueName`, the column is called `name`.
-   */
   #toAttributes({ catalogueName, price, ...rest }: CatalogueData) {
     return {
       ...rest,

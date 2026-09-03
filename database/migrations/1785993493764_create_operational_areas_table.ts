@@ -21,10 +21,6 @@ export default class extends BaseSchema {
       ADD CONSTRAINT operational_areas_geometry_valid CHECK (ST_IsValid(geometry))
     `)
 
-    /**
-     * Area lookups are point-in-polygon tests (`ST_Covers`), which only the
-     * spatial index can serve.
-     */
     this.schema.raw(`CREATE INDEX operational_areas_geometry_index
       ON ${this.tableName}
       USING GIST (geometry)

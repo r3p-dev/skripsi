@@ -2,10 +2,11 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 import { Role } from '#enums/role_enum'
-import Order from '#models/order'
+import AdminChannelPolicy from '#policies/admin_channel_policy'
+import OrderPolicy from '#policies/order_policy'
 import transmit from '@adonisjs/transmit/services/main'
+import { ADMIN_ORDERS_CHANNEL } from '#services/order_service'
 import {
-  forgotPasswordLimiter,
   geocodeLimiter,
   loginLimiter,
   paymentLimiter,
@@ -20,15 +21,13 @@ transmit.registerRoutes((route) => {
   route.use(middleware.auth())
 })
 
-transmit.authorize<{ orderNumber: string }>('orders/:orderNumber', async (ctx, { orderNumber }) => {
-  const user = ctx.auth.user
-  if (!user) return false
+transmit.authorize(ADMIN_ORDERS_CHANNEL, async (ctx) =>
+  ctx.bouncer.with(AdminChannelPolicy).allows('subscribe')
+)
 
-  if (user.role === Role.STAFF) return true
-
-  const order = await Order.query().where('order_number', orderNumber).first()
-  return order?.userId === user.id
-})
+transmit.authorize<{ orderNumber: string }>('orders/:orderNumber', async (ctx, { orderNumber }) =>
+  ctx.bouncer.with(OrderPolicy).allows('subscribe', orderNumber)
+)
 
 router.post('transaction/callback', [controllers.webhooks.Transaction, 'update'])
 
@@ -44,9 +43,7 @@ router
     router.post('login', [controllers.auth.Session, 'store']).use(loginLimiter)
 
     router.get('forgot-password', [controllers.auth.PasswordReset, 'create'])
-    router
-      .post('forgot-password', [controllers.auth.PasswordReset, 'store'])
-      .use(forgotPasswordLimiter)
+    router.post('forgot-password', [controllers.auth.PasswordReset, 'store'])
 
     router.get('reset-password', [controllers.auth.PasswordReset, 'edit'])
     router
@@ -95,7 +92,7 @@ router
         .as('transaction.store')
         .use(paymentLimiter)
 
-      router.resource('orders', controllers.customer.Order).except(['edit', 'destroy']).params({
+      router.resource('orders', controllers.customer.Order).except(['edit', 'update']).params({
         orders: 'number',
       })
     })
@@ -115,6 +112,9 @@ router
       router.get('tasks', [controllers.staff.Trip, 'index']).as('trip.index')
 
       router.get('tasks/:number/trip/:type', [controllers.staff.Trip, 'show']).as('trip.show')
+      router
+        .post('tasks/:number/trip/:type/claim', [controllers.staff.Trip, 'claim'])
+        .as('trip.claim')
       router.post('tasks/:number/trip/:type', [controllers.staff.Trip, 'update']).as('trip.update')
       router
         .delete('tasks/:number/trip/:type', [controllers.staff.Trip, 'destroy'])
@@ -123,6 +123,9 @@ router
       router
         .get('tasks/:number/inspection', [controllers.staff.Inspection, 'show'])
         .as('inspection.show')
+      router
+        .post('tasks/:number/inspection/claim', [controllers.staff.Inspection, 'claim'])
+        .as('inspection.claim')
       router
         .post('tasks/:number/inspection', [controllers.staff.Inspection, 'update'])
         .as('inspection.update')
@@ -137,10 +140,6 @@ router
       router
         .post('tasks/:number/collection', [controllers.staff.Collection, 'update'])
         .as('collection.update')
-
-      router
-        .post('tasks/:number/notification', [controllers.staff.Notification, 'store'])
-        .as('notification.store')
 
       router.get('tasks/:number/tag', [controllers.staff.Tag, 'show']).as('tag.show')
 

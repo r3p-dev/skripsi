@@ -1,11 +1,11 @@
-import ProfileService from '#services/profile_service'
+import CustomerProfileService from '#services/customer_profile_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { changePasswordValidator } from '#validators/profile_validator'
 
 @inject()
 export default class PasswordController {
-  constructor(protected profileService: ProfileService) {}
+  constructor(protected profileService: CustomerProfileService) {}
 
   async update({ auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()

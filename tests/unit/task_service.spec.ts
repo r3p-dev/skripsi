@@ -11,23 +11,17 @@ import { ActionName } from '#enums/order_action_enum'
 import { OrderStatus, OrderType } from '#enums/order_enum'
 import { CLAIM_DURATION_HOURS, TaskType } from '#enums/task_enum'
 import { UserFactory } from '#database/factories/user_factory'
-import { FakeFonnteService } from '#tests/utils/fakes'
+import { stubOrderActionFailure } from '#tests/utils/fakes'
 import { createCustomer, createOrder } from '#tests/utils/helpers'
+import drive from '@adonisjs/drive/services/main'
 import { DateTime } from 'luxon'
 
-function build(fonnte = new FakeFonnteService()) {
-  const service = new TaskService(
-    new AddressService(),
-    new CatalogueService(),
-    fonnte,
-    new OrderService(new AddressService()),
-    new RoutingService()
-  )
-
-  return { service, fonnte }
-}
-
-const { service: taskService } = build()
+const taskService = new TaskService(
+  new AddressService(),
+  new CatalogueService(),
+  new OrderService(new AddressService()),
+  new RoutingService()
+)
 
 function staff() {
   return UserFactory.apply('staff').create()
@@ -270,10 +264,6 @@ test.group('TaskService | the queues', (group) => {
 
     const ids = (orders: Order[]) => orders.map((order) => order.id)
 
-    /**
-     * Scoped to the three orders this test creates, so unrelated rows already
-     * in the database do not affect the outcome.
-     */
     assert.include(ids(inspections), inspecting.id)
     assert.notInclude(ids(cleanings), inspecting.id)
     assert.notInclude(ids(collections), inspecting.id)
@@ -421,60 +411,85 @@ test.group('TaskService | handing goods over', (group) => {
       attributes: { status: OrderStatus.CLEANING_DONE },
     })
 
-    await taskService.completeCollection(await staff(), order)
+    await taskService.completeCollection(await staff(), order, fakePhoto())
     await order.refresh()
 
     assert.equal(order.status, OrderStatus.COMPLETED)
   })
 
-  test('the customer is told once their order is ready', async ({ assert }) => {
-    const { service, fonnte } = build()
-
-    const customer = await createCustomer()
-    const order = await createOrder(customer, {
-      attributes: { status: OrderStatus.CLEANING_DONE },
-    })
-
-    await service.sendReadyNotice(await staff(), order)
-
-    assert.lengthOf(fonnte.messages, 1)
-    assert.equal(fonnte.lastMessage?.target, order.customerPhone)
-  })
-
-  test('the customer is not messaged twice about the same order', async ({ assert }) => {
-    const { service, fonnte } = build()
-
+  test('the handover is written into the order history with its photo', async ({ assert }) => {
     const customer = await createCustomer()
     const order = await createOrder(customer, {
       attributes: { status: OrderStatus.CLEANING_DONE },
     })
     const petugas = await staff()
 
-    await service.sendReadyNotice(petugas, order)
-    await service.sendReadyNotice(petugas, order)
+    await taskService.completeCollection(petugas, order, fakePhoto())
 
-    assert.lengthOf(fonnte.messages, 1)
-  })
+    const actions = await OrderAction.query().where('order_id', order.id)
 
-  test('an order that is not ready yet is never announced', async ({ assert }) => {
-    const { service, fonnte } = build()
-
-    const customer = await createCustomer()
-    const order = await createOrder(customer)
-    const petugas = await staff()
-
-    await assert.rejects(() => service.sendReadyNotice(petugas, order))
-    assert.isEmpty(fonnte.messages)
+    assert.lengthOf(actions, 1)
+    assert.equal(actions[0].name, ActionName.COLLECTED)
+    assert.equal(actions[0].userId, petugas.id)
+    assert.isNotNull(actions[0].photoPath)
   })
 })
 
-/**
- * A stand-in for the uploaded proof photo. Only the move to disk matters to the
- * service, and the tests care about what happens around it.
- */
+test.group('TaskService | the proof photos', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('a photo is swept up when the transition it belongs to fails', async ({ assert }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, {
+      attributes: { status: OrderStatus.CLEANING_DONE },
+    })
+    const petugas = await staff()
+
+    const written: string[] = []
+    const restore = stubOrderActionFailure()
+
+    try {
+      await assert.rejects(() =>
+        taskService.completeCollection(petugas, order, writingPhoto(written))
+      )
+    } finally {
+      restore()
+    }
+
+    assert.lengthOf(written, 1, 'the photo did reach the disk before the failure')
+    assert.isFalse(await drive.use().exists(written[0]), 'and was removed again')
+  })
+
+  test('a photo of a transition that went through is kept', async ({ assert }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, {
+      attributes: { status: OrderStatus.CLEANING_DONE },
+    })
+
+    const written: string[] = []
+
+    await taskService.completeCollection(await staff(), order, writingPhoto(written))
+
+    assert.isTrue(await drive.use().exists(written[0]))
+
+    await drive.use().delete(written[0])
+  })
+})
+
 function fakePhoto() {
   return {
     extname: 'jpg',
     async moveToDisk() {},
+  } as never
+}
+
+function writingPhoto(written: string[]) {
+  return {
+    extname: 'jpg',
+    async moveToDisk(key: string) {
+      written.push(key)
+
+      await drive.use().put(key, 'proof')
+    },
   } as never
 }

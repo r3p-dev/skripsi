@@ -1,6 +1,6 @@
 import OrderTransformer from '#transformers/order_transformer'
 import RouteItemTransformer from '#transformers/route_item_transformer'
-import TaskService from '#services/task_service'
+import TaskService, { TASK_TAKEN_MESSAGE } from '#services/task_service'
 import { TaskType, isTripType } from '#enums/task_enum'
 import { taskPhotoValidator } from '#validators/task_validator'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -29,19 +29,23 @@ export default class TripController {
     })
   }
 
-  async show({ auth, inertia, params }: HttpContext) {
+  async show({ auth, inertia, params, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const type = this.#taskType(params.type)
 
     const summary = await this.taskService.findSummaryByNumber(params.number)
-    const claimed = await this.taskService.claim(user, summary, type)
 
-    if (!claimed) {
+    if (this.taskService.isBlocked(user, summary)) {
+      session.flash('error', TASK_TAKEN_MESSAGE)
+      return response.redirect().toRoute('staff.trip.index')
+    }
+
+    if (!this.taskService.holds(user, summary)) {
       return inertia.render('staff/trip/show', {
         type,
         order: OrderTransformer.transform(summary).useVariant('toDetail'),
         route: null,
-        blocked: true,
+        claimed: false,
       })
     }
 
@@ -51,8 +55,22 @@ export default class TripController {
       type,
       order: OrderTransformer.transform(order).useVariant('toDetail'),
       route: await this.taskService.routeTo(order),
-      blocked: false,
+      claimed: true,
     })
+  }
+
+  async claim({ auth, params, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const type = this.#taskType(params.type)
+
+    const order = await this.taskService.findSummaryByNumber(params.number)
+
+    if (!(await this.taskService.claim(user, order, type))) {
+      session.flash('error', TASK_TAKEN_MESSAGE)
+      return response.redirect().toRoute('staff.trip.index')
+    }
+
+    return response.redirect().toRoute('staff.trip.show', { number: params.number, type })
   }
 
   async update({ auth, params, request, response, session }: HttpContext) {

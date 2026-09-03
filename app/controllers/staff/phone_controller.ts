@@ -1,11 +1,11 @@
-import ProfileService from '#services/profile_service'
+import StaffProfileService from '#services/staff_profile_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { changePhoneValidator } from '#validators/profile_validator'
 
 @inject()
 export default class PhoneController {
-  constructor(protected profileService: ProfileService) {}
+  constructor(protected profileService: StaffProfileService) {}
 
   async store({ auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()

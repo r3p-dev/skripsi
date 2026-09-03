@@ -4,13 +4,20 @@ import { OrderStatus, OrderStatusLabel, OrderType, OrderTypeLabel } from '#enums
 import { PaymentMethod, PaymentMethodLabel, TransactionStatus } from '#enums/transaction_enum'
 import { Role } from '#enums/role_enum'
 import db from '@adonisjs/lucid/services/db'
+import { formatRupiah } from '#utils/currency'
 import { DateTime } from 'luxon'
 
 export type Breakdown = { value: string; label: string; total: number }
 
-export type MoneyBreakdown = { value: string; label: string; orders: number; revenue: number }
+export type MoneyBreakdown = {
+  value: string
+  label: string
+  orders: number
+  revenue: number
+  revenueLabel: string
+}
 
-export type SeriesPoint = { date: string; label: string; total: number }
+export type SeriesPoint = { date: string; label: string; total: number; totalLabel: string }
 
 const TREND_DAYS = 14
 const PICKUP_DAYS = 7
@@ -53,6 +60,8 @@ export default class AnalyticsService {
       this.#topServices(start, end),
     ])
 
+    const averageOrderValue = totals.orders === 0 ? 0 : Math.round(totals.revenue / totals.orders)
+
     return {
       from: start.toISODate()!,
       to: end.toISODate()!,
@@ -60,8 +69,10 @@ export default class AnalyticsService {
         .setLocale('id')
         .toLocaleString(DateTime.DATE_MED)}`,
       totalRevenue: totals.revenue,
+      totalRevenueLabel: formatRupiah(totals.revenue),
       paidOrders: totals.orders,
-      averageOrderValue: totals.orders === 0 ? 0 : Math.round(totals.revenue / totals.orders),
+      averageOrderValue,
+      averageOrderValueLabel: formatRupiah(averageOrderValue),
       series,
       byPaymentMethod,
       byType,
@@ -87,6 +98,7 @@ export default class AnalyticsService {
       completedOrders: completed,
       awaitingPayment: awaiting,
       revenue,
+      revenueLabel: formatRupiah(revenue),
       customers: byRole[Role.CUSTOMER] ?? 0,
       staff: byRole[Role.STAFF] ?? 0,
     }
@@ -200,7 +212,7 @@ export default class AnalyticsService {
       value: method,
       label: PaymentMethodLabel[method],
       orders: Number(totals.get(method)?.orders ?? 0),
-      revenue: Math.round(Number(totals.get(method)?.revenue ?? 0)),
+      ...this.#revenue(totals.get(method)?.revenue),
     }))
   }
 
@@ -217,7 +229,7 @@ export default class AnalyticsService {
       value: type,
       label: OrderTypeLabel[type],
       orders: Number(totals.get(type)?.orders ?? 0),
-      revenue: Math.round(Number(totals.get(type)?.revenue ?? 0)),
+      ...this.#revenue(totals.get(type)?.revenue),
     }))
   }
 
@@ -241,13 +253,10 @@ export default class AnalyticsService {
       name: row.name as string,
       category: row.category as string,
       orders: Number(row.orders),
-      revenue: Math.round(Number(row.revenue)),
+      ...this.#revenue(row.revenue),
     }))
   }
 
-  /**
-   * Settled money in a window, joined back to the order it paid for.
-   */
   #paidQuery(start: DateTime, end: DateTime) {
     return db
       .from('transactions')
@@ -265,6 +274,12 @@ export default class AnalyticsService {
       .first()
 
     return Math.round(Number(row?.total ?? 0))
+  }
+
+  #revenue(value: unknown): { revenue: number; revenueLabel: string } {
+    const revenue = Math.round(Number(value ?? 0))
+
+    return { revenue, revenueLabel: formatRupiah(revenue) }
   }
 
   async #count(query: ReturnType<typeof db.from>): Promise<number> {
@@ -287,10 +302,13 @@ export default class AnalyticsService {
       const day = start.plus({ days: offset })
       const date = day.toISODate()!
 
+      const total = totals.get(date) ?? 0
+
       return {
         date,
         label: day.setLocale('id').toFormat('d MMM'),
-        total: totals.get(date) ?? 0,
+        total,
+        totalLabel: formatRupiah(total),
       }
     })
   }

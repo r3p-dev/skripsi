@@ -6,8 +6,8 @@ import TransactionTransformer from '#transformers/transaction_transformer'
 import UserTransformer from '#transformers/user_transformer'
 import { OrderStatus, OrderStatusLabel, OrderTypeLabel } from '#enums/order_enum'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { DateTime } from 'luxon'
 import { formatRupiah } from '#utils/currency'
+import { formatDate, formatShortDate } from '#utils/date'
 
 export default class OrderTransformer extends BaseTransformer<Order> {
   toObject() {
@@ -24,9 +24,8 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       totalPrice: Number(this.resource.totalPrice ?? 0),
       totalPriceLabel: formatRupiah(this.resource.totalPrice),
 
-      pickupDate:
-        this.resource.pickupDate?.setLocale('id').toLocaleString(DateTime.DATE_FULL) ?? null,
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      pickupDate: formatDate(this.resource.pickupDate),
+      createdAt: formatDate(this.resource.createdAt),
     }
   }
 
@@ -40,15 +39,10 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       type: this.resource.type,
       typeLabel: OrderTypeLabel[this.resource.type],
 
-      pickupDate:
-        this.resource.pickupDate?.setLocale('id').toLocaleString(DateTime.DATE_FULL) ?? null,
+      pickupDate: formatDate(this.resource.pickupDate),
     }
   }
 
-  /**
-   * A row in an admin list. Dates stay machine-readable here because the table
-   * formats them itself, unlike the detail views that print what they are given.
-   */
   toListItem() {
     return {
       ...this.pick(this.resource, ['id', 'orderNumber', 'customerName', 'customerPhone']),
@@ -60,9 +54,14 @@ export default class OrderTransformer extends BaseTransformer<Order> {
       typeLabel: OrderTypeLabel[this.resource.type],
 
       totalPrice: this.resource.totalPrice === null ? null : Number(this.resource.totalPrice),
+      totalPriceLabel:
+        this.resource.totalPrice === null ? null : formatRupiah(this.resource.totalPrice),
 
       createdAt: this.resource.createdAt.toISO(),
+      createdAtLabel: formatShortDate(this.resource.createdAt),
+
       pickupDate: this.resource.pickupDate?.toISODate() ?? null,
+      pickupDateLabel: formatShortDate(this.resource.pickupDate),
 
       transactions: TransactionTransformer.transform(this.whenLoaded(this.resource.transactions)),
     }

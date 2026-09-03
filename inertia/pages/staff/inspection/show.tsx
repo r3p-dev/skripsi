@@ -1,7 +1,7 @@
 import StaffLayout from '@/components/layouts/staff_layout'
 import { OutlineButton, boxField } from '@/components/atoms/editorial'
 import {
-  BlockedNotice,
+  ClaimPrompt,
   TaskAddress,
   TaskHeader,
   TaskSummary,
@@ -12,34 +12,50 @@ import { ItemCard, useItemRows } from '@/components/organisms/item_fields'
 import { cn } from '@/lib/utils'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
-import { OrderStatusLabel } from '@/enums/order_enum'
-import { formatDate } from '@/lib/format'
 import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import { Form } from '@adonisjs/inertia/react'
 
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   catalogues: Data.Catalogue[]
-  blocked: boolean
+  claimed: boolean
 }>
 
-export default function Show({ order, catalogues, blocked }: PageProps) {
+export default function Show({ order, catalogues, claimed }: PageProps) {
   const { items, addItem, removeItem, setCatalogueId } = useItemRows()
 
   return (
     <StaffLayout title={`Inspeksi - ${order.orderNumber}`} description="Detail tugas inspeksi">
-      <TaskHeader eyebrow="Inspeksi" title={order.orderNumber} showBack={blocked} />
+      <TaskHeader eyebrow="Inspeksi" title={order.orderNumber} showBack={!claimed} />
 
       <div className="gutter flex flex-1 flex-col gap-3 pb-nav">
-        {blocked ? (
-          <BlockedNotice />
+        <TaskSummary status={order.statusLabel} pickupDate={order.pickupDate ?? '—'} />
+
+        {!claimed ? (
+          <ClaimPrompt orderNumber={order.orderNumber}>
+            <Form
+              id="claim-inspection"
+              route="staff.inspection.claim"
+              routeParams={{ number: order.orderNumber }}
+            >
+              {({ processing }) => (
+                <ConfirmDialog
+                  triggerClassName="flex min-h-12 w-full items-center justify-center bg-ink px-4 text-small font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
+                  label="Mulai Kerjakan Tugas"
+                  title="Ambil tugas inspeksi?"
+                  description={`Pesanan ${order.orderNumber} akan menjadi tugas Anda selama 3 jam dan hilang dari antrean petugas lain.`}
+                >
+                  <ConfirmFooter
+                    label="Ambil Tugas"
+                    processing={processing}
+                    formId="claim-inspection"
+                  />
+                </ConfirmDialog>
+              )}
+            </Form>
+          </ClaimPrompt>
         ) : (
           <>
-            <TaskSummary
-              status={OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-              pickupDate={formatDate(order.pickupDate)}
-            />
-
             {order.address && <TaskAddress address={order.address} />}
 
             <Form

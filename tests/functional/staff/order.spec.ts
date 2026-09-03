@@ -6,16 +6,19 @@ import { ItemType } from '#enums/item_enum'
 import { OrderStatus, OrderType } from '#enums/order_enum'
 import { PaymentMethod } from '#enums/transaction_enum'
 import { UserFactory } from '#database/factories/user_factory'
-import { createCustomer, itemFields, itemPayload } from '#tests/utils/helpers'
+import {
+  PNG_PIXEL,
+  createCustomer,
+  createOrder,
+  inputErrors,
+  itemFields,
+  itemPayload,
+} from '#tests/utils/helpers'
+import { formatRupiah } from '#utils/currency'
 
 function staff() {
   return UserFactory.apply('staff').create()
 }
-
-const PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-  'base64'
-)
 
 function counterFields(catalogueId: number, overrides: Record<string, string> = {}) {
   return {
@@ -84,7 +87,7 @@ test.group('Staff counter orders | taking the order', (group) => {
       .post('/staff/orders')
       .loginAs(await staff())
       .withCsrfToken()
-      .file('photo', PNG, { filename: 'bukti.png' })
+      .file('photo', PNG_PIXEL, { filename: 'bukti.png' })
       .fields(counterFields(catalogue.id))
       .redirects(0)
 
@@ -109,7 +112,7 @@ test.group('Staff counter orders | taking the order', (group) => {
       .post('/staff/orders')
       .loginAs(await staff())
       .withCsrfToken()
-      .file('photo', PNG, { filename: 'bukti.png' })
+      .file('photo', PNG_PIXEL, { filename: 'bukti.png' })
       .fields(
         counterFields(catalogue.id, {
           customerId: String(customer.user.id),
@@ -134,7 +137,7 @@ test.group('Staff counter orders | taking the order', (group) => {
       .post('/staff/orders')
       .loginAs(petugas)
       .withCsrfToken()
-      .file('photo', PNG, { filename: 'bukti.png' })
+      .file('photo', PNG_PIXEL, { filename: 'bukti.png' })
       .fields(counterFields(catalogue.id))
       .redirects(0)
 
@@ -147,16 +150,12 @@ test.group('Staff counter orders | taking the order', (group) => {
 
     response.assertStatus(200)
     response.assertInertiaComponent('staff/order/receipt')
-    assert.equal(response.inertiaProps.change, 425_000)
+    assert.equal(response.inertiaProps.changeLabel, formatRupiah(425_000))
   })
 
   test('an order without a photo is rejected', async ({ client, assert }) => {
     const catalogue = await CatalogueFactory.create()
 
-    /**
-     * A phone number unique to this test, so the "nothing was created" check
-     * can be scoped to this submission rather than the whole table.
-     */
     const phone = '081200000199'
 
     const response = await client
@@ -168,5 +167,81 @@ test.group('Staff counter orders | taking the order', (group) => {
 
     response.assertStatus(302)
     assert.isNull(await Order.query().where('customer_phone', phone).first())
+  })
+})
+
+test.group('Staff counter orders | correcting the goods', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('an order waiting to be paid can be corrected', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, {
+      attributes: { status: OrderStatus.AWAITING_PAYMENT },
+    })
+
+    const response = await client
+      .get(`/staff/orders/${order.orderNumber}/edit`)
+      .loginAs(await staff())
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('staff/order/edit')
+    response.assertInertiaPropsContains({ canEdit: true, isCounterOrder: false })
+  })
+
+  test('an order at any other stage explains why it cannot be corrected', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(customer, { states: ['inCleaning'] })
+
+    const response = await client
+      .get(`/staff/orders/${order.orderNumber}/edit`)
+      .loginAs(await staff())
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaPropsContains({ canEdit: false, isCounterOrder: false })
+  })
+
+  test('a counter order is marked as paid at the till', async ({ client }) => {
+    const customer = await createCustomer()
+    const order = await createOrder(
+      { user: customer.user, address: null },
+      { states: ['walkIn', 'inCleaning'] }
+    )
+
+    const response = await client
+      .get(`/staff/orders/${order.orderNumber}/edit`)
+      .loginAs(await staff())
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaPropsContains({ canEdit: false, isCounterOrder: true })
+  })
+
+  test('correcting an order that is not awaiting payment is refused', async ({
+    client,
+    assert,
+  }) => {
+    const catalogue = await CatalogueFactory.create()
+    const customer = await createCustomer()
+    const order = await createOrder(customer, { states: ['inCleaning'] })
+
+    const response = await client
+      .put(`/staff/orders/${order.orderNumber}`)
+      .loginAs(await staff())
+      .withCsrfToken()
+      .redirects(0)
+      .form(
+        itemFields([
+          itemPayload({
+            type: ItemType.SHOE,
+            condition: 'Kotor ringan',
+            catalogue: String(catalogue.id),
+          }),
+        ])
+      )
+
+    response.assertStatus(302)
+    assert.property(inputErrors(response), 'form')
   })
 })

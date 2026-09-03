@@ -8,10 +8,6 @@ import { TransactionFactory } from '#database/factories/transaction_factory'
 import { createCustomer, createOrder } from '#tests/utils/helpers'
 import { createHash } from 'node:crypto'
 
-/**
- * Midtrans calls this endpoint, not a person, so it sits outside the role
- * groups next to the other agnostic specs.
- */
 function signed(payload: Record<string, string>): Record<string, string> {
   const serverKey = env.get('MIDTRANS_SERVER_KEY').release()
 

@@ -1,4 +1,3 @@
-import { OrderStatusLabel, OrderTypeLabel } from '@/enums/order_enum'
 import AdminLayout from '@/components/layouts/admin_layout'
 import { BoxSelect, SearchField, SolidButton, StatusBadge } from '@/components/atoms/editorial'
 import { DataTable, type Column } from '@/components/molecules/data_table'
@@ -6,7 +5,6 @@ import { ExportButton } from '@/components/molecules/export_button'
 import { PageHeader } from '@/components/molecules/page_header'
 import { Pagination } from '@/components/molecules/pagination'
 import { neutralTone, orderStatusTones, orderTypeTones } from '@/lib/constants'
-import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -54,7 +52,7 @@ const columns: Column<OrderRow>[] = [
     role: 'trailing',
     cell: (order) => (
       <StatusBadge tone={orderStatusTones[order.status] ?? neutralTone}>
-        {OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
+        {order.statusLabel}
       </StatusBadge>
     ),
   },
@@ -62,23 +60,21 @@ const columns: Column<OrderRow>[] = [
     key: 'type',
     header: 'Tipe',
     cell: (order) => (
-      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>
-        {OrderTypeLabel[order.type as keyof typeof OrderTypeLabel]}
-      </StatusBadge>
+      <StatusBadge tone={orderTypeTones[order.type] ?? neutralTone}>{order.typeLabel}</StatusBadge>
     ),
   },
   {
     key: 'createdAt',
     header: 'Dibuat',
     cellClassName: 'text-ink-soft',
-    cell: (order) => formatShortDate(order.createdAt),
+    cell: (order) => order.createdAtLabel,
   },
   {
     key: 'totalPrice',
     header: 'Total',
     align: 'right',
     cellClassName: 'font-semibold text-ink',
-    cell: (order) => (order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)),
+    cell: (order) => order.totalPriceLabel ?? '-',
   },
 ]
 

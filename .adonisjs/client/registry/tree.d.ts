@@ -57,7 +57,7 @@ export interface ApiDefinition {
       create: typeof routes['customer.orders.create']
       store: typeof routes['customer.orders.store']
       show: typeof routes['customer.orders.show']
-      update: typeof routes['customer.orders.update']
+      destroy: typeof routes['customer.orders.destroy']
     }
     transaction: {
       show: typeof routes['customer.transaction.show']
@@ -76,11 +76,13 @@ export interface ApiDefinition {
     trip: {
       index: typeof routes['staff.trip.index']
       show: typeof routes['staff.trip.show']
+      claim: typeof routes['staff.trip.claim']
       update: typeof routes['staff.trip.update']
       destroy: typeof routes['staff.trip.destroy']
     }
     inspection: {
       show: typeof routes['staff.inspection.show']
+      claim: typeof routes['staff.inspection.claim']
       update: typeof routes['staff.inspection.update']
       destroy: typeof routes['staff.inspection.destroy']
     }
@@ -89,9 +91,6 @@ export interface ApiDefinition {
     }
     collection: {
       update: typeof routes['staff.collection.update']
-    }
-    notification: {
-      store: typeof routes['staff.notification.store']
     }
     tag: {
       show: typeof routes['staff.tag.show']

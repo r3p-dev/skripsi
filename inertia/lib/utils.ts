@@ -6,6 +6,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Whether a route name exists in the generated registry.
+ *
+ * Read this as "hide the link rather than crash on it". A name that no longer
+ * exists is simply absent: callers that filter on it fail quietly, so renaming
+ * a route can make a menu entry disappear with no warning and no error. Check
+ * the nav lists in the layouts by hand whenever a route name changes.
+ */
 export function hasRoute(name: string): boolean {
   return Object.hasOwn(routes, name)
 }

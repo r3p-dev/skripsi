@@ -3,7 +3,7 @@ import UserTransformer from '#transformers/user_transformer'
 import { ActionNameLabel } from '#enums/order_action_enum'
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import router from '@adonisjs/core/services/router'
-import { DateTime } from 'luxon'
+import { formatDateTime } from '#utils/date'
 
 export default class OrderActionTransformer extends BaseTransformer<OrderAction> {
   toObject() {
@@ -19,7 +19,7 @@ export default class OrderActionTransformer extends BaseTransformer<OrderAction>
 
       staff: UserTransformer.transform(this.whenLoaded(this.resource.staff)),
 
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATETIME_MED),
+      createdAt: formatDateTime(this.resource.createdAt),
     }
   }
 }

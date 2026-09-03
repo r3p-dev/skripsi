@@ -24,8 +24,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { neutralTone, transactionStatusTones } from '@/lib/constants'
-import { PaymentMethodLabel, TransactionStatusLabel } from '@/enums/transaction_enum'
-import { formatShortDate, formatRupiah } from '@/lib/format'
 import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -75,7 +73,7 @@ function buildColumns(paymentMethodOptions: Option[]): Column<OrderRow>[] {
       role: 'trailing',
       cell: (order) => (
         <span className="text-body font-semibold text-ink tablet:text-small">
-          {order.totalPrice === null ? '-' : formatRupiah(order.totalPrice)}
+          {order.totalPriceLabel ?? '-'}
         </span>
       ),
     },
@@ -83,7 +81,7 @@ function buildColumns(paymentMethodOptions: Option[]): Column<OrderRow>[] {
       key: 'createdAt',
       header: 'Menunggu Sejak',
       cellClassName: 'text-ink-soft',
-      cell: (order) => formatShortDate(order.createdAt),
+      cell: (order) => order.createdAtLabel,
     },
     {
       key: 'transaction',
@@ -98,11 +96,9 @@ function buildColumns(paymentMethodOptions: Option[]): Column<OrderRow>[] {
         return (
           <span className="flex flex-wrap items-center justify-end gap-1.5 tablet:flex-col tablet:items-start">
             <StatusBadge tone={transactionStatusTones[latest.status] ?? neutralTone}>
-              {TransactionStatusLabel[latest.status as keyof typeof TransactionStatusLabel]}
+              {latest.statusLabel}
             </StatusBadge>
-            <span className="text-meta text-ink-subtle">
-              {PaymentMethodLabel[latest.paymentMethod as keyof typeof PaymentMethodLabel]}
-            </span>
+            <span className="text-meta text-ink-subtle">{latest.paymentMethodLabel}</span>
           </span>
         )
       },

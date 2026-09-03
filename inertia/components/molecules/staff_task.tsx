@@ -12,6 +12,23 @@ import {
 } from '@tabler/icons-react'
 import { type ReactNode } from 'react'
 
+export function TaskCard({ children }: { children: ReactNode }) {
+  return (
+    <Panel tone="tint" className="flex flex-col gap-3.5 px-5 py-4.5">
+      {children}
+    </Panel>
+  )
+}
+
+export function TaskHeading({ orderNumber, badge }: { orderNumber: string; badge: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <p className="m-0 text-body leading-[1.4] font-semibold text-ink">{orderNumber}</p>
+      {badge}
+    </div>
+  )
+}
+
 export function TaskHeader({
   eyebrow,
   title,
@@ -40,21 +57,23 @@ export function TaskHeader({
   )
 }
 
-export function BlockedNotice() {
+export function ClaimPrompt({
+  orderNumber,
+  children,
+}: {
+  orderNumber: string
+  children: ReactNode
+}) {
   return (
-    <Panel
-      tone="tint"
-      className="flex flex-col items-center gap-3 border-dashed px-6 py-16 text-center"
-    >
-      <IconLock className="size-8 text-ink-subtle" />
-      <div>
-        <p className="m-0 text-lead leading-[1.4] font-semibold text-ink">
-          Sedang diproses petugas lain
-        </p>
-        <p className="m-0 mt-1.5 text-small leading-[1.6] text-ink-soft">
-          Tugas ini sedang ditangani oleh petugas lain. Silakan pilih tugas lain dari antrean.
+    <Panel tone="tint" className="flex flex-col gap-3 px-5 py-4.5">
+      <div className="flex items-start gap-3">
+        <IconLock className="mt-0.5 size-4 shrink-0 text-ink-subtle" />
+        <p className="m-0 text-small leading-[1.6] text-ink-soft">
+          Pesanan {orderNumber} belum Anda kerjakan. Ambil tugas ini untuk melihat alamat pelanggan
+          dan menyelesaikannya. Tugas akan menjadi milik Anda selama 3 jam.
         </p>
       </div>
+      {children}
     </Panel>
   )
 }

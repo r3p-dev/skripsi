@@ -1,11 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { changeNameValidator } from '#validators/profile_validator'
-import ProfileService from '#services/profile_service'
+import StaffProfileService from '#services/staff_profile_service'
 
 @inject()
 export default class ProfileController {
-  constructor(protected profileService: ProfileService) {}
+  constructor(protected profileService: StaffProfileService) {}
 
   async show({ inertia }: HttpContext) {
     return inertia.render('staff/profile/show', {})

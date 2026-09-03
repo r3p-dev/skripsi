@@ -17,11 +17,6 @@ export type ReceiptGroup = {
   subtotalLabel: string
 }
 
-/**
- * Turns the goods on an order into the rows a receipt prints: one heading per
- * item, then the catalogues booked against it. Items still waiting on inspection
- * carry no catalogues and are kept, so the customer can see the laundry has them.
- */
 export function groupLinesByItem(items: OrderItem[]): ReceiptGroup[] {
   return items.map((item, index) => ({
     key: String(item.id ?? index),

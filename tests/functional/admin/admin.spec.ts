@@ -51,6 +51,49 @@ test.group('Admin | the screens load', (group) => {
   })
 })
 
+test.group('Admin | the server sends display labels', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('the dashboard carries formatted money', async ({ client, assert }) => {
+    const response = await client
+      .get('/admin')
+      .loginAs(await admin())
+      .withInertia()
+
+    const props = response.inertiaProps as {
+      summary: { revenueLabel: string }
+      revenueTrend: { totalLabel: string }[]
+    }
+
+    assert.match(props.summary.revenueLabel, /^Rp/)
+    assert.isNotEmpty(props.revenueTrend)
+    assert.match(props.revenueTrend[0].totalLabel, /^Rp/)
+  })
+
+  test('the report carries formatted money', async ({ client, assert }) => {
+    const response = await client
+      .get('/admin/reports')
+      .loginAs(await admin())
+      .withInertia()
+
+    const props = response.inertiaProps as {
+      report: {
+        totalRevenueLabel: string
+        averageOrderValueLabel: string
+        series: { totalLabel: string }[]
+        byPaymentMethod: { revenueLabel: string }[]
+      }
+    }
+
+    assert.match(props.report.totalRevenueLabel, /^Rp/)
+    assert.match(props.report.averageOrderValueLabel, /^Rp/)
+    assert.isNotEmpty(props.report.series)
+    assert.match(props.report.series[0].totalLabel, /^Rp/)
+    assert.isNotEmpty(props.report.byPaymentMethod)
+    assert.match(props.report.byPaymentMethod[0].revenueLabel, /^Rp/)
+  })
+})
+
 test.group('Admin | orders', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
@@ -159,7 +202,6 @@ test.group('Admin | reconciliation', (group) => {
       .post(`/admin/reconciliation/${order.orderNumber}`)
       .loginAs(await admin())
       .withCsrfToken()
-      // Deliberately missing the reason the validator insists on.
       .form({ paymentMethod: PaymentMethod.CASH } as never)
       .redirects(0)
 

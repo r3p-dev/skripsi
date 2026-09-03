@@ -81,7 +81,7 @@ test.group('AddressService | changing address', (group) => {
       )
     )
 
-    assert.equal(failure.field, 'radius')
+    assert.equal(failure.field, 'location')
     assert.match(failure.message, /di luar jangkauan/i)
     assert.isNull(await addressService.getActiveAddress(user))
   })
@@ -98,7 +98,7 @@ test.group('AddressService | changing address', (group) => {
       )
     )
 
-    assert.equal(failure.field, 'radius')
+    assert.equal(failure.field, 'location')
   })
 
   test('an unused old address is thrown away', async ({ assert }) => {

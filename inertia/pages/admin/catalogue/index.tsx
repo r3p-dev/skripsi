@@ -26,8 +26,7 @@ import type { Data } from '@/generated/data'
 import type { Filters, InertiaProps, Metadata } from '@/types'
 import { Form, Link } from '@adonisjs/inertia/react'
 import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
-import { CatalogueCategoryLabel, CatalogueTypeLabel } from '@/enums/catalogue_enum'
-import { formatRupiah } from '@/lib/format'
+import { CatalogueCategoryLabel } from '@/enums/catalogue_enum'
 
 type PageProps = InertiaProps<{
   catalogues: { data: Data.Catalogue[]; metadata: Metadata }
@@ -57,7 +56,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Catalogue>[] {
       cellClassName: 'font-semibold text-ink',
       cell: (catalogue) => (
         <span className="text-body font-semibold text-ink tablet:text-small">
-          {formatRupiah(catalogue.price)}
+          {catalogue.priceLabel}
         </span>
       ),
     },
@@ -74,7 +73,7 @@ function buildColumns(inUse: Set<number>): Column<Data.Catalogue>[] {
       key: 'type',
       header: 'Tipe',
       cellClassName: 'text-ink-soft',
-      cell: (catalogue) => CatalogueTypeLabel[catalogue.type as keyof typeof CatalogueTypeLabel],
+      cell: (catalogue) => catalogue.typeLabel,
     },
     {
       key: 'actions',

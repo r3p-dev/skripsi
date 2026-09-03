@@ -1,38 +1,30 @@
 import StaffLayout from '@/components/layouts/staff_layout'
 import { boxField } from '@/components/atoms/editorial'
 import {
-  BlockedNotice,
+  ClaimPrompt,
   TaskAddress,
   TaskHeader,
   TaskSummary,
 } from '@/components/molecules/staff_task'
-import RouteMap, { type RouteGeometry } from '@/components/organisms/route_map'
+import { RouteSummary, type TripRoute } from '@/components/molecules/route_summary'
+import RouteMap from '@/components/organisms/route_map'
 import StaticMap from '@/components/organisms/static_map'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { Data } from '@/generated/data'
 import type { InertiaProps } from '@/types'
-import { OrderStatusLabel } from '@/enums/order_enum'
-import { formatDate } from '@/lib/format'
 import { ConfirmDialog, ConfirmFooter } from '@/components/molecules/confirm_action'
 import { Form } from '@adonisjs/inertia/react'
-import { IconNavigation, IconRoute } from '@tabler/icons-react'
+import { IconNavigation } from '@tabler/icons-react'
 
 type TripType = 'pickup' | 'delivery'
-
-type TripRoute = {
-  distance: number
-  duration: number
-  geometry: RouteGeometry
-  source: 'osrm' | 'haversine'
-}
 
 type PageProps = InertiaProps<{
   type: TripType
   order: Data.Order.Variants['toDetail']
   route: TripRoute | null
-  blocked: boolean
+  claimed: boolean
 }>
 
 const typeLabels: Record<TripType, string> = {
@@ -40,38 +32,35 @@ const typeLabels: Record<TripType, string> = {
   delivery: 'Pengantaran',
 }
 
-function RouteSummary({ route }: { route: TripRoute }) {
-  const km = (route.distance / 1000).toFixed(1)
-  const minutes = Math.max(1, Math.round(route.duration / 60))
-
-  return (
-    <div className="flex items-center justify-between gap-3 border border-rule bg-paper-tint px-5 py-3.5">
-      <span className="flex items-center gap-2 text-small leading-normal text-ink-soft">
-        <IconRoute className="size-4" />
-        {route.source === 'osrm' ? 'Rute jalan' : 'Perkiraan garis lurus'}
-      </span>
-      <span className="text-small leading-normal font-semibold text-ink">
-        {km} km · {minutes} mnt
-      </span>
-    </div>
-  )
-}
-
-export default function Show({ type, order, route, blocked }: PageProps) {
+export default function Show({ type, order, route, claimed }: PageProps) {
   return (
     <StaffLayout title={`${typeLabels[type]} - ${order.orderNumber}`} description="Detail tugas">
-      <TaskHeader eyebrow={typeLabels[type]} title={order.orderNumber} showBack={blocked} />
+      <TaskHeader eyebrow={typeLabels[type]} title={order.orderNumber} showBack={!claimed} />
 
       <div className="gutter flex flex-1 flex-col gap-3 pb-nav">
-        {blocked ? (
-          <BlockedNotice />
+        <TaskSummary status={order.statusLabel} pickupDate={order.pickupDate ?? '—'} />
+
+        {!claimed ? (
+          <ClaimPrompt orderNumber={order.orderNumber}>
+            <Form
+              id="claim-task"
+              route="staff.trip.claim"
+              routeParams={{ number: order.orderNumber, type }}
+            >
+              {({ processing }) => (
+                <ConfirmDialog
+                  triggerClassName="flex min-h-12 w-full items-center justify-center bg-ink px-4 text-small font-medium tracking-[0.08em] text-white uppercase transition-colors hover:bg-ink/90"
+                  label="Mulai Kerjakan Tugas"
+                  title={`Ambil tugas ${typeLabels[type].toLowerCase()}?`}
+                  description={`Pesanan ${order.orderNumber} akan menjadi tugas Anda selama 3 jam dan hilang dari antrean petugas lain.`}
+                >
+                  <ConfirmFooter label="Ambil Tugas" processing={processing} formId="claim-task" />
+                </ConfirmDialog>
+              )}
+            </Form>
+          </ClaimPrompt>
         ) : (
           <>
-            <TaskSummary
-              status={OrderStatusLabel[order.status as keyof typeof OrderStatusLabel]}
-              pickupDate={formatDate(order.pickupDate)}
-            />
-
             {order.address && (
               <>
                 <div className="border border-rule">
@@ -92,11 +81,6 @@ export default function Show({ type, order, route, blocked }: PageProps) {
                 {route && <RouteSummary route={route} />}
 
                 <TaskAddress address={order.address}>
-                  {/*
-                    The in-house route above covers the usual case. Google Maps
-                    stays available for turn-by-turn voice guidance, and as a
-                    way out when the routing service is only guessing.
-                  */}
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.latitude},${order.address.longitude}`}
                     target="_blank"

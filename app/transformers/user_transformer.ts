@@ -1,7 +1,7 @@
 import { type Role, RoleLabel } from '#enums/role_enum'
 import type User from '#models/user'
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import { DateTime } from 'luxon'
+import { formatDate } from '#utils/date'
 
 export default class UserTransformer extends BaseTransformer<User> {
   toObject() {
@@ -19,7 +19,7 @@ export default class UserTransformer extends BaseTransformer<User> {
       roleLabel: RoleLabel[this.resource.role as Role],
       isActive: Boolean(this.resource.isActive),
 
-      createdAt: this.resource.createdAt.setLocale('id').toLocaleString(DateTime.DATE_FULL),
+      createdAt: formatDate(this.resource.createdAt),
     }
   }
 }

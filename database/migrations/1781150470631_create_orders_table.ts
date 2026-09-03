@@ -48,11 +48,6 @@ export default class extends BaseSchema {
       table.index(['claimed_by', 'claimed_at'])
     })
 
-    /**
-     * The admin order search matches with a leading wildcard
-     * (`ILIKE '%term%'`), which no btree index can serve. Trigram GIN indexes
-     * are the one index type that can answer those lookups.
-     */
     this.schema.raw(`CREATE INDEX orders_order_number_trgm_index
       ON ${this.tableName} USING GIN (order_number gin_trgm_ops)
     `)

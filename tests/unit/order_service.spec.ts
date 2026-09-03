@@ -12,9 +12,6 @@ import { DateTime } from 'luxon'
 
 const orderService = new OrderService(new AddressService())
 
-/**
- * An unsaved order, for the rules that only look at the row in front of them.
- */
 function stubOrder(attributes: Partial<Order>): Promise<Order> {
   return OrderFactory.merge(attributes as never).makeStubbed()
 }
@@ -201,6 +198,22 @@ test.group('OrderService | booking', (group) => {
     const pickupDate = DateTime.now().plus({ days: 3 })
 
     await OrderFactory.merge({ pickupDate, status: OrderStatus.PICKUP_SCHEDULED }).createMany(
+      DAILY_PICKUP_LIMIT
+    )
+
+    const [failure] = await validationMessages(() =>
+      orderService.createOnlineOrder(user, { pickupDate, items: [] })
+    )
+
+    assert.equal(failure.field, 'pickupDate')
+    assert.match(failure.message, /Kuota penjemputan/i)
+  })
+
+  test('a slot stays spent after the pickup has been made', async ({ assert }) => {
+    const { user } = await createCustomer()
+    const pickupDate = DateTime.now().plus({ days: 7 })
+
+    await OrderFactory.merge({ pickupDate, status: OrderStatus.COMPLETED }).createMany(
       DAILY_PICKUP_LIMIT
     )
 

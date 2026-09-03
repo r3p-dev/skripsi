@@ -1,9 +1,9 @@
 import { test } from '@japa/runner'
-import FonnteService from '#services/fonnte_service'
+import WhatsappService from '#notifications/whatsapp_service'
 import User from '#models/user'
 import app from '@adonisjs/core/services/app'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { FakeFonnteService } from '#tests/utils/fakes'
+import { FakeWhatsappService } from '#tests/utils/fakes'
 import { UserFactory } from '#database/factories/user_factory'
 import { inputErrors, toRelativeUrl } from '#tests/utils/helpers'
 
@@ -100,9 +100,9 @@ test.group('Admin profile | changing phone number', (group) => {
   group.each.teardown(() => app.container.restoreAll())
 
   test('the verification link points at the admin route', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const admin = await UserFactory.apply('admin').create()
 
@@ -114,13 +114,13 @@ test.group('Admin profile | changing phone number', (group) => {
       .form({ phone: '081200000751' })
 
     response.assertStatus(302)
-    assert.include(fonnte.lastMessage!.body, '/admin/phone/verify')
+    assert.include(whatsapp.messageTo('081200000751')!.body, '/admin/phone/verify')
   })
 
   test('following the link swaps the number over', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const admin = await UserFactory.apply('admin').create()
 
@@ -132,7 +132,7 @@ test.group('Admin profile | changing phone number', (group) => {
       .form({ phone: '081200000752' })
 
     const response = await client
-      .get(toRelativeUrl(fonnte.lastMessage!.body))
+      .get(toRelativeUrl(whatsapp.messageTo('081200000752')!.body))
       .loginAs(admin)
       .redirects(0)
 
@@ -144,9 +144,9 @@ test.group('Admin profile | changing phone number', (group) => {
   })
 
   test('an admin cannot claim a number another account holds', async ({ client, assert }) => {
-    const fonnte = new FakeFonnteService()
+    const whatsapp = new FakeWhatsappService()
 
-    app.container.swap(FonnteService, () => fonnte)
+    app.container.swap(WhatsappService, () => whatsapp)
 
     const admin = await UserFactory.apply('admin').create()
     const other = await UserFactory.create()
@@ -160,6 +160,6 @@ test.group('Admin profile | changing phone number', (group) => {
 
     response.assertStatus(302)
     assert.property(inputErrors(response), 'phone')
-    assert.isEmpty(fonnte.messages)
+    assert.isEmpty(whatsapp.messages)
   })
 })

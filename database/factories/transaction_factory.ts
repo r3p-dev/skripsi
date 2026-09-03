@@ -17,10 +17,6 @@ export const TransactionFactory = factory
       cashReceived: null,
     }
   })
-  /**
-   * `transactions_order_id_pending_unique` allows a single pending row per
-   * order, so extra attempts on the same order need one of the closed states.
-   */
   .state('paid', (transaction) => {
     transaction.status = TransactionStatus.PAID
   })

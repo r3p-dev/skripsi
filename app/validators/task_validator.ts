@@ -26,13 +26,6 @@ export const inspectionValidator = vine.create({
   items: vine.array(inspectedItem).minLength(1).maxLength(MAX_ITEMS_PER_ORDER),
 })
 
-/**
- * A counter order: the customer is standing there, so the goods, the price and
- * the money all land in one submission.
- *
- * `customerId` is optional because walk-ins need not have an account, but
- * asking for delivery requires one — that is where the address lives.
- */
 export const offlineOrderValidator = vine.create({
   customerId: vine.number().positive().optional(),
   name: name(),
@@ -49,9 +42,6 @@ export const offlineOrderValidator = vine.create({
     .requiredWhen('paymentMethod', '=', PaymentMethod.CASH),
 })
 
-/**
- * Correcting the goods on an order that has been priced but not yet paid.
- */
 export const orderItemsValidator = vine.create({
   items: vine.array(inspectedItem).minLength(1).maxLength(MAX_ITEMS_PER_ORDER),
 })

@@ -3,4 +3,14 @@
  * DO NOT EDIT manually
  */
 
-export const events = {}
+import OrderCreated from '#events/order_created'
+import OrderPaid from '#events/order_paid'
+import OrderPriceCorrected from '#events/order_price_corrected'
+import OrderStatusChanged from '#events/order_status_changed'
+
+export const events = {
+  OrderCreated: OrderCreated,
+  OrderPaid: OrderPaid,
+  OrderPriceCorrected: OrderPriceCorrected,
+  OrderStatusChanged: OrderStatusChanged,
+}

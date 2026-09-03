@@ -130,7 +130,7 @@ test.group('Customer address | adding one', (group) => {
       )
 
     response.assertStatus(302)
-    assert.property(inputErrors(response), 'radius')
+    assert.property(inputErrors(response), 'location')
     assert.isEmpty(await Address.query().where('user_id', user.id))
   })
 

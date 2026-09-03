@@ -1,5 +1,11 @@
 import StaffLayout from '@/components/layouts/staff_layout'
-import { OutlineButton, Panel, SectionLabel, SolidButton } from '@/components/atoms/editorial'
+import {
+  Notice,
+  OutlineButton,
+  Panel,
+  SectionLabel,
+  SolidButton,
+} from '@/components/atoms/editorial'
 import { TaskHeader } from '@/components/molecules/staff_task'
 import { ItemCard, useItemRows, type ItemRow } from '@/components/organisms/item_fields'
 import type { Data } from '@/generated/data'
@@ -11,15 +17,12 @@ import { CatalogueCategory } from '@/enums/catalogue_enum'
 type PageProps = InertiaProps<{
   order: Data.Order.Variants['toDetail']
   catalogues: Data.Catalogue[]
+  canEdit: boolean
+  isCounterOrder: boolean
 }>
 
 type OrderLine = NonNullable<Data.Order.Variants['toDetail']['items']>[number]
 
-/**
- * Turns the goods already recorded on the order back into editable rows. Each
- * item keeps its main catalogue in the dropdown and its add-ons as checkboxes,
- * which is how the form reads them.
- */
 function toItemRows(items: OrderLine[], catalogues: Data.Catalogue[]): ItemRow[] {
   const categoryById = new Map(catalogues.map((catalogue) => [catalogue.id, catalogue.category]))
 
@@ -50,7 +53,7 @@ function toItemRows(items: OrderLine[], catalogues: Data.Catalogue[]): ItemRow[]
   })
 }
 
-export default function Edit({ order, catalogues }: PageProps) {
+export default function Edit({ order, catalogues, canEdit, isCounterOrder }: PageProps) {
   const { items, addItem, removeItem, setCatalogueId } = useItemRows(
     toItemRows(order.items ?? [], catalogues)
   )
@@ -69,14 +72,32 @@ export default function Edit({ order, catalogues }: PageProps) {
       <div className="gutter flex flex-1 flex-col gap-3 pb-nav">
         <Panel tone="tint" className="px-5 py-4">
           <p className="m-0 text-small leading-[1.6] text-ink-body">
-            Perbaiki merek, model, atau layanan yang salah sebelum pelanggan melunasi. Setelah
-            dilunasi, data barang tidak dapat diubah lagi.
+            {canEdit
+              ? 'Perbaiki merek, model, atau layanan yang salah sebelum pelanggan melunasi. Setelah dilunasi, data barang tidak dapat diubah lagi.'
+              : 'Data barang hanya dapat diperbaiki selagi pesanan menunggu pelunasan.'}
           </p>
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-rule pt-3 text-small leading-normal">
             <span className="text-ink-soft">Total saat ini</span>
-            <span className="font-semibold text-ink">{order.totalPrice ?? '-'}</span>
+            <span className="font-semibold text-ink">{order.totalPriceLabel}</span>
           </div>
         </Panel>
+
+        {!canEdit && (
+          <Notice>
+            {isCounterOrder ? (
+              <span>
+                <strong className="font-semibold text-ink">Tidak berlaku</strong> — pesanan ini
+                sudah dibayar di kasir saat dibuat, jadi tidak ada tagihan yang bisa diperbaiki.
+              </span>
+            ) : (
+              <span>
+                Perbaikan barang hanya tersedia sebelum pelanggan membayar, yaitu untuk pesanan
+                online yang sudah diinspeksi tetapi belum dilunasi. Pesanan ini berstatus{' '}
+                <strong className="font-semibold text-ink">{order.statusLabel}</strong>.
+              </span>
+            )}
+          </Notice>
+        )}
 
         {inspectionPhoto && (
           <Panel tone="tint">
@@ -93,38 +114,42 @@ export default function Edit({ order, catalogues }: PageProps) {
           </Panel>
         )}
 
-        <Form
-          route="staff.order.update"
-          routeParams={{ number: order.orderNumber }}
-          className="flex flex-col gap-3"
-        >
-          {({ processing }) => (
-            <>
-              {items.map((item, index) => (
-                <ItemCard
-                  key={item.key}
-                  index={index}
-                  catalogues={catalogues}
-                  item={item}
-                  canRemove={items.length > 1}
-                  onCatalogueChange={(catalogueId) => setCatalogueId(item.key, catalogueId)}
-                  onRemove={() => removeItem(item.key)}
-                />
-              ))}
+        {canEdit && (
+          <Form
+            route="staff.order.update"
+            routeParams={{ number: order.orderNumber }}
+            className="flex flex-col gap-3"
+          >
+            {({ processing }) => (
+              <>
+                {items.map((item, index) => (
+                  <ItemCard
+                    key={item.key}
+                    index={index}
+                    catalogues={catalogues}
+                    item={item}
+                    canRemove={items.length > 1}
+                    onCatalogueChange={(catalogueId) => setCatalogueId(item.key, catalogueId)}
+                    onRemove={() => removeItem(item.key)}
+                  />
+                ))}
 
-              <OutlineButton type="button" onClick={addItem} className="py-3 text-meta">
-                Tambah Barang
-              </OutlineButton>
+                <OutlineButton type="button" onClick={addItem} className="py-3 text-meta">
+                  Tambah Barang
+                </OutlineButton>
 
-              <SolidButton type="submit" disabled={processing}>
-                Simpan Barang
-              </SolidButton>
-            </>
-          )}
-        </Form>
+                <SolidButton type="submit" disabled={processing}>
+                  Simpan Barang
+                </SolidButton>
+              </>
+            )}
+          </Form>
+        )}
 
         <Link route="staff.trip.index" className="block">
-          <OutlineButton render={<span />}>Sudah Benar</OutlineButton>
+          <OutlineButton render={<span />}>
+            {canEdit ? 'Sudah Benar' : 'Kembali ke Tugas'}
+          </OutlineButton>
         </Link>
       </div>
     </StaffLayout>

@@ -10,7 +10,6 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import type { Data } from '@/generated/data'
 import { CatalogueCategory } from '@/enums/catalogue_enum'
 import { ItemType } from '@/enums/item_enum'
-import { formatRupiah } from '@/lib/format'
 import { IconTrash } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 
@@ -122,7 +121,7 @@ function ItemFields({
           <option value="">Pilih layanan</option>
           {mainServices.map((catalogue) => (
             <option key={catalogue.id} value={catalogue.id}>
-              {catalogue.name} - {formatRupiah(catalogue.price)}
+              {catalogue.name} - {catalogue.priceLabel}
             </option>
           ))}
         </BoxSelect>
@@ -144,7 +143,7 @@ function ItemFields({
                   defaultChecked={defaults?.additionalCatalogueIds.includes(catalogue.id)}
                   className="size-4.5 shrink-0 rounded-xs border-rule-field accent-ink"
                 />
-                {catalogue.name} - {formatRupiah(catalogue.price)}
+                {catalogue.name} - {catalogue.priceLabel}
               </label>
             ))}
           </div>
